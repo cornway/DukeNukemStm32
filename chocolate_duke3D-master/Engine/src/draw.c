@@ -9,6 +9,7 @@
 #include "platform.h"
 #include "build.h"
 #include "draw.h"
+#include "begin_code.h"
 
 int32_t pixelsAllowed = 10000000000;
 

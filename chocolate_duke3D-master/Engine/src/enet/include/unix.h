@@ -6,11 +6,7 @@
 #define __ENET_UNIX_H__
 
 #include <stdlib.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include <misc_utils.h>
 
 #ifdef MSG_MAXIOVLEN
 #define ENET_BUFFER_MAXIMUM MSG_MAXIOVLEN
@@ -36,7 +32,7 @@ typedef struct
 
 #define ENET_API extern
 
-typedef fd_set ENetSocketSet;
+typedef int ENetSocketSet;
 
 #define ENET_SOCKETSET_EMPTY(sockset)          FD_ZERO (& (sockset))
 #define ENET_SOCKETSET_ADD(sockset, socket)    FD_SET (socket, & (sockset))

@@ -13,6 +13,12 @@
    #include <inttypes.h>
 #endif
 
+#ifdef ORIGCODE
+#pragma pack(1)
+#else
+#include <arch.h>
+#endif
+
 #define MAXSECTORS 1024
 #define MAXWALLS 8192
 #define MAXSPRITES 4096
@@ -41,8 +47,6 @@
 	#define EXTERN extern
 #endif
 
-#pragma pack(1)
-
 /*
  * ceilingstat/floorstat:
  *   bit 0: 1 = parallaxing, 0 = not                                 "P"
@@ -61,7 +65,7 @@
  */
 
 	/* 40 bytes */
-typedef struct
+typedef struct V_PREPACK
 {
 	short wallptr, wallnum;
 	int32_t ceilingz, floorz;
@@ -74,7 +78,7 @@ typedef struct
 	uint8_t  floorpal, floorxpanning, floorypanning;
 	uint8_t  visibility, filler;
 	short lotag, hitag, extra;
-} sectortype;
+} V_POSTPACK sectortype;
 
 /*
  * cstat:
@@ -92,7 +96,7 @@ typedef struct
  */
 
 	/* 32 bytes */
-typedef struct
+typedef struct V_PREPACK
 {
 	int32_t x, y;
 	short point2, nextwall, nextsector, cstat;
@@ -100,7 +104,7 @@ typedef struct
 	int8_t shade;
 	uint8_t  pal, xrepeat, yrepeat, xpanning, ypanning;
 	short lotag, hitag, extra;
-} walltype;
+} V_POSTPACK walltype;
 
 
 /*
@@ -121,7 +125,7 @@ typedef struct
  */
 
 	/* 44 bytes */
-typedef struct
+typedef struct V_PREPACK
 {
 	int32_t x, y, z;
 	short cstat, picnum;
@@ -132,7 +136,7 @@ typedef struct
 	short sectnum, statnum;
 	short ang, owner, xvel, yvel, zvel;
 	short lotag, hitag, extra;
-} spritetype;
+} V_POSTPACK spritetype;
 
 #pragma pack()
 

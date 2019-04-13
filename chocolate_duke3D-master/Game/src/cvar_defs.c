@@ -19,6 +19,22 @@
 #include "joystick.h"
 
 #include "audiolib/music.h"
+#include "unix_compat.h"
+
+int g_CV_console_text_color;
+int g_CV_num_console_lines;
+int g_CV_classic;
+int g_CV_TransConsole;
+int g_CV_DebugJoystick;
+int g_CV_DebugSound;
+int g_CV_DebugFileAccess;
+uint32_t sounddebugActiveSounds;
+uint32_t sounddebugAllocateSoundCalls;
+uint32_t sounddebugDeallocateSoundCalls;
+
+
+int g_CV_CubicInterpolation;
+
 
 // Bind our Cvars at startup. You can still add bindings after this call, but
 // it is recommanded that you bind your default CVars here.

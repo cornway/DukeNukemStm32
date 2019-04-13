@@ -316,7 +316,7 @@
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
             <Strict>0</Strict>
-            <EnumInt>0</EnumInt>
+            <EnumInt>1</EnumInt>
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
@@ -333,10 +333,10 @@
             <v6WtE>0</v6WtE>
             <v6Rtti>0</v6Rtti>
             <VariousControls>
-              <MiscControls> </MiscControls>
+              <MiscControls></MiscControls>
               <Define>STM32F769xx,USE_HAL_DRIVER,USE_STM32F769I_DISCO,DATA_IN_ExtSDRAM,USE_LCD_HDMI,USE_USB_HS,SDL_HEXEN</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Inc;..\common\STM32F7xx_Driver\Inc;..\common\FatFs\src;..\common\STM32F7xx_Driver\BSP\Components\Common;..\common\STM32F7xx_Driver\BSP\STM32F769I-Discovery;..\common\STM32F7xx_Driver\CMSIS\Device\ST\STM32F7xx\Include;..\common\inc;..\Duke32\chocolate_duke3D-master\Game\src;..\Duke32\chocolate_duke3D-master\Engine\src</IncludePath>
+              <IncludePath>..\Inc;..\common\STM32F7xx_Driver\Inc;..\common\FatFs\src;..\common\STM32F7xx_Driver\BSP\Components\Common;..\common\STM32F7xx_Driver\BSP\STM32F769I-Discovery;..\common\STM32F7xx_Driver\CMSIS\Device\ST\STM32F7xx\Include;..\common\inc;..\chocolate_duke3D-master\Game\src;..\chocolate_duke3D-master\Engine\src</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -611,14 +611,39 @@
               <FilePath>../Src/stm32f7xx_it.c</FilePath>
             </File>
             <File>
-              <FileName>i_sdlsound.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\doom\src\i_sdlsound.c</FilePath>
-            </File>
-            <File>
               <FileName>mach_stub.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\common\mach_stub.c</FilePath>
+            </File>
+            <File>
+              <FileName>snd_mem.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\snd_mem.c</FilePath>
+            </File>
+            <File>
+              <FileName>snd_mix.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\snd_mix.c</FilePath>
+            </File>
+            <File>
+              <FileName>snd_sdl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\snd_sdl.c</FilePath>
+            </File>
+            <File>
+              <FileName>sys_sdl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\sys_sdl.c</FilePath>
+            </File>
+            <File>
+              <FileName>vid_sdl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\vid_sdl.c</FilePath>
+            </File>
+            <File>
+              <FileName>stub.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\stub.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -956,11 +981,6 @@
               <FilePath>..\chocolate_duke3D-master\Engine\src\draw.c</FilePath>
             </File>
             <File>
-              <FileName>dummy_multi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\chocolate_duke3D-master\Engine\src\dummy_multi.c</FilePath>
-            </File>
-            <File>
               <FileName>engine.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\chocolate_duke3D-master\Engine\src\engine.c</FilePath>
@@ -976,21 +996,6 @@
               <FilePath>..\chocolate_duke3D-master\Engine\src\fixedPoint_math.c</FilePath>
             </File>
             <File>
-              <FileName>mmulti.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\chocolate_duke3D-master\Engine\src\mmulti.c</FilePath>
-            </File>
-            <File>
-              <FileName>mmulti_stable.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\chocolate_duke3D-master\Engine\src\mmulti_stable.c</FilePath>
-            </File>
-            <File>
-              <FileName>multi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\chocolate_duke3D-master\Engine\src\multi.c</FilePath>
-            </File>
-            <File>
               <FileName>network.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\chocolate_duke3D-master\Engine\src\network.c</FilePath>
@@ -999,6 +1004,16 @@
               <FileName>tiles.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\chocolate_duke3D-master\Engine\src\tiles.c</FilePath>
+            </File>
+            <File>
+              <FileName>mmulti_stable.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Engine\src\mmulti_stable.c</FilePath>
+            </File>
+            <File>
+              <FileName>fx_man.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\fx_man.c</FilePath>
             </File>
           </Files>
         </Group>

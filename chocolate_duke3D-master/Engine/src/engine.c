@@ -16,13 +16,12 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "platform.h"
+#include "unix_compat.h"
+#include "dev_io.h"
 
 #if !PLATFORM_MACOSX
-#include <malloc.h>
+#include <misc_utils.h>
 #endif
 
 #include "build.h"
@@ -1317,7 +1316,7 @@ static void wallscan(int32_t x1, int32_t x2,
                 i *= tsizy;
             else
                 i <<= tsizy;
-            bufplce[z] = tiles[globalpicnum].data+i;
+            bufplce[z] = (intptr_t)tiles[globalpicnum].data+i;
 
             vince[z] = swal[x+z]*globalyscale;
             vplce[z] = globalzd + vince[z]*(y1ve[z]-globalhoriz+1);
@@ -1346,38 +1345,38 @@ static void wallscan(int32_t x1, int32_t x2,
         if ((bad != 0) || (u4 >= d4))
         {
             if (!(bad&1))
-                prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],bufplce[0],ylookup[y1ve[0]]+x+frameoffset+0);
+                prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+x+frameoffset+0);
             if (!(bad&2))
-                prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],bufplce[1],ylookup[y1ve[1]]+x+frameoffset+1);
+                prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+x+frameoffset+1);
             if (!(bad&4))
-                prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],bufplce[2],ylookup[y1ve[2]]+x+frameoffset+2);
+                prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+x+frameoffset+2);
             if (!(bad&8))
-                prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],bufplce[3],ylookup[y1ve[3]]+x+frameoffset+3);
+                prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+x+frameoffset+3);
             continue;
         }
 
         if (u4 > y1ve[0])
-            vplce[0] =prevlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],bufplce[0],ylookup[y1ve[0]]+x+frameoffset+0);
+            vplce[0] =prevlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+x+frameoffset+0);
         if (u4 > y1ve[1])
-            vplce[1] = prevlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],bufplce[1],ylookup[y1ve[1]]+x+frameoffset+1);
+            vplce[1] = prevlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+x+frameoffset+1);
         if (u4 > y1ve[2])
-            vplce[2] = prevlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],bufplce[2],ylookup[y1ve[2]]+x+frameoffset+2);
+            vplce[2] = prevlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+x+frameoffset+2);
         if (u4 > y1ve[3])
-            vplce[3] = prevlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],bufplce[3],ylookup[y1ve[3]]+x+frameoffset+3);
+            vplce[3] = prevlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+x+frameoffset+3);
 
         if (d4 >= u4) 
-            vlineasm4(d4-u4+1,ylookup[u4]+x+frameoffset);
+            vlineasm4(d4-u4+1,ylookup[u4]+x+(intptr_t)frameoffset);
 
-        i = x+frameoffset+ylookup[d4+1];
+        i = x+(intptr_t)frameoffset+ylookup[d4+1];
         
         if (y2ve[0] > d4)
-            prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],bufplce[0],i+0);
+            prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],(uint8_t *)bufplce[0],(uint8_t *)(i+0));
         if (y2ve[1] > d4)
-            prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],bufplce[1],i+1);
+            prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],(uint8_t *)bufplce[1],(uint8_t *)(i+1));
         if (y2ve[2] > d4)
-            prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],bufplce[2],i+2);
+            prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],(uint8_t *)bufplce[2],(uint8_t *)(i+2));
         if (y2ve[3] > d4)
-            prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],bufplce[3],i+3);
+            prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],(uint8_t *)bufplce[3],(uint8_t *)(i+3));
     }
     for(; x<=x2; x++)
     {
@@ -1500,7 +1499,7 @@ static void maskwallscan(int32_t x1, int32_t x2,
             else
                 i <<= tileHeight;
             
-            bufplce[z] = tiles[globalpicnum].data+i;
+            bufplce[z] = (intptr_t)tiles[globalpicnum].data+i;
 
             vince[z] = swal[dax]*globalyscale;
             vplce[z] = globalzd + vince[z]*(y1ve[z]-globalhoriz+1);
@@ -1526,25 +1525,25 @@ static void maskwallscan(int32_t x1, int32_t x2,
 
         if ((bad > 0) || (u4 >= d4))
         {
-            if (!(bad&1)) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],bufplce[0],ylookup[y1ve[0]]+p+0);
-            if (!(bad&2)) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],bufplce[1],ylookup[y1ve[1]]+p+1);
-            if (!(bad&4)) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],bufplce[2],ylookup[y1ve[2]]+p+2);
-            if (!(bad&8)) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],bufplce[3],ylookup[y1ve[3]]+p+3);
+            if (!(bad&1)) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+p+0);
+            if (!(bad&2)) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+p+1);
+            if (!(bad&4)) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+p+2);
+            if (!(bad&8)) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+p+3);
             continue;
         }
 
-        if (u4 > y1ve[0]) vplce[0] = mvlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],bufplce[0],ylookup[y1ve[0]]+p+0);
-        if (u4 > y1ve[1]) vplce[1] = mvlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],bufplce[1],ylookup[y1ve[1]]+p+1);
-        if (u4 > y1ve[2]) vplce[2] = mvlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],bufplce[2],ylookup[y1ve[2]]+p+2);
-        if (u4 > y1ve[3]) vplce[3] = mvlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],bufplce[3],ylookup[y1ve[3]]+p+3);
+        if (u4 > y1ve[0]) vplce[0] = mvlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+p+0);
+        if (u4 > y1ve[1]) vplce[1] = mvlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+p+1);
+        if (u4 > y1ve[2]) vplce[2] = mvlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+p+2);
+        if (u4 > y1ve[3]) vplce[3] = mvlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+p+3);
 
-        if (d4 >= u4) mvlineasm4(d4-u4+1,ylookup[u4]+p);
+        if (d4 >= u4) mvlineasm4(d4-u4+1,ylookup[u4]+(intptr_t)p);
 
-        i = p+ylookup[d4+1];
-        if (y2ve[0] > d4) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],bufplce[0],i+0);
-        if (y2ve[1] > d4) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],bufplce[1],i+1);
-        if (y2ve[2] > d4) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],bufplce[2],i+2);
-        if (y2ve[3] > d4) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],bufplce[3],i+3);
+        i = (intptr_t)p+ylookup[d4+1];
+        if (y2ve[0] > d4) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],(uint8_t *)bufplce[0],(uint8_t *)i+0);
+        if (y2ve[1] > d4) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],(uint8_t *)bufplce[1],(uint8_t *)i+1);
+        if (y2ve[2] > d4) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],(uint8_t *)bufplce[2],(uint8_t *)i+2);
+        if (y2ve[3] > d4) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],(uint8_t *)bufplce[3],(uint8_t *)i+3);
     }
     for(; x<=x2; x++,p++)
     {
@@ -1862,9 +1861,9 @@ static void grouscan (int32_t dax1, int32_t dax2, int32_t sectnum, uint8_t  dast
     if (sec->visibility != 0) globvis = mulscale4(globvis,(int32_t)((uint8_t )(sec->visibility+16)));
     globvis = mulscale13(globvis,daz);
     globvis = mulscale16(globvis,xdimscale);
-    j =(int32_t) FP_OFF(palookup[globalpal]);
+    j =(int32_t) FP_OFF((uint8_t *)palookup[globalpal]);
 
-    setupslopevlin(((int32_t)(picsiz[globalpicnum]&15))+(((int32_t)(picsiz[globalpicnum]>>4))<<8),tiles[globalpicnum].data,-ylookup[1]);
+    setupslopevlin(((int32_t)(picsiz[globalpicnum]&15))+(((int32_t)(picsiz[globalpicnum]>>4))<<8),(intptr_t)tiles[globalpicnum].data,-ylookup[1]);
 
     l = (globalzd>>16);
 
@@ -1911,7 +1910,7 @@ static void grouscan (int32_t dax1, int32_t dax2, int32_t sectnum, uint8_t  dast
             globalx3 = (globalx2>>10);
             globaly3 = (globaly2>>10);
             asm3 = mulscale16(y2,globalzd) + (globalzx>>6);
-            slopevlin(ylookup[y2]+x+frameoffset,krecipasm(asm3>>3),(int32_t)nptr2,y2-y1+1,globalx1,globaly1);
+            slopevlin(ylookup[y2]+x+(intptr_t)frameoffset,krecipasm(asm3>>3),(int32_t)nptr2,y2-y1+1,globalx1,globaly1);
 
             if ((x&15) == 0) faketimerhandler();
         }
@@ -3068,11 +3067,11 @@ static void transmaskvline(int32_t x)
     if (i >= tiles[globalpicnum].dim.width)
         i %= tiles[globalpicnum].dim.width;
     
-    bufplc = tiles[globalpicnum].data+i*tiles[globalpicnum].dim.height;
+    bufplc = (intptr_t)(tiles[globalpicnum].data+i*tiles[globalpicnum].dim.height);
 
-    p = ylookup[y1v]+x+frameoffset;
+    p = ylookup[y1v]+x+(intptr_t)frameoffset;
 
-    tvlineasm1(vinc,palookupoffs,y2v-y1v,vplc,bufplc,p);
+    tvlineasm1(vinc,(uint8_t *)palookupoffs,y2v-y1v,vplc,(uint8_t *)bufplc,(uint8_t *)p);
 
     transarea += y2v-y1v;
 }
@@ -3104,10 +3103,10 @@ static void transmaskvline2 (int32_t x)
         return;
     }
 
-    palookupoffse[0] = (int32_t)FP_OFF(palookup[globalpal]) + (getpalookup((int32_t)mulscale16(swall[x],globvis),globalshade)<<8);
-    palookupoffse[1] = (int32_t)FP_OFF(palookup[globalpal]) + (getpalookup((int32_t)mulscale16(swall[x2],globvis),globalshade)<<8);
+    palookupoffse[0] = (uint8_t *)FP_OFF(palookup[globalpal]) + (getpalookup((int32_t)mulscale16(swall[x],globvis),globalshade)<<8);
+    palookupoffse[1] = (uint8_t *)FP_OFF(palookup[globalpal]) + (getpalookup((int32_t)mulscale16(swall[x2],globvis),globalshade)<<8);
 
-    setuptvlineasm2(globalshiftval,palookupoffse[0],palookupoffse[1]);
+    setuptvlineasm2(globalshiftval,(intptr_t)palookupoffse[0],(intptr_t)palookupoffse[1]);
 
     vince[0] = swall[x]*globalyscale;
     vince[1] = swall[x2]*globalyscale;
@@ -3117,25 +3116,25 @@ static void transmaskvline2 (int32_t x)
     i = lwall[x] + globalxpanning;
     if (i >= tiles[globalpicnum].dim.width)
         i %= tiles[globalpicnum].dim.width;
-    bufplce[0] = tiles[globalpicnum].data+i*tiles[globalpicnum].dim.height;
+    bufplce[0] = (intptr_t)(tiles[globalpicnum].data+i*tiles[globalpicnum].dim.height);
 
     i = lwall[x2] + globalxpanning;
     if (i >= tiles[globalpicnum].dim.width)
         i %= tiles[globalpicnum].dim.width;
-    bufplce[1] = tiles[globalpicnum].data+i*tiles[globalpicnum].dim.height;
+    bufplce[1] = (intptr_t)(tiles[globalpicnum].data+i*tiles[globalpicnum].dim.height);
 
     
     y1 = max(y1ve[0],y1ve[1]);
     y2 = min(y2ve[0],y2ve[1]);
 
-    i = x+frameoffset;
+    i = x+(intptr_t)frameoffset;
 
     if (y1ve[0] != y1ve[1])
     {
         if (y1ve[0] < y1)
-            vplce[0] = tvlineasm1(vince[0],palookupoffse[0],y1-y1ve[0]-1,vplce[0],bufplce[0],ylookup[y1ve[0]]+i);
+            vplce[0] = tvlineasm1(vince[0],palookupoffse[0],y1-y1ve[0]-1,vplce[0],(uint8_t *)bufplce[0],(uint8_t *)ylookup[y1ve[0]]+i);
         else
-            vplce[1] = tvlineasm1(vince[1],palookupoffse[1],y1-y1ve[1]-1,vplce[1],bufplce[1],ylookup[y1ve[1]]+i+1);
+            vplce[1] = tvlineasm1(vince[1],palookupoffse[1],y1-y1ve[1]-1,vplce[1],(uint8_t *)bufplce[1],(uint8_t *)ylookup[y1ve[1]]+i+1);
     }
 
     if (y2 > y1)
@@ -3152,9 +3151,9 @@ static void transmaskvline2 (int32_t x)
     }
 
     if (y2ve[0] > y2ve[1])
-        tvlineasm1(vince[0],palookupoffse[0],y2ve[0]-y2-1,asm1,bufplce[0],ylookup[y2+1]+i);
+        tvlineasm1(vince[0],palookupoffse[0],y2ve[0]-y2-1,asm1,(uint8_t *)bufplce[0],(uint8_t *)ylookup[y2+1]+i);
     else if (y2ve[0] < y2ve[1])
-        tvlineasm1(vince[1],palookupoffse[1],y2ve[1]-y2-1,asm2,bufplce[1],ylookup[y2+1]+i+1);
+        tvlineasm1(vince[1],palookupoffse[1],y2ve[1]-y2-1,asm2,(uint8_t *)bufplce[1],(uint8_t *)ylookup[y2+1]+i+1);
 
     faketimerhandler();
 }
@@ -3324,18 +3323,18 @@ int loadboard(char  *filename, int32_t *daposx, int32_t *daposy,
 static void write32(int f, int32_t val)
 {
     val = BUILDSWAP_INTEL32(val);
-    write(f, &val, 4);
+    d_write(f, &val, 4);
 }
 
 static void write16(int f, short val)
 {
     val = BUILDSWAP_INTEL16(val);
-    write(f, &val, 2);
+    d_write(f, &val, 2);
 }
 
 static void write8(int f, uint8_t  val)
 {
-    write(f, &val, 1);
+    d_write(f, &val, 1);
 }
 
 
@@ -3352,12 +3351,11 @@ int saveboard(char  *filename, int32_t *daposx, int32_t *daposy,
 #if ((defined PLATFORM_DOS) || (defined PLATFORM_WIN32))
     permissions = S_IWRITE;
 #elif (defined PLATFORM_UNIX)
-    permissions = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    permissions = 0;
 #endif
 
-    if ((fil = open(filename,
-                    O_BINARY|O_TRUNC|O_CREAT|O_WRONLY,
-                    permissions)) == -1)
+    d_open(filename, &fil, "+w");
+    if (fil == -1)
     {
         return(-1);
     }
@@ -3466,7 +3464,7 @@ int saveboard(char  *filename, int32_t *daposx, int32_t *daposy,
         }
     }
 
-    close(fil);
+    d_close(fil);
     return(0);
 }
 
@@ -4025,7 +4023,7 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                     by += yv*(y1-oy);
                     oy = y1;
 
-                    bufplce[xx] = (bx>>16)*tileHeight+bufplc;
+                    bufplce[xx] = (bx>>16)*tileHeight+(intptr_t)bufplc;
                     vplce[xx] = by;
                     y1ve[xx] = y1;
                     y2ve[xx] = y2-1;
@@ -4042,60 +4040,60 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                     if ((bad != 0) || (u4 >= d4))
                     {
                         if (!(bad&1)) 
-                            prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],bufplce[0],ylookup[y1ve[0]]+p+0);
+                            prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+p+0);
                         if (!(bad&2)) 
-                            prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],bufplce[1],ylookup[y1ve[1]]+p+1);
+                            prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+p+1);
                         if (!(bad&4)) 
-                            prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],bufplce[2],ylookup[y1ve[2]]+p+2);
+                            prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+p+2);
                         if (!(bad&8)) 
-                            prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],bufplce[3],ylookup[y1ve[3]]+p+3);
+                            prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+p+3);
                         continue;
                     }
 
                     if (u4 > y1ve[0]) 
-                        vplce[0] = prevlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],bufplce[0],ylookup[y1ve[0]]+p+0);
+                        vplce[0] = prevlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+p+0);
                     if (u4 > y1ve[1]) 
-                        vplce[1] = prevlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],bufplce[1],ylookup[y1ve[1]]+p+1);
+                        vplce[1] = prevlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+p+1);
                     if (u4 > y1ve[2]) 
-                        vplce[2] = prevlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],bufplce[2],ylookup[y1ve[2]]+p+2);
+                        vplce[2] = prevlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+p+2);
                     if (u4 > y1ve[3]) 
-                        vplce[3] = prevlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],bufplce[3],ylookup[y1ve[3]]+p+3);
+                        vplce[3] = prevlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+p+3);
 
-                    if (d4 >= u4) vlineasm4(d4-u4+1,ylookup[u4]+p);
+                    if (d4 >= u4) vlineasm4(d4-u4+1,ylookup[u4]+(intptr_t)p);
 
-                    i = p+ylookup[d4+1];
+                    i = (intptr_t)p+ylookup[d4+1];
                     if (y2ve[0] > d4) 
-                        prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],bufplce[0],i+0);
+                        prevlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],(uint8_t *)bufplce[0],(uint8_t *)i+0);
                     if (y2ve[1] > d4) 
-                        prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],bufplce[1],i+1);
+                        prevlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],(uint8_t *)bufplce[1],(uint8_t *)i+1);
                     if (y2ve[2] > d4) 
-                        prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],bufplce[2],i+2);
+                        prevlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],(uint8_t *)bufplce[2],(uint8_t *)i+2);
                     if (y2ve[3] > d4) 
-                        prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],bufplce[3],i+3);
+                        prevlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],(uint8_t *)bufplce[3],(uint8_t *)i+3);
                 }
                 else
                 {
                     if ((bad != 0) || (u4 >= d4))
                     {
-                        if (!(bad&1)) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],bufplce[0],ylookup[y1ve[0]]+p+0);
-                        if (!(bad&2)) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],bufplce[1],ylookup[y1ve[1]]+p+1);
-                        if (!(bad&4)) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],bufplce[2],ylookup[y1ve[2]]+p+2);
-                        if (!(bad&8)) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],bufplce[3],ylookup[y1ve[3]]+p+3);
+                        if (!(bad&1)) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-y1ve[0],vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+p+0);
+                        if (!(bad&2)) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-y1ve[1],vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+p+1);
+                        if (!(bad&4)) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-y1ve[2],vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+p+2);
+                        if (!(bad&8)) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-y1ve[3],vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+p+3);
                         continue;
                     }
 
-                    if (u4 > y1ve[0]) vplce[0] = mvlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],bufplce[0],ylookup[y1ve[0]]+p+0);
-                    if (u4 > y1ve[1]) vplce[1] = mvlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],bufplce[1],ylookup[y1ve[1]]+p+1);
-                    if (u4 > y1ve[2]) vplce[2] = mvlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],bufplce[2],ylookup[y1ve[2]]+p+2);
-                    if (u4 > y1ve[3]) vplce[3] = mvlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],bufplce[3],ylookup[y1ve[3]]+p+3);
+                    if (u4 > y1ve[0]) vplce[0] = mvlineasm1(vince[0],palookupoffse[0],u4-y1ve[0]-1,vplce[0],(uint8_t *)bufplce[0],ylookup[y1ve[0]]+p+0);
+                    if (u4 > y1ve[1]) vplce[1] = mvlineasm1(vince[1],palookupoffse[1],u4-y1ve[1]-1,vplce[1],(uint8_t *)bufplce[1],ylookup[y1ve[1]]+p+1);
+                    if (u4 > y1ve[2]) vplce[2] = mvlineasm1(vince[2],palookupoffse[2],u4-y1ve[2]-1,vplce[2],(uint8_t *)bufplce[2],ylookup[y1ve[2]]+p+2);
+                    if (u4 > y1ve[3]) vplce[3] = mvlineasm1(vince[3],palookupoffse[3],u4-y1ve[3]-1,vplce[3],(uint8_t *)bufplce[3],ylookup[y1ve[3]]+p+3);
 
-                    if (d4 >= u4) mvlineasm4(d4-u4+1,ylookup[u4]+p);
+                    if (d4 >= u4) mvlineasm4(d4-u4+1,ylookup[u4]+(intptr_t)p);
 
-                    i = p+ylookup[d4+1];
-                    if (y2ve[0] > d4) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],bufplce[0],i+0);
-                    if (y2ve[1] > d4) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],bufplce[1],i+1);
-                    if (y2ve[2] > d4) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],bufplce[2],i+2);
-                    if (y2ve[3] > d4) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],bufplce[3],i+3);
+                    i = (intptr_t)p+ylookup[d4+1];
+                    if (y2ve[0] > d4) mvlineasm1(vince[0],palookupoffse[0],y2ve[0]-d4-1,vplce[0],(uint8_t *)bufplce[0],(uint8_t *)i+0);
+                    if (y2ve[1] > d4) mvlineasm1(vince[1],palookupoffse[1],y2ve[1]-d4-1,vplce[1],(uint8_t *)bufplce[1],(uint8_t *)i+1);
+                    if (y2ve[2] > d4) mvlineasm1(vince[2],palookupoffse[2],y2ve[2]-d4-1,vplce[2],(uint8_t *)bufplce[2],(uint8_t *)i+2);
+                    if (y2ve[3] > d4) mvlineasm1(vince[3],palookupoffse[3],y2ve[3]-d4-1,vplce[3],(uint8_t *)bufplce[3],(uint8_t *)i+3);
                 }
 
                 faketimerhandler();
@@ -4108,16 +4106,16 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                 if ((xv2&0x0000ffff) == 0)
                 {
                     qlinemode = 1;
-                    setuprhlineasm4(0L,yv2<<16,(xv2>>16)*tileHeight+(yv2>>16),palookupoffs,0L,0L);
+                    setuprhlineasm4(0L,yv2<<16,(xv2>>16)*tileHeight+(yv2>>16),(intptr_t)palookupoffs,0L,0L);
                 }
                 else
                 {
                     qlinemode = 0;
-                    setuprhlineasm4(xv2<<16,yv2<<16,(xv2>>16)*tileHeight+(yv2>>16),palookupoffs,tileHeight,0L);
+                    setuprhlineasm4(xv2<<16,yv2<<16,(xv2>>16)*tileHeight+(yv2>>16),(intptr_t)palookupoffs,tileHeight,0L);
                 }
             }
             else
-                setuprmhlineasm4(xv2<<16,yv2<<16,(xv2>>16)*tileHeight+(yv2>>16),palookupoffs,tileHeight,0L);
+                setuprmhlineasm4(xv2<<16,yv2<<16,(xv2>>16)*tileHeight+(yv2>>16),(intptr_t)palookupoffs,tileHeight,0L);
 
             y1 = uplc[x1];
             if (((dastat&8) == 0) && (startumost[x1] > y1)) y1 = startumost[x1];
@@ -4147,11 +4145,11 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                             oy = y1;
                             if (dastat&64) {
                                 if (qlinemode)
-                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y1]+x+frameplace);
+                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                                 else
-                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+frameplace);
+                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                             } else
-                                rmhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+frameplace);
+                                rmhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+(intptr_t)bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                         }
                         y1 = ny1;
                     }
@@ -4168,11 +4166,11 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                             oy = y1;
                             if (dastat&64) {
                                 if (qlinemode)
-                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L,by<<16,ylookup[y1]+x+frameplace);
+                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                                 else
-                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+frameplace);
+                                    rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                             } else
-                                rmhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+frameplace);
+                                rmhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+(intptr_t)bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                         }
                         while (y1 > ny1) lastx[y1--] = x;
                     }
@@ -4187,11 +4185,11 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                         oy = y2;
                         if (dastat&64) {
                             if (qlinemode)
-                                rhlineasm4(x-lastx[y2],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y2]+x+frameplace);
+                                rhlineasm4(x-lastx[y2],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y2]+x+(intptr_t)frameplace);
                             else
-                                rhlineasm4(x-lastx[y2],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y2]+x+frameplace);
+                                rhlineasm4(x-lastx[y2],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y2]+x+(intptr_t)frameplace);
                         } else
-                            rmhlineasm4(x-lastx[y2],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y2]+x+frameplace);
+                            rmhlineasm4(x-lastx[y2],(bx>>16)*tileHeight+(by>>16)+(intptr_t)bufplc,0L,bx<<16,by<<16,ylookup[y2]+x+(intptr_t)frameplace);
                     }
                     while (y2 < ny2) lastx[y2++] = x;
                 }
@@ -4209,12 +4207,12 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                         if (dastat&64)
                         {
                             if (qlinemode)
-                                rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y1]+x+frameplace);
+                                rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                             else
-                                rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+frameplace);
+                                rhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                         }
                         else
-                            rmhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+frameplace);
+                            rmhlineasm4(x-lastx[y1],(bx>>16)*tileHeight+(by>>16)+(intptr_t)bufplc,0L,bx<<16,by<<16,ylookup[y1]+x+(intptr_t)frameplace);
                     }
                     if (x == x2-1)
                     {
@@ -4244,11 +4242,11 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
                 oy = y1;
                 if (dastat&64) {
                     if (qlinemode)
-                        rhlineasm4(x2-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y1]+x2+frameplace);
+                        rhlineasm4(x2-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,0L    ,by<<16,ylookup[y1]+x2+(intptr_t)frameplace);
                     else
-                        rhlineasm4(x2-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x2+frameplace);
+                        rhlineasm4(x2-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x2+(intptr_t)frameplace);
                 } else
-                    rmhlineasm4(x2-lastx[y1],(bx>>16)*tileHeight+(by>>16)+bufplc,0L,bx<<16,by<<16,ylookup[y1]+x2+frameplace);
+                    rmhlineasm4(x2-lastx[y1],(bx>>16)*tileHeight+(by>>16)+(intptr_t)bufplc,0L,bx<<16,by<<16,ylookup[y1]+x2+(intptr_t)frameplace);
             }
         }
     }
@@ -4257,9 +4255,9 @@ static void dorotatesprite (int32_t sx, int32_t sy, int32_t z, short a, short pi
         if ((dastat&1) == 0)
         {
             if (dastat&64)
-                setupspritevline(palookupoffs,(xv>>16)*tileHeight,xv<<16,tileHeight,yv,0L);
+                setupspritevline((intptr_t)palookupoffs,(xv>>16)*tileHeight,xv<<16,tileHeight,yv,0L);
             else
-                msetupspritevline(palookupoffs,(xv>>16)*tileHeight,xv<<16,tileHeight,yv,0L);
+                msetupspritevline((intptr_t)palookupoffs,(xv>>16)*tileHeight,xv<<16,tileHeight,yv,0L);
         }
         else
         {
@@ -6859,7 +6857,7 @@ static int raytrace(int32_t x3, int32_t y3, int32_t *x4, int32_t *y4)
 
 /* !!! ugh...move this var into clipmove as a parameter, and update build2.txt! */
 int32_t clipmoveboxtracenum = 3;
-int clipmove (int32_t *x, int32_t *y, int32_t *z, short *sectnum,
+int clipmove (PACKED int32_t *x, PACKED int32_t *y, PACKED int32_t *z, PACKED short *sectnum,
               int32_t xvect, int32_t yvect, int32_t walldist, int32_t ceildist,
               int32_t flordist, uint32_t  cliptype)
 {
@@ -7234,7 +7232,7 @@ int clipmove (int32_t *x, int32_t *y, int32_t *z, short *sectnum,
 }
 
 
-int pushmove(int32_t *x, int32_t *y, int32_t *z, short *sectnum,
+int pushmove(PACKED int32_t *x, PACKED int32_t *y, PACKED int32_t *z, PACKED short *sectnum,
              int32_t walldist, int32_t ceildist, int32_t flordist,
              uint32_t  cliptype)
 {
@@ -7351,7 +7349,7 @@ int pushmove(int32_t *x, int32_t *y, int32_t *z, short *sectnum,
  Note: Inside uses cross_product and return as soon as the point switch
  from one side to the other.
  */
-void updatesector(int32_t x, int32_t y, short *lastKnownSector)
+void updatesector(int32_t x, int32_t y, PACKED short *lastKnownSector)
 {
     walltype *wal;
     int32_t i, j;
@@ -7396,7 +7394,8 @@ void updatesector(int32_t x, int32_t y, short *lastKnownSector)
 }
 
 
-void rotatepoint(int32_t xpivot, int32_t ypivot, int32_t x, int32_t y, short daang, int32_t *x2, int32_t *y2)
+void rotatepoint(int32_t xpivot, int32_t ypivot, int32_t x,
+                    int32_t y, short daang, PACKED int32_t *x2, PACKED int32_t *y2)
 {
     int32_t dacos, dasin;
 
@@ -8207,7 +8206,7 @@ void makepalookup(int32_t palnum, uint8_t  *remapbuf, int8_t r,
     {
         /* Allocate palookup buffer */
         if ((palookup[palnum] = (uint8_t  *)kkmalloc(numpalookups<<8)) == NULL)
-            allocache((int32_t *)&palookup[palnum],numpalookups<<8,&permanentlock);
+            allocache( &palookup[palnum],numpalookups<<8,&permanentlock);
     }
 
     if (dastat == 0) return;
@@ -8360,8 +8359,8 @@ static void fillpolygon(int32_t npoints)
                 bx = ox*asm1 + globalposx;
                 by = ox*asm2 - globalposy;
 
-                p = ylookup[y]+x2+frameplace;
-                hlineasm4(x2-x1,globalshade<<8,by,bx,p);
+                p = ylookup[y]+x2+(intptr_t)frameplace;
+                hlineasm4(x2-x1,globalshade<<8,by,bx,(uint8_t *)p);
             }
             else
             {
@@ -8370,12 +8369,12 @@ static void fillpolygon(int32_t npoints)
                 bx = ox*asm1 + globalposx;
                 by = ox*asm2 - globalposy;
 
-                p = ylookup[y]+x1+frameplace;
+                p = ylookup[y]+x1+(intptr_t)frameplace;
                 if (globalpolytype == 1)
-                    mhline(globalbufplc,bx,(x2-x1)<<16,0L,by,p);
+                    mhline(globalbufplc,bx,(x2-x1)<<16,0L,by,(uint8_t *)p);
                 else
                 {
-                    thline(globalbufplc,bx,(x2-x1)<<16,0L,by,p);
+                    thline(globalbufplc,bx,(x2-x1)<<16,0L,by,(uint8_t *)p);
                     transarea += (x2-x1);
                 }
             }
@@ -9002,7 +9001,7 @@ void clearview(int32_t dacol)
     dacol += (dacol<<8);
     dacol += (dacol<<16);
     
-    p = frameplace+ylookup[windowy1]+windowx1;
+    p = (intptr_t)frameplace+ylookup[windowy1]+windowx1;
     for(y=windowy1; y<=windowy2; y++)
     {
         clearbufbyte((void *)p,dx,dacol);
@@ -9120,7 +9119,7 @@ void completemirror(void)
 
     transarea += (mirrorsx2-mirrorsx1)*(windowy2-windowy1);
 
-    p = frameplace+ylookup[windowy1+mirrorsy1]+windowx1+mirrorsx1;
+    p = (intptr_t)frameplace+ylookup[windowy1+mirrorsy1]+windowx1+mirrorsx1;
     i = windowx2-windowx1-mirrorsx2-mirrorsx1;
     mirrorsx2 -= mirrorsx1;
     // FIX_00085: Optimized Video driver. FPS increases by +20%.

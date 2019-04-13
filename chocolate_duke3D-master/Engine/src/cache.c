@@ -8,10 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "platform.h"
 #include "display.h"
@@ -53,6 +49,7 @@
  *           After calling uninitcache, it is still ok to call allocache
  *           without first calling initcache.
  */
+#include "misc_utils.h"
 
 #define MAXCACHEOBJECTS 9216
 

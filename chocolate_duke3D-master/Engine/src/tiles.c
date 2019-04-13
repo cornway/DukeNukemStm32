@@ -10,6 +10,7 @@
 #include "engine.h"
 #include "draw.h"
 #include "filesystem.h"
+#include "unix_compat.h"
 
 char  artfilename[20];
 

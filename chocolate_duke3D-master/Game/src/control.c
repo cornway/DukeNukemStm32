@@ -27,6 +27,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "control.h"
 #include "mouse.h"
 #include "joystick.h"
+#include "dukeunix.h"
 
 //***************************************************************************
 //
@@ -84,6 +85,9 @@ static int32 JoyButtonMapping[MAXJOYBUTTONS];
 static float JoyAnalogScale[MAXJOYAXES];
 static int32 JoyAnalogDeadzone[MAXJOYAXES];
 
+struct _KeyMapping KeyMapping[MAXGAMEBUTTONS];
+int32 MouseMapping[MAXMOUSEBUTTONS];
+int32 MouseDigitalAxeMapping[MAXMOUSEAXES][2];
 
 
 int ACTION(int i)

@@ -8,13 +8,15 @@
 #ifndef __PRAGMAS_H__
 #define __PRAGMAS_H__
 
-#include "platform.h" 
+#include "platform.h"
+#include <stdint.h>
+#include <arch.h>
 
 static __inline void swapchar(uint8_t  *p1, uint8_t  *p2)
 { uint8_t  tmp = *p1; *p1 = *p2; *p2 = tmp; }
-static __inline void swapshort(short *p1, short *p2)
+static __inline void swapshort(PACKED short *p1, PACKED short *p2)
 { short tmp = *p1; *p1 = *p2; *p2 = tmp; }
-static __inline void swaplong(int32_t *p1, int32_t *p2)
+static __inline void swaplong(PACKED int32_t *p1, PACKED int32_t *p2)
 { int32_t tmp = *p1; *p1 = *p2; *p2 = tmp; }
 static __inline void swapchar2(uint8_t  *p1, uint8_t  *p2, int xsiz)
 {

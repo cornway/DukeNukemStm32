@@ -45,16 +45,16 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "audiolib/sndcards.h"
 
 #include "duke3d.h"
+#include "dukeunix.h"
+#include "unix_compat.h"
 
 #include "console.h"
 #include "cvars.h"
 #include "cvar_defs.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include "global.h"
-
+#include <dev_io.h>
+#include <misc_utils.h>
 
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2
@@ -107,10 +107,10 @@ uint8_t  debug_on = 0,actor_tog = 0,memorycheckoveride=0;
 uint8_t *rtsptr;
 
 
-extern uint8_t  syncstate;
+uint8_t  syncstate;
 extern int32 numlumps;
 
-FILE *frecfilep = (FILE *)NULL;
+int frecfilep = -1;
 void pitch_test( void );
 
 uint8_t  restorepalette,screencapt,nomorelogohack;
@@ -2422,10 +2422,10 @@ void gameexit(char  *msg)
     if(ud.recstat == 1)
         closedemowrite();
 
-    if(frecfilep != NULL)
+    if(frecfilep >= 0)
     {
-        fclose(frecfilep);
-        frecfilep = NULL;
+        d_close(frecfilep);
+        frecfilep = -1;
     }
 
     if(qe || cp)
@@ -2482,7 +2482,7 @@ void gameexit(char  *msg)
 
     uninitgroupfile();
 
-    unlink("duke3d.tmp");
+    d_unlink("duke3d.tmp");
 	
     Error(EXIT_SUCCESS, "");
 
@@ -3600,7 +3600,7 @@ uint8_t  wallswitchcheck(short i)
 }
 
 
-int32_t tempwallptr;
+PACKED int32_t tempwallptr;
 short spawn( short j, short pn )
 {
     short i, s, startwall, endwall, sect, clostest;
@@ -8054,11 +8054,10 @@ int dukeGRP_Match(char* filename,int length)
 }
 
 
-#include <dirent.h>
 void findGRPToUse(char * groupfilefullpath){
     
     char directoryToScan[512];
-    struct dirent* dirEntry ;
+    fobj_t dirEntry ;
     
     directoryToScan[0] = '\0';
     
@@ -8074,22 +8073,23 @@ void findGRPToUse(char * groupfilefullpath){
     
     printf("Scanning directory '%s' for a GRP file like '%s'.\n",directoryToScan,baseDir);
     
-    DIR* dir =  opendir(directoryToScan);
+    int dir =  d_opendir(directoryToScan);
     
-    while ((dirEntry = readdir(dir)) != NULL)
+    while ((d_readdir(dir, &dirEntry) >= 0))
     {
         
 #ifdef __linux__
         if (dukeGRP_Match(dirEntry->d_name, _D_EXACT_NAMLEN(dirEntry)))
 #else
-        if (dukeGRP_Match(dirEntry->d_name,dirEntry->d_namlen))
+        if (dukeGRP_Match(dirEntry.name,strlen(dirEntry.name)))
 #endif
         {
-            sprintf(groupfilefullpath,"%s",dirEntry->d_name);
+            sprintf(groupfilefullpath,"%s",dirEntry.name);
             return;
         }
         
     }
+    d_closedir(dir);
 }
 
 #endif
@@ -8112,7 +8112,7 @@ static int load_duke3d_groupfile(void)
 	return(initgroupfile(groupfilefullpath) != -1);
 }
 
-int main(int argc,char  **argv)
+int duke_main(int argc,char  **argv)
 {
     int32_t i, j;
 	int32_t filehandle;
@@ -8232,19 +8232,20 @@ int main(int argc,char  **argv)
 	}
 
 	// computing exe crc
+    int fsize;
 	ud.exeCRC[0] = 0;
 	exe = NULL;
-	filehandle = open(argv[0],O_BINARY|O_RDONLY);
+	fsize = d_open(argv[0], &filehandle, "r");
 	if(filehandle!=-1)
 	{
-		exe = malloc(filelength(filehandle));
+		exe = Sys_Malloc(fsize);
 		if(exe)
 		{
-			read(filehandle, exe, filelength(filehandle));
-			ud.exeCRC[0] = crc32_update(exe, filelength(filehandle), ud.exeCRC[0]);
-			free(exe);
+			d_read(filehandle, exe, fsize);
+			ud.exeCRC[0] = crc32_update(exe, d_size(filehandle), ud.exeCRC[0]);
+			Sys_Free(exe);
 		}
-		close(filehandle);
+		d_close(filehandle);
 	}
 
 
@@ -8728,32 +8729,34 @@ void opendemowrite(void)
 
 // CTW - MODIFICATION
 //  if ((frecfilep = fopen(d,"wb")) == -1) return;
-    if ((frecfilep = fopen(fullpathdemofilename,"wb")) == NULL) return;
+    d_open(fullpathdemofilename, &frecfilep, "+w");
+
+    if (frecfilep < 0) return;
 // CTW END - MODIFICATION
-    fwrite(&dummylong,4,1,frecfilep);
-    fwrite(&ver,sizeof(uint8_t ),1,frecfilep);
+    d_write(frecfilep, &dummylong, 4);
+    d_write(frecfilep, &ver,sizeof(uint8_t ));
 	// FIX_00062: Better support and identification for GRP and CON files for 1.3/1.3d/1.4/1.5
-	fwrite((int32_t *)groupefil_crc32,sizeof(groupefil_crc32),1,frecfilep);
-    fwrite((uint8_t  *)&ud.volume_number,sizeof(uint8_t ),1,frecfilep);
-    fwrite((uint8_t  *)&ud.level_number,sizeof(uint8_t ),1,frecfilep);
-    fwrite((uint8_t  *)&ud.player_skill,sizeof(uint8_t ),1,frecfilep);
-    fwrite((uint8_t  *)&ud.m_coop,sizeof(uint8_t ),1,frecfilep);
-    fwrite((uint8_t  *)&ud.m_ffire,sizeof(uint8_t ),1,frecfilep);
-    fwrite((short *)&ud.multimode,sizeof(short),1,frecfilep);
-    fwrite((short *)&ud.m_monsters_off,sizeof(short),1,frecfilep);
-    fwrite((int32 *)&ud.m_respawn_monsters,sizeof(int32),1,frecfilep);
-    fwrite((int32 *)&ud.m_respawn_items,sizeof(int32),1,frecfilep);
-    fwrite((int32 *)&ud.m_respawn_inventory,sizeof(int32),1,frecfilep);
-    fwrite((int32 *)&ud.playerai,sizeof(int32),1,frecfilep);
-    fwrite((uint8_t  *)&ud.user_name[0][0],sizeof(ud.user_name),1,frecfilep);
-    fwrite((int32 *)&ud.auto_run,sizeof(int32),1,frecfilep);
-    fwrite((uint8_t  *)boardfilename,sizeof(boardfilename),1,frecfilep);
+	d_write(frecfilep, (int32_t *)groupefil_crc32,sizeof(groupefil_crc32));
+    d_write(frecfilep, (uint8_t  *)&ud.volume_number,sizeof(uint8_t ));
+    d_write(frecfilep, (uint8_t  *)&ud.level_number,sizeof(uint8_t ));
+    d_write(frecfilep, (uint8_t  *)&ud.player_skill,sizeof(uint8_t ));
+    d_write(frecfilep, (uint8_t  *)&ud.m_coop,sizeof(uint8_t ));
+    d_write(frecfilep, (uint8_t  *)&ud.m_ffire,sizeof(uint8_t ));
+    d_write(frecfilep, (short *)&ud.multimode,sizeof(short));
+    d_write(frecfilep, (short *)&ud.m_monsters_off,sizeof(short));
+    d_write(frecfilep, (int32 *)&ud.m_respawn_monsters,sizeof(int32));
+    d_write(frecfilep, (int32 *)&ud.m_respawn_items,sizeof(int32));
+    d_write(frecfilep, (int32 *)&ud.m_respawn_inventory,sizeof(int32));
+    d_write(frecfilep, (int32 *)&ud.playerai,sizeof(int32));
+    d_write(frecfilep, (uint8_t  *)&ud.user_name[0][0],sizeof(ud.user_name));
+    d_write(frecfilep, (int32 *)&ud.auto_run,sizeof(int32));
+    d_write(frecfilep, (uint8_t  *)boardfilename,sizeof(boardfilename));
 
     for(i=0;i<ud.multimode;i++)
 	{    
-		fwrite((int32 *)&ps[i].aim_mode,sizeof(uint8_t ),1,frecfilep); // seems wrong; prolly not needed anyway
+		d_write(frecfilep, (int32 *)&ps[i].aim_mode,sizeof(uint8_t )); // seems wrong; prolly not needed anyway
 		// FIX_00080: Out Of Synch in demos. Tries recovering OOS in old demos v27/28/29/116/117/118. New: v30/v119.
-		fwrite(ud.wchoice[i],sizeof(ud.wchoice[0]),1,frecfilep);
+		d_write(frecfilep, ud.wchoice[i],sizeof(ud.wchoice[0]));
 	}
 
     totalreccnt = 0;
@@ -8784,11 +8787,11 @@ void closedemowrite(void)
         {
             dfwrite(recsync,sizeof(input)*ud.multimode,ud.reccnt/ud.multimode,frecfilep);
 
-            fseek(frecfilep,SEEK_SET,0L);
-            fwrite(&totalreccnt,sizeof(int32_t),1,frecfilep);
+            d_seek(frecfilep,0L);
+            d_write(frecfilep, &totalreccnt, sizeof(int32_t));
             ud.recstat = ud.m_recstat = 0;
         }
-        fclose(frecfilep);
+        d_close(frecfilep);
         frecfilep = NULL;
     }
 }
@@ -10640,13 +10643,13 @@ void takescreenshot(void)
 	if(getGameDir()[0] != '\0')
 	{
 		sprintf(szFilename, "%s\\%s", getGameDir(), SCREENSHOTPATH);
-		mkdir(szFilename);
+		d_mkdir(szFilename);
 		sprintf(szFilename, "%s\\%s\\%s", getGameDir(), SCREENSHOTPATH, tempbuf);
 	}
 	// otherwise let's save it to the root.
 	else
 	{
-		mkdir(SCREENSHOTPATH);
+		d_mkdir(SCREENSHOTPATH);
 		sprintf(szFilename, "%s\\%s", SCREENSHOTPATH, tempbuf);
 	}
 

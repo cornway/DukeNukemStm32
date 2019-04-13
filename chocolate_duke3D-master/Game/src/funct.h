@@ -85,9 +85,9 @@ extern short findotherplayer(short p,int32_t *d);
 //#line "sector.c" 240
 extern void doanimations(void );
 //#line "sector.c" 301
-extern int32_t getanimationgoal(int32_t *animptr);
+extern int32_t getanimationgoal(PACKED int32_t *animptr);
 //#line "sector.c" 315
-extern int32_t setanimation(short animsect,int32_t *animptr,int32_t thegoal,int32_t thevel);
+extern int32_t setanimation(short animsect,PACKED int32_t *animptr,int32_t thegoal,int32_t thevel);
 //#line "sector.c" 348
 extern void animatecamsprite(void );
 //#line "sector.c" 369
@@ -520,9 +520,9 @@ extern byte *ANIM_GetPalette(void );
 //#line "actors.c" 7
 extern void updateinterpolations(void);
 //#line "actors.c" 15
-extern void setinterpolation(int32_t *posptr);
+extern void setinterpolation(PACKED int32_t *posptr);
 //#line "actors.c" 27
-extern void stopinterpolation(int32_t *posptr);
+extern void stopinterpolation(PACKED int32_t *posptr);
 //#line "actors.c" 41
 extern void dointerpolations(int32_t smoothratio);
 //#line "actors.c" 55

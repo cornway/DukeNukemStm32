@@ -42,7 +42,7 @@ int getflorzofslope(int16_t sectnum, int32_t dax, int32_t day);
 void getzsofslope(int16_t sectnum, int32_t dax, int32_t day, int32_t *ceilz, int32_t *florz);
 void setaspect(int32_t daxrange, int32_t daaspect);
 int insertsprite(int16_t sectnum, int16_t statnum);
-void updatesector(int32_t x, int32_t y, int16_t *sectnum);
+void updatesector(int32_t x, int32_t y, PACKED int16_t *sectnum);
 int lastwall(int16_t point);
 void initspritelists(void);
 int deletesprite(int16_t spritenum);
@@ -71,7 +71,7 @@ uint8_t  getpixel(int32_t x, int32_t y);
 void setbrightness(uint8_t  dabrightness, uint8_t  *dapal);
 int screencapture(char  *filename, uint8_t  inverseit);
 void getmousevalues(int16_t *mousx, int16_t *mousy, int16_t *bstatus);
-int clipmove (int32_t *x, int32_t *y, int32_t *z, int16_t *sectnum, int32_t xvect,int32_t yvect, int32_t walldist, int32_t ceildist,int32_t flordist, uint32_t  cliptype);
+int clipmove (PACKED int32_t *x, PACKED int32_t *y, PACKED int32_t *z, PACKED short *sectnum, int32_t xvect,int32_t yvect, int32_t walldist, int32_t ceildist,int32_t flordist, uint32_t  cliptype);
 void getzrange(int32_t x, int32_t y, int32_t z, int16_t sectnum,int32_t *ceilz, int32_t *ceilhit, int32_t *florz, int32_t *florhit,int32_t walldist, uint32_t  cliptype);
 int getangle(int32_t xvect, int32_t yvect);
 void alignceilslope(int16_t dasect, int32_t x, int32_t y, int32_t z);
@@ -83,7 +83,7 @@ int hitscan(int32_t xs, int32_t ys, int32_t zs, int16_t sectnum,
 int inside (int32_t x, int32_t y, int16_t sectnum);
 void setfirstwall(int16_t sectnum, int16_t newfirstwall);
 void rotatepoint(int32_t xpivot, int32_t ypivot, int32_t x, int32_t y, int16_t daang,
-			int32_t *x2, int32_t *y2);
+			PACKED int32_t *x2, PACKED int32_t *y2);
 int drawtilescreen(int32_t pictopleft, int32_t picbox);
 void clearview(int32_t dacol);
 void clearallviews(int32_t dacol);
@@ -108,7 +108,7 @@ int nextsectorneighborz(int16_t sectnum, int32_t thez,
 int neartag(int32_t xs, int32_t ys, int32_t zs, int16_t sectnum, int16_t ange,
             int16_t *neartagsector, int16_t *neartagwall, int16_t *neartagsprite,
             int32_t *neartaghitdist, int32_t neartagrange, uint8_t  tagsearch);
-int pushmove(int32_t *x, int32_t *y, int32_t *z, int16_t *sectnum,
+int pushmove(PACKED int32_t *x, PACKED int32_t *y, PACKED int32_t *z, PACKED short *sectnum,
              int32_t walldist, int32_t ceildist, int32_t flordist,
              uint32_t  cliptype);
 

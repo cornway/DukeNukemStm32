@@ -1,6 +1,10 @@
 #ifndef _INCLUDE_PLATFORM_H_
 #define _INCLUDE_PLATFORM_H_
 
+#define __STM32__
+
+#include <stdint.h>
+
 #if (defined PLATFORM_WIN32)
     #include "win32_compat.h"
 #elif (defined PLATFORM_UNIX)
@@ -9,6 +13,8 @@
     #include "doscmpat.h"
 #elif (defined __APPLE__)
     #include "macos_compat.h"
+#elif (defined __STM32__)
+    #define PLATFORM_SUPPORTS_SDL
 #else
 #error Define your platform!
 #endif

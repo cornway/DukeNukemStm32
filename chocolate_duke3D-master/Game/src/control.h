@@ -179,10 +179,12 @@ struct _KeyMapping
 	kb_scancode key2;
 	
 	/* other mappings go here */
-} KeyMapping[MAXGAMEBUTTONS];
+};
 
-int32 MouseMapping[MAXMOUSEBUTTONS];
-int32 MouseDigitalAxeMapping[MAXMOUSEAXES][2];  // [axesX/Y][directionLeft/Right or directionUp/Down]
+
+extern struct _KeyMapping KeyMapping[MAXGAMEBUTTONS];
+extern int32 MouseMapping[MAXMOUSEBUTTONS];
+extern int32 MouseDigitalAxeMapping[MAXMOUSEAXES][2];  // [axesX/Y][directionLeft/Right or directionUp/Down]
 
 
 int  ACTION(int i);

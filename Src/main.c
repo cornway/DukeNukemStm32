@@ -36,12 +36,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "lcd_main.h"
-#include "i_video.h"
 
-const char *mus_dir_path = "/doom/music";
-const char *snd_dir_path = "doom/sound/";
+const char *mus_dir_path = "./music";
+const char *snd_dir_path = "./sound/";
 
-extern int d_main(void);
+extern int duke_main(int argc,char  **argv);
 extern int dev_main (void);
 
 int main(void)
@@ -53,14 +52,14 @@ void VID_PreConfig (void)
 {
     screen_t screen;
     screen.buf = NULL;
-    screen.width = SCREENWIDTH;
-    screen.height = SCREENHEIGHT;
+    screen.width = 320;
+    screen.height = 200;
     screen_win_cfg(&screen);
 }
 
 int mainloop (int argc, const char *argv[])
 {
-    d_main();
+    duke_main(0, NULL);
     return 0;
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

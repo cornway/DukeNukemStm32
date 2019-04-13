@@ -11,7 +11,7 @@
 
 #include "stdio.h"
 #include "platform.h"
-
+#include "arch.h"
 
 
 #define MAXGROUPFILES 4     /* Warning: Fix groupfil if this is changed */
@@ -24,16 +24,16 @@ void     uninitgroupfile(void);
 uint16_t crc16(uint8_t  *data_p, uint16_t length);
 uint32_t crc32_update(uint8_t  *buf, uint32_t length, uint32_t crc_to_update);
 int32_t  kopen4load(const char  *filename, int openOnlyFromGRP);
-int32_t  kread(int32_t handle, void *buffer, int32_t leng);
-int32_t  kread8(int32_t handle, uint8_t  *buffer);
-int32_t  kread16(int32_t handle, int16_t *buffer);
-int32_t  kread32(int32_t handle, int32_t *buffer);
+int32_t  kread(int32_t handle, PACKED void *buffer, int32_t leng);
+int32_t  kread8(int32_t handle, PACKED uint8_t  *buffer);
+int32_t  kread16(int32_t handle, PACKED int16_t *buffer);
+int32_t  kread32(int32_t handle, PACKED int32_t *buffer);
 int32_t  klseek(int32_t handle, int32_t offset, int whence);
 int32_t  kfilelength(int32_t handle);
 void     kclose(int32_t handle);
-void     kdfread(void *buffer, size_t dasizeof, size_t count, int32_t fil);
-void     dfread(void *buffer, size_t dasizeof, size_t count, FILE *fil);
-void     dfwrite(void *buffer, size_t dasizeof, size_t count, FILE *fil);
+void     kdfread(PACKED void *buffer, size_t dasizeof, size_t count, int32_t fil);
+void     dfread(PACKED void *buffer, size_t dasizeof, size_t count, int fil);
+void     dfwrite(PACKED void *buffer, size_t dasizeof, size_t count, int fil);
 
 int      getGRPcrc32(int grpID);
 

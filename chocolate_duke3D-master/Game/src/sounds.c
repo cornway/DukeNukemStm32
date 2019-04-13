@@ -35,11 +35,14 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "global.h"
 #include "filesystem.h"
+#include "sounds.h"
 
 
 #define LOUDESTVOLUME 150
 
 int32_t backflag,numenvsnds;
+
+dma_t  *shm = 0;
 
 /*
 ===================
@@ -181,7 +184,7 @@ void MusicStartup( void )
       CONFIG_WriteSetup();
       KB_Shutdown();
       uninitgroupfile();
-      unlink("duke3d.tmp");
+      d_unlink("duke3d.tmp");
       Error(EXIT_FAILURE, "Couldn't find selected sound card, or, error w/ sound card itself\n");
    }
 }

@@ -14,10 +14,10 @@
 
 #include <stdlib.h>
 
-#define kmalloc(x) malloc(x)
-#define kkmalloc(x) malloc(x)
-#define kfree(x) free(x)
-#define kkfree(x) free(x)
+#define kmalloc(x) Sys_Malloc(x)
+#define kkmalloc(x) Sys_Malloc(x)
+#define kfree(x) Sys_Free(x)
+#define kkfree(x) Sys_Free(x)
 
 #ifdef FP_OFF
 #undef FP_OFF
@@ -53,13 +53,7 @@
 #define strcmpi strcasecmp
 
 #define S_IREAD S_IRUSR
-#include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <dirent.h>
+#include <misc_utils.h>
 #include <string.h>
 
 #define USER_DUMMY_NETWORK 1

@@ -30,11 +30,10 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "control.h"
 
 #include "filesystem.h"
-#include "SDL.h"
 #include "premap.h"
 #include "display.h"
+#include "dukeunix.h"
 
-extern SDL_Surface *surface;
 extern short inputloc;
 extern int recfilep;
 extern uint8_t  vgacompatible;
@@ -154,11 +153,13 @@ void savetemp(char  *fn,uint8_t* daptr,int32_t dasiz)
 {
     int fp;
 
-    fp = open(fn,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+    d_open(fn, &fp, "+w");
+    if (fp < 0) {
+        return;
+    }
+    d_write(fp, (uint8_t  *)daptr, dasiz);
 
-    write(fp,(uint8_t  *)daptr,dasiz);
-
-    close(fp);
+    d_close(fp);
 }
 
 void getangplayers(short snum)
@@ -554,7 +555,7 @@ int saveplayer(int8_t spot)
      char  fn[] = "game0.sav";
      char  mpfn[] = "gameA_00.sav";
      char  *fnptr,scriptptrs[MAXSCRIPTSIZE];
-         FILE *fil;
+         int fil;
      int32_t bv = BYTEVERSION;
 	 char  fullpathsavefilename[16];
 
@@ -599,7 +600,8 @@ int saveplayer(int8_t spot)
 		sprintf(fullpathsavefilename, "%s", fnptr);
 	}
 
-     if ((fil = fopen(fullpathsavefilename,"wb")) == 0) return(-1);
+     d_open(fullpathsavefilename, &fil, "+w");
+     if (fil < 0) return(-1);
 
      ready2send = 0;
 
@@ -758,7 +760,7 @@ int saveplayer(int8_t spot)
      dfwrite(&global_random,sizeof(global_random),1,fil);
      dfwrite(&parallaxyscale,sizeof(parallaxyscale),1,fil);
 
-         fclose(fil);
+     d_close(fil);
 
      if(ud.multimode < 2)
      {
@@ -2678,7 +2680,7 @@ else
 						ud.mouseflip = 1-ud.mouseflip;
 					}
                     break;
-
+#if 0
 				case 5:
 
 					if (SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON) 
@@ -2692,7 +2694,7 @@ else
 						SDL_ShowCursor(0);
 					}
 					break;
-
+#endif
 				case 6:
 					cmenu(704); // Button setup
                     break;
@@ -2732,11 +2734,12 @@ else
 
 
 			menutext(c,43+16*5,SHX(-7),PHX(-7),"MOUSE CURSOR");
+#ifdef ORIGCODE
 			if(SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON)
 				menutext(c+160+40,43+16*5,SHX(-7),PHX(-7),"TAKEN");
 			else
 				menutext(c+160+40,43+16*5,SHX(-7),PHX(-7),"FREE'D");
-
+#endif
 			menutext(c,43+16*6,SHX(-7),PHX(-7),"BUTTON SETUP...");
 		
 			menutext(c,43+16*7,SHX(-7),PHX(-7),"DIGITAL AXES SETUP...");	
@@ -3186,8 +3189,10 @@ else
 
 				case 1:
 					BFullScreen = !BFullScreen;
+#ifdef ORIGCODE
 					SDL_QuitSubSystem(SDL_INIT_VIDEO);
-					_platform_init(0, NULL, "Duke Nukem 3D", "Duke3D");
+#endif
+                _platform_init(0, NULL, "Duke Nukem 3D", "Duke3D");
 					_setgamemode(ScreenMode,validmodexdim[current_resolution],validmodeydim[current_resolution]);
 					break;
 

@@ -505,7 +505,7 @@ void startcom()
 	}
 }
 
-void interrupt far comhandler(void)
+void  comhandler(void)
 {
 	do
 	{
@@ -1146,7 +1146,7 @@ int getoutputcirclesize(void)
 	}
 	return(0);
 }
-
+#ifdef ORIGCODE
 int setsocket(short newsocket)
 {
 	long i;
@@ -1174,3 +1174,4 @@ int setsocket(short newsocket)
 	}
 	return(0);
 }
+#endif

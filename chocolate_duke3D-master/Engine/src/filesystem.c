@@ -12,9 +12,11 @@
 #include "cache.h"
 #include "fixedPoint_math.h"
 #include "../../Game/src/global.h"
-#include <strings.h>
+#include <string.h>
+#include <misc_utils.h>
+#include <dev_io.h>
 
-char game_dir[512];
+extern char game_dir[512];
 
 //The multiplayer module in game.dll needs direct access to the crc32 (sic).
 int32_t groupefil_crc32[MAXGROUPFILES];
@@ -70,17 +72,16 @@ int32_t initgroupfile(const char  *filename)
     
 	//groupfil_memory[numgroupfiles] = NULL; // addresses of raw GRP files in memory
 	//groupefil_crc32[numgroupfiles] = 0;
-    
-	archive->fileDescriptor = open(filename,O_BINARY|O_RDONLY,S_IREAD);
+    d_open((char *)filename, &archive->fileDescriptor, "r");
     
     if (archive->fileDescriptor < 0){
         printf("Error: Unable to open file %s.\n",filename);
         getchar();
-        exit(0);
+        fatal_error("");
     }
     
     
-    read(archive->fileDescriptor,buf,16);
+    d_read(archive->fileDescriptor,buf,16);
     
     //FCS   : The ".grp" file format is just a collection of a lot of files stored into 1 big one.
 	//KS doc: I tried to make the format as simple as possible: The first 12 bytes contains my name,
@@ -106,12 +107,12 @@ int32_t initgroupfile(const char  *filename)
     archive->numFiles = BUILDSWAP_INTEL32(*((int32_t *)&buf[12]));
     
     
-    archive->gfilelist = kmalloc(archive->numFiles * sizeof(grpIndexEntry_t));
-    archive->fileOffsets = kmalloc(archive->numFiles * sizeof(int32_t));
-    archive->filesizes = kmalloc(archive->numFiles * sizeof(int32_t));
+    archive->gfilelist = Sys_Malloc(archive->numFiles * sizeof(grpIndexEntry_t));
+    archive->fileOffsets = Sys_Malloc(archive->numFiles * sizeof(int32_t));
+    archive->filesizes = Sys_Malloc(archive->numFiles * sizeof(int32_t));
     
     // Load the full index 16 bytes per file (12bytes for name + 4 bytes for the size).
-    read(archive->fileDescriptor,archive->gfilelist, archive->numFiles * 16);
+    d_read(archive->fileDescriptor,archive->gfilelist, archive->numFiles * 16);
     
     //Initialize all file offset and pointers.
     j = 12 + 4 + archive->numFiles * sizeof(grpIndexEntry_t);
@@ -131,13 +132,13 @@ int32_t initgroupfile(const char  *filename)
     
 	// Compute CRC32 of the whole grp and implicitely caches the GRP in memory through windows caching service.
     // Rewind the fileDescriptor
-	lseek(archive->fileDescriptor, 0, SEEK_SET);
+	d_seek(archive->fileDescriptor, 0);
     
 	//i = 1000000;
 	//groupfil_memory[numgroupfiles] = malloc(i);
     
     //Load the full GRP in RAM.
-	while((j=read(archive->fileDescriptor, crcBuffer, sizeof(crcBuffer)))){
+	while((j=d_read(archive->fileDescriptor, crcBuffer, sizeof(crcBuffer)))){
 		archive->crc32 = crc32_update(crcBuffer,j,archive->crc32);
 	}
     
@@ -159,9 +160,9 @@ void uninitgroupfile(void)
 	int i;
     
 	for( i=0 ; i < grpSet.num ;i++){
-        free(grpSet.archives[i].gfilelist);
-        free(grpSet.archives[i].fileOffsets);
-        free(grpSet.archives[i].filesizes);
+        Sys_Free(grpSet.archives[i].gfilelist);
+        Sys_Free(grpSet.archives[i].fileOffsets);
+        Sys_Free(grpSet.archives[i].filesizes);
         memset(&grpSet.archives[i], 0, sizeof(grpArchive_t));
     }
     
@@ -278,13 +279,13 @@ int32_t kopen4load(const char  *filename, int openOnlyFromGRP){
 	
 
     if (newhandle < 0)
-        Error(EXIT_FAILURE, "Too Many files open!\n");
+        Error(0, "Too Many files open!\n");
     
 
     //Try to look in the filesystem first. In this case fd = filedescriptor.
     if(!openOnlyFromGRP){
         
-        openFiles[newhandle].fd = open(filename,O_BINARY|O_RDONLY);
+        d_open((char *)filename, &openFiles[newhandle].fd, "r");
         
         if (openFiles[newhandle].fd != -1){
             openFiles[newhandle].type = SYSTEM_FILE;
@@ -317,7 +318,7 @@ int32_t kopen4load(const char  *filename, int openOnlyFromGRP){
     
 }
 
-int32_t kread(int32_t handle, void *buffer, int32_t leng){
+int32_t kread(int32_t handle, PACKED void *buffer, int32_t leng){
     
     openFile_t      * openFile ;
     grpArchive_t    * archive  ;
@@ -327,25 +328,24 @@ int32_t kread(int32_t handle, void *buffer, int32_t leng){
     if (!openFile->used){
         printf("Invalide handle. Unrecoverable error.\n");
         getchar();
-        exit(0);
+        fatal_error("exit : 0");
     }
     
     //FILESYSTEM ? OS takes care of it !
     if (openFile->type == SYSTEM_FILE){
-        return(read(openFile->fd,buffer,leng));
+        return(d_read(openFile->fd,buffer,leng));
     }
     
     //File is actually in the GRP
     archive = & grpSet.archives[openFile->grpID];
         
-    lseek(archive->fileDescriptor,
-          archive->fileOffsets[openFile->fd] + openFile->cursor,
-          SEEK_SET);
+    d_seek(archive->fileDescriptor,
+          archive->fileOffsets[openFile->fd] + openFile->cursor);
     
     //Adjust leng so we cannot read more than filesystem-cursor location.
     leng = min(leng,archive->filesizes[openFile->fd]-openFile->cursor);
     
-    leng = read(archive->fileDescriptor,buffer,leng);
+    leng = d_read(archive->fileDescriptor,buffer,leng);
     
     openFile->cursor += leng;
 	
@@ -353,7 +353,7 @@ int32_t kread(int32_t handle, void *buffer, int32_t leng){
     
 }
 
-int kread16(int32_t handle, short *buffer){
+int kread16(int32_t handle, PACKED short *buffer){
     if (kread(handle, buffer, 2) != 2)
         return(0);
     
@@ -361,7 +361,7 @@ int kread16(int32_t handle, short *buffer){
     return(1);
 }
 
-int kread32(int32_t handle, int32_t *buffer){
+int kread32(int32_t handle, PACKED int32_t *buffer){
     if (kread(handle, buffer, 4) != 4)
         return(0);
     
@@ -369,7 +369,7 @@ int kread32(int32_t handle, int32_t *buffer){
     return(1);
 }
 
-int kread8(int32_t handle, uint8_t  *buffer){
+int kread8(int32_t handle, PACKED uint8_t  *buffer){
     if (kread(handle, buffer, 1) != 1)
         return(0);
     
@@ -383,12 +383,13 @@ int32_t klseek(int32_t handle, int32_t offset, int whence){
     if (!openFiles[handle].used){
         printf("Invalide handle. Unrecoverable error.\n");
         getchar();
-        exit(0);
+        fatal_error("exit : 0");
     }
     
     // FILESYSTEM ? OS will take care of it.
     if (openFiles[handle].type == SYSTEM_FILE){
-        return lseek(openFiles[handle].fd,offset,whence);
+        d_seek(openFiles[handle].fd,offset);
+        return offset;
     }
     
     
@@ -420,11 +421,11 @@ int32_t kfilelength(int32_t handle)
     if (!openFile->used){
         printf("Invalide handle. Unrecoverable error.\n");
         getchar();
-        exit(0);
+        fatal_error("exit : 0");
     }
     
     if (openFile->type == SYSTEM_FILE){
-        return(filelength(openFile->fd));
+        return(d_size(openFile->fd));
     }
     
     else{
@@ -449,7 +450,7 @@ void kclose(int32_t handle)
     }
     
     if (openFile->type == SYSTEM_FILE){
-        close(openFile->fd);
+        d_close(openFile->fd);
     }
 	
     memset(openFile, 0, sizeof(openFile_t));
@@ -569,7 +570,7 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
 }
 
 
-void kdfread(void *buffer, size_t dasizeof, size_t count, int32_t fil)
+void kdfread(PACKED void *buffer, size_t dasizeof, size_t count, int32_t fil)
 {
 	size_t i, j;
 	int32_t k, kgoal;
@@ -607,7 +608,7 @@ void kdfread(void *buffer, size_t dasizeof, size_t count, int32_t fil)
 	lzwbuflock[0] = lzwbuflock[1] = lzwbuflock[2] = lzwbuflock[3] = lzwbuflock[4] = 1;
 }
 
-void dfread(void *buffer, size_t dasizeof, size_t count, FILE *fil)
+void dfread(PACKED void *buffer, size_t dasizeof, size_t count, int fil)
 {
 	size_t i, j;
 	int32_t k, kgoal;
@@ -628,8 +629,8 @@ void dfread(void *buffer, size_t dasizeof, size_t count, FILE *fil)
     
 	ptr = (uint8_t  *)buffer;
     
-	fread(&leng,2,1,fil);
-    fread(lzwbuf5,(int32_t )leng,1,fil);
+	d_read(fil, &leng,2);
+    d_read(fil, lzwbuf5,(int32_t )leng);
     
 	k = 0;
     kgoal = uncompress(lzwbuf5,(int32_t )leng,lzwbuf4);
@@ -641,7 +642,7 @@ void dfread(void *buffer, size_t dasizeof, size_t count, FILE *fil)
 	{
 		if (k >= kgoal)
 		{
-			fread(&leng,2,1,fil); fread(lzwbuf5,(int32_t )leng,1,fil);
+			d_read(fil, &leng,2); d_read(fil, lzwbuf5,(int32_t )leng);
 			k = 0; kgoal = uncompress(lzwbuf5,(int32_t )leng,lzwbuf4);
 		}
 		for(j=0;j<dasizeof;j++) ptr[j+dasizeof] = (uint8_t ) ((ptr[j]+lzwbuf4[j+k])&255);
@@ -651,7 +652,7 @@ void dfread(void *buffer, size_t dasizeof, size_t count, FILE *fil)
 	lzwbuflock[0] = lzwbuflock[1] = lzwbuflock[2] = lzwbuflock[3] = lzwbuflock[4] = 1;
 }
 
-void dfwrite(void *buffer, size_t dasizeof, size_t count, FILE *fil)
+void dfwrite(PACKED void *buffer, size_t dasizeof, size_t count, int fil)
 {
 	size_t i, j, k;
 	short leng;
@@ -673,7 +674,7 @@ void dfwrite(void *buffer, size_t dasizeof, size_t count, FILE *fil)
 	if (k > LZWSIZE-dasizeof)
 	{
 		leng = (short)compress(lzwbuf4,k,lzwbuf5); k = 0;
-		fwrite(&leng,2,1,fil); fwrite(lzwbuf5,(int32_t )leng,1,fil);
+		d_write(fil, &leng,2); d_write(fil, lzwbuf5,(int32_t )leng);
 	}
     
 	for(i=1;i<count;i++)
@@ -683,14 +684,14 @@ void dfwrite(void *buffer, size_t dasizeof, size_t count, FILE *fil)
 		if (k > LZWSIZE-dasizeof)
 		{
 			leng = (short)compress(lzwbuf4,k,lzwbuf5); k = 0;
-			fwrite(&leng,2,1,fil); fwrite(lzwbuf5,(int32_t )leng,1,fil);
+			d_write(fil, &leng,2); d_write(fil, lzwbuf5,(int32_t )leng);
 		}
 		ptr += dasizeof;
 	}
 	if (k > 0)
 	{
 		leng = (short)compress(lzwbuf4,k,lzwbuf5);
-		fwrite(&leng,2,1,fil); fwrite(lzwbuf5,(int32_t )leng,1,fil);
+		d_write(fil, &leng,2); d_write(fil, lzwbuf5,(int32_t )leng);
 	}
 	lzwbuflock[0] = lzwbuflock[1] = lzwbuflock[2] = lzwbuflock[3] = lzwbuflock[4] = 1;
 }

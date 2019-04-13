@@ -29,13 +29,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "arch.h"
 
-
-
-
-#if !PLATFORM_MACOSX
-#include <malloc.h>
-#endif
 
 #ifdef _WIN32
 #include "../../Engine/src/windows/inttypes.h"
@@ -43,7 +38,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <inttypes.h>
 #endif
 
-#include <fcntl.h>
+#include <dev_io.h>
 #include <time.h>
 #include <ctype.h>
 
@@ -369,9 +364,9 @@ struct animwalltype
 extern struct animwalltype animwall[MAXANIMWALLS];
 extern short numanimwalls,probey,lastprobey;
 
-char  *mymembuf;
+extern char  *mymembuf;
 extern uint8_t  typebuflen;
-char typebuf[41];
+extern char typebuf[41];
 extern uint8_t  MusicPtr[72000];
 extern int32_t msx[2048],msy[2048];
 extern short cyclers[MAXCYCLERS][6],numcyclers;
@@ -586,15 +581,15 @@ extern short connecthead, connectpoint2[MAXPLAYERS];   //Player linked list vari
 extern short screenpeek;
 
 extern int current_menu;
-extern int32_t tempwallptr,animatecnt;
+extern PACKED int32_t tempwallptr,animatecnt;
 extern int32_t lockclock;
 extern uint8_t  display_mirror,rtsplaying;
 
 extern int32_t movefifoend[MAXPLAYERS];
 extern int32_t ototalclock;
 
-extern int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES];
-extern int32_t animatevel[MAXANIMATES];
+extern PACKED int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES];
+extern PACKED int32_t animatevel[MAXANIMATES];
 // extern int32_t oanimateval[MAXANIMATES];
 extern short neartagsector, neartagwall, neartagsprite;
 extern int32_t neartaghitdist;
@@ -679,9 +674,9 @@ extern uint8_t  stereo,eightytwofifty,playerswhenstarted,everyothertime;
 extern int32_t myminlag[MAXPLAYERS], mymaxlag, otherminlag, bufferjitter;
 
 extern int32_t numinterpolations, startofdynamicinterpolations;
-extern int32_t oldipos[MAXINTERPOLATIONS];
-extern int32_t bakipos[MAXINTERPOLATIONS];
-extern int32_t *curipos[MAXINTERPOLATIONS];
+PACKED extern int32_t oldipos[MAXINTERPOLATIONS];
+PACKED extern int32_t bakipos[MAXINTERPOLATIONS];
+PACKED extern int32_t *curipos[MAXINTERPOLATIONS];
 
 extern short numclouds,clouds[128],cloudx[128],cloudy[128];
 extern int32_t cloudtotalclock,totalmemory;

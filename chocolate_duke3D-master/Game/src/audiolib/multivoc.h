@@ -32,7 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define __MULTIVOC_H
 
 //#include <windows.h>
-#include <SDL.h>
+#include <misc_utils.h>
+#include <stdint.h>
 
 // forward declare
 //struct SDL_mutex;
@@ -125,6 +126,6 @@ void  MV_UnlockMemory( void );
 int   MV_LockMemory( void );
 
 //CRITICAL_SECTION reverbCS;
-SDL_mutex* reverbMutex;
+void* reverbMutex;
 
 #endif

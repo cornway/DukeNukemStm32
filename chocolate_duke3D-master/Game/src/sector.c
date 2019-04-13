@@ -335,7 +335,7 @@ void doanimations(void)
 	}
 }
 
-int32_t getanimationgoal(int32_t *animptr)
+int32_t getanimationgoal(PACKED int32_t *animptr)
 {
 	int32_t i, j;
 
@@ -349,7 +349,7 @@ int32_t getanimationgoal(int32_t *animptr)
 	return(j);
 }
 
-int32_t setanimation(short animsect,int32_t *animptr, int32_t thegoal, int32_t thevel)
+int32_t setanimation(short animsect, PACKED int32_t *animptr, int32_t thegoal, int32_t thevel)
 {
 	int32_t i, j;
 

@@ -1617,7 +1617,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 					"always use the GRP internal CON files.\n"
 					"\nReload normal GRP internal *.CON files? (Y/N) : ");
 			do
-				kbdKey = getch() | ' ';
+				kbdKey = ' ';//getch() | ' ';
 			while(kbdKey != 'y' && kbdKey != 'n');
 			printf("%c\n", kbdKey);
 
@@ -1635,7 +1635,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 					"always use the GRP internal CON files.\n"
 					"\nReload normal GRP internal *.CON files? (Y/N) : ");
 			do
-				kbdKey = getch() | ' ';
+				kbdKey = ' ';//getch() | ' ';
 			while(kbdKey != 'y' && kbdKey != 'n');
 			printf("%c\n", kbdKey);
 
@@ -1651,7 +1651,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 					"always use the GRP internal CON files.\n"
 					"\nReload normal GRP internal *.CON files? (Y/N) : ");
 			do
-				kbdKey = getch() | ' ';
+				kbdKey = ' ';//getch() | ' ';
 			while(kbdKey != 'y' && kbdKey != 'n');
 			printf("%c\n", kbdKey);
 

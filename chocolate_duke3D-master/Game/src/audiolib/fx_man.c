@@ -63,48 +63,7 @@ int FX_Installed = FALSE;
 char *FX_ErrorString(int ErrorNumber)
 
    {
-   char *ErrorString;
-
-   switch( ErrorNumber )
-      {
-      case FX_Warning :
-      case FX_Error :
-         ErrorString = FX_ErrorString( FX_ErrorCode );
-         break;
-
-      case FX_Ok :
-         ErrorString = "Fx ok\n";
-         break;
-
-      case FX_ASSVersion :
-         ErrorString = "Apogee Sound System Version " ASS_VERSION_STRING "  "
-            "Programmed by Jim Dose\n"
-            "(c) Copyright 1995 James R. Dose.  All Rights Reserved.\n";
-         break;
-
-
-      case FX_SoundCardError :
-         ErrorString = DSL_ErrorString( DSL_Error );
-         break;
-
-      case FX_InvalidCard :
-         ErrorString = "Invalid Sound Fx device.\n";
-         break;
-
-      case FX_MultiVocError :
-         ErrorString = MV_ErrorString( MV_Error );
-         break;
-
-      case FX_DPMI_Error :
-         ErrorString = "DPMI Error in FX_MAN.\n";
-         break;
-
-      default :
-         ErrorString = "Unknown Fx error code.\n";
-         break;
-      }
-
-   return( ErrorString );
+   return( 0 );
    }
 
 
@@ -121,36 +80,7 @@ int FX_SetupCard
    )
 
    {
-   int status;
-   int DeviceStatus;
-
-   if ( USER_CheckParameter( "ASSVER" ) )
-      {
-      FX_SetErrorCode( FX_ASSVersion );
-      return( FX_Error );
-      }
-
-   FX_SoundDevice = SoundCard;
-
-   status = FX_Ok;
-   FX_SetErrorCode( FX_Ok );
-
-
-      DeviceStatus = DSL_Init();
-      if ( DeviceStatus != DSL_Ok )
-         {
-         FX_SetErrorCode( FX_SoundCardError );
-         status = FX_Error;
-         }
-         else
-         {
-         device->MaxVoices     = 32;
-         device->MaxSampleBits = 0;
-         device->MaxChannels   = 0;
-         }
-
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -206,68 +136,9 @@ int FX_Init
    int samplebits,
    unsigned mixrate
    )
-
-   {
-   int status;
-   int devicestatus;
-
-   if ( FX_Installed )
-      {
-      FX_Shutdown();
-      }
-
-   if ( USER_CheckParameter( "ASSVER" ) )
-      {
-      FX_SetErrorCode( FX_ASSVersion );
-      return( FX_Error );
-      }
-
-   status = LL_LockMemory();
-   if ( status != LL_Ok )
-      {
-      FX_SetErrorCode( FX_DPMI_Error );
-      return( FX_Error );
-      }
-
-   FX_MixRate = mixrate;
-
-   status = FX_Ok;
-   FX_SoundDevice = SoundCard;
-   switch( SoundCard )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
-      case UltraSound :
-         devicestatus = MV_Init( SoundCard, FX_MixRate, numvoices,
-            numchannels, samplebits );
-         if ( devicestatus != MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Error;
-            }
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
-         status = FX_Error;
-      }
-
-   if ( status != FX_Ok )
-      {
-      LL_UnlockMemory();
-      }
-   else
-      {
-      FX_Installed = TRUE;
-      }
-
-   return( status );
-   }
+{
+    return( 0 );
+}
 
 
 /*---------------------------------------------------------------------
@@ -282,41 +153,7 @@ int FX_Shutdown
    )
 
    {
-   int status;
-
-   if ( !FX_Installed )
-      {
-      return( FX_Ok );
-      }
-
-   status = FX_Ok;
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
-      case UltraSound :
-         status = MV_Shutdown();
-         if ( status != MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Error;
-            }
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
-         status = FX_Error;
-      }
-
-   FX_Installed = FALSE;
-   LL_UnlockMemory();
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -329,29 +166,7 @@ int FX_Shutdown
 int FX_SetCallBack(void ( *function )( int32_t ))
 
    {
-   int status;
-
-   status = FX_Ok;
-
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-      case SoundScape :
-      case SoundSource :
-      case TandySoundSource :
-      case UltraSound :
-         MV_SetCallBack( function );
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
-         status = FX_Error;
-      }
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -363,9 +178,6 @@ int FX_SetCallBack(void ( *function )( int32_t ))
 
 void FX_SetVolume(int volume)
    {
-
-   MV_SetVolume( volume );
-
    }
 
 
@@ -377,13 +189,7 @@ void FX_SetVolume(int volume)
 
 int FX_GetVolume(void)
    {
-   int volume;
-
-
-   volume = MV_GetVolume();
-
-
-   return( volume );
+   return( 0 );
    }
 
 
@@ -396,7 +202,6 @@ int FX_GetVolume(void)
 void FX_SetReverseStereo(int setting)
 
    {
-   MV_SetReverseStereo( setting );
    }
 
 
@@ -407,9 +212,8 @@ void FX_SetReverseStereo(int setting)
 ---------------------------------------------------------------------*/
 
 int FX_GetReverseStereo(void)
-
    {
-   return MV_GetReverseStereo();
+    return 0;
    }
 
 
@@ -425,7 +229,6 @@ void FX_SetReverb
    )
 
    {
-   MV_SetReverb( reverb );
    }
 
 
@@ -441,7 +244,6 @@ void FX_SetFastReverb
    )
 
    {
-   MV_SetFastReverb( reverb );
    }
 
 
@@ -457,7 +259,7 @@ int FX_GetMaxReverbDelay
    )
 
    {
-   return MV_GetMaxReverbDelay();
+   return 0;
    }
 
 
@@ -473,7 +275,7 @@ int FX_GetReverbDelay
    )
 
    {
-   return MV_GetReverbDelay();
+   return 0;
    }
 
 
@@ -489,7 +291,6 @@ void FX_SetReverbDelay
    )
 
    {
-   MV_SetReverbDelay( delay );
    }
 
 
@@ -505,7 +306,7 @@ int FX_VoiceAvailable
    )
 
    {
-   return MV_VoiceAvailable( priority );
+   return 0;
    }
 
 /*---------------------------------------------------------------------
@@ -521,16 +322,7 @@ int FX_EndLooping
    )
 
    {
-   int status;
-
-   status = MV_EndLooping( handle );
-   if ( status == MV_Error )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-
-   return( status );
+   return 0;
    }
 
 /*---------------------------------------------------------------------
@@ -549,16 +341,7 @@ int FX_SetPan
    )
 
    {
-   int status;
-
-   status = MV_SetPan( handle, vol, left, right );
-   if ( status == MV_Error )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -575,16 +358,7 @@ int FX_SetPitch
    )
 
    {
-   int status;
-
-   status = MV_SetPitch( handle, pitchoffset );
-   if ( status == MV_Error )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -601,16 +375,7 @@ int FX_SetFrequency
    )
 
    {
-   int status;
-
-   status = MV_SetFrequency( handle, frequency );
-   if ( status == MV_Error )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -632,17 +397,7 @@ int FX_PlayVOC
    )
 
    {
-   int handle;
-
-   handle = MV_PlayVOC( ptr, pitchoffset, vol, left, right,
-      priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -666,17 +421,7 @@ int FX_PlayLoopedVOC
    )
 
    {
-   int handle;
-
-   handle = MV_PlayLoopedVOC( ptr, loopstart, loopend, pitchoffset,
-      vol, left, right, priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -698,17 +443,7 @@ int FX_PlayWAV
    )
 
    {
-   int handle;
-
-   handle = MV_PlayWAV( ptr, pitchoffset, vol, left, right,
-      priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -732,17 +467,7 @@ int FX_PlayLoopedWAV
    )
 
    {
-   int32_t handle;
-
-   handle = MV_PlayLoopedWAV( ptr, loopstart, loopend,
-      pitchoffset, vol, left, right, priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -764,17 +489,7 @@ int FX_PlayVOC3D
    )
 
    {
-   int handle;
-
-   handle = MV_PlayVOC3D( ptr, pitchoffset, angle, distance,
-      priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -796,17 +511,7 @@ int FX_PlayWAV3D
    )
 
    {
-   int handle;
-
-   handle = MV_PlayWAV3D( ptr, pitchoffset, angle, distance,
-      priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -830,17 +535,7 @@ int FX_PlayRaw
    )
 
    {
-   int handle;
-
-   handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
-      vol, left, right, priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -866,17 +561,7 @@ int FX_PlayLoopedRaw
    )
 
    {
-   int handle;
-
-   handle = MV_PlayLoopedRaw( ptr, length, loopstart, loopend,
-      rate, pitchoffset, vol, left, right, priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -895,16 +580,7 @@ int FX_Pan3D
    )
 
    {
-   int status;
-
-   status = MV_Pan3D( handle, angle, distance );
-   if ( status != MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      status = FX_Warning;
-      }
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -920,7 +596,7 @@ int FX_SoundActive
    )
 
    {
-   return( MV_VoicePlaying( handle ) );
+   return( 0 );
    }
 
 
@@ -936,7 +612,7 @@ int FX_SoundsPlaying
    )
 
    {
-   return( MV_VoicesPlaying() );
+   return( 0 );
    }
 
 
@@ -952,15 +628,6 @@ int FX_StopSound
    )
 
    {
-   int status;
-
-   status = MV_Kill( handle );
-   if ( status != MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      return( FX_Warning );
-      }
-
    return( FX_Ok );
    }
 
@@ -977,15 +644,6 @@ int FX_StopAllSounds
    )
 
    {
-   int status;
-
-   status = MV_KillAllVoices();
-   if ( status != MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      return( FX_Warning );
-      }
-
    return( FX_Ok );
    }
 
@@ -1009,17 +667,7 @@ int FX_StartDemandFeedPlayback
    )
 
    {
-   int handle;
-
-   handle = MV_StartDemandFeedPlayback( function, rate,
-      pitchoffset, vol, left, right, priority, callbackval );
-   if ( handle < MV_Ok )
-      {
-      FX_SetErrorCode( FX_MultiVocError );
-      handle = FX_Warning;
-      }
-
-   return( handle );
+   return( 0 );
    }
 
 
@@ -1036,38 +684,7 @@ int FX_StartRecording
    )
 
    {
-   int status;
-
-#ifdef PLAT_DOS
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         status = MV_StartRecording( MixRate, function );
-         if ( status != MV_Ok )
-            {
-            FX_SetErrorCode( FX_MultiVocError );
-            status = FX_Warning;
-            }
-         else
-            {
-            status = FX_Ok;
-            }
-         break;
-
-      default :
-         FX_SetErrorCode( FX_InvalidCard );
-         status = FX_Warning;
-         break;
-      }
-#else
-   FX_SetErrorCode( FX_InvalidCard );
-   status = FX_Warning;
-#endif
-
-   return( status );
+   return( 0 );
    }
 
 
@@ -1083,16 +700,4 @@ void FX_StopRecord
    )
 
    {
-#ifdef PLAT_DOS
-   // Stop sound playback
-   switch( FX_SoundDevice )
-      {
-      case SoundBlaster :
-      case Awe32 :
-      case ProAudioSpectrum :
-      case SoundMan16 :
-         MV_StopRecord();
-         break;
-      }
-#endif
    }

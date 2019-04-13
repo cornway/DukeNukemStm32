@@ -4,8 +4,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "enet.h"
-
 //#include "buildqueue.h"
 
 #include <vector>
@@ -249,12 +247,12 @@ void cleanup(void);
 		*/
 		
 		
-
+#if 0
 		if(enet_initialize() == -1)
 		{
 			printf("Error initializing ENet\n");
 		}
-
+#endif
 		atexit(cleanup);
 
 		retval = (gcomtype *)malloc(sizeof (gcomtype));
@@ -358,7 +356,7 @@ void cleanup(void);
 		*/
 		incommingPacketQueue.clear();
 
-		enet_deinitialize();
+		//enet_deinitialize();
 	}
 
 	void cleanup(void)

@@ -4,22 +4,18 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "enet.h"
-
 //#include "buildqueue.h"
-
-#include <vector>
 
 
 //#define _DEBUG_NETWORKING_
-extern "C"
-{
 
 #include "platform.h"
 #include "fixedPoint_math.h"
 #include "signal.h"
 #include "mmulti_stable.h"
 #include "filesystem.h"
+#include "dukeunix.h"
+#include "unix_compat.h"
 
 #define MAXPLAYERS 16
 #define BAKSIZ 16384
@@ -39,6 +35,9 @@ static short udpport = BUILD_DEFAULT_UDP_PORT;
 
 #define updatecrc16(crc,dat) crc = (((crc<<8)&65535)^crctable[((((unsigned short)crc)>>8)&65535)^dat])
 
+short numplayers = 1, myconnectindex = 0;
+short connecthead, connectpoint2[MAXPLAYERS];
+
 static long incnt[MAXPLAYERS], outcntplc[MAXPLAYERS], outcntend[MAXPLAYERS];
 static char errorgotnum[MAXPLAYERS];
 static char errorfixnum[MAXPLAYERS];
@@ -54,7 +53,7 @@ unsigned int g_bAllPlayersFound = 0;
 static char lastpacket[576], inlastpacket = 0;
 static short lastpacketfrom, lastpacketleng;
 
-extern long totalclock;  /* MUST EXTERN 1 ANNOYING VARIABLE FROM GAME */
+extern volatile int32_t totalclock;  /* MUST EXTERN 1 ANNOYING VARIABLE FROM GAME */
 static long timeoutcount = 60, resendagaincount = 4, lastsendtime[MAXPLAYERS];
 
 static short bakpacketptr[MAXPLAYERS][256], bakpacketlen[MAXPLAYERS][256];
@@ -62,7 +61,9 @@ static char bakpacketbuf[BAKSIZ];
 static long bakpacketplc = 0;
 
 short myconnectindex, numplayers;
-short connecthead, connectpoint2[MAXPLAYERS];
+short connectpoint2[MAXPLAYERS];
+extern short connecthead;
+
 //char syncstate = 0;
 
 unsigned char g_bWaitingForAllReady = 0;
@@ -95,7 +96,10 @@ typedef struct
 	unsigned char buffer[MAXPACKETSIZE];
 }PACKET;
 
-typedef std::vector<PACKET> PacketQueue;
+typedef struct {
+    char c[1];
+} PacketQueue;
+
 PacketQueue incommingPacketQueue;
 
 //typedef std::vector<PACKET> PacketQueue;
@@ -125,7 +129,9 @@ enum EConnectionMode
 	CONN_MODE_CONNECTED		= 3,
 	CONN_MODE_DISCONNECTED	= 4,
 };
+#ifdef ORIGCODE
 EConnectionMode g_ConnMode = CONN_MODE_CONNECTING;
+#endif
 
 typedef struct {
   unsigned int host;
@@ -162,12 +168,12 @@ unsigned short g_nPlayerIDList[MAX_PLAYERS];
 #define INITIAL_CONNECTION_DELAY 50
 #define INGAME_CONNECTION_DELAY 0
 #define POLL_DELAY 1000
-
+#ifdef ORIGCODE
 //ENetAddress		address;
 ENetHost*		g_Server = 0;
 //ENetEvent		event;
 ENetPeer*		g_Peers[MAX_PLAYERS];
-
+#endif
 short *g_other;
 char *g_bufptr;
 short g_nMessageLen;
@@ -184,9 +190,9 @@ int parse_interface(char *str, int *ip, short *udpport);
 int parse_udp_config(const char *cfgfile, gcomtype *gcom);
 
 int connect_to_everyone();
-void HandleEvent(ENetEvent *pEvent);
-unsigned int GetPeerIndex(ENetPeer* peer);
-unsigned int GetOtherIndex(ENetPeer* peer);
+void HandleEvent(void *pEvent);
+unsigned int GetPeerIndex(void* peer);
+unsigned int GetOtherIndex(void* peer);
 void ServiceNetwork();
 void Send_Peer_Gretting();
 void Wait_For_Ready();
@@ -250,12 +256,12 @@ void cleanup(void);
 		*/
 		
 		
-
+#if 0
 		if(enet_initialize() == -1)
 		{
 			printf("Error initializing ENet\n");
 		}
-
+#endif
 		atexit(cleanup);
 
 		retval = (gcomtype *)malloc(sizeof (gcomtype));
@@ -333,12 +339,12 @@ void cleanup(void);
 			#ifdef _DEBUG_NETWORKING_
 				printf("Send Packet to peer %d : type: %d len: %d\n", other, bufptr[0], messleng);
 			#endif
-
+#ifdef ORIGCODE
 			ENetPacket * packet = enet_packet_create (bufptr, sizeof(char) * messleng, ENET_PACKET_FLAG_RELIABLE);//ENET_PACKET_FLAG_RELIABLE
 			//enet_peer_send (g_Peers[other], 0, packet);
 			enet_peer_send (g_Peers[allowed_addresses[other].peer_idx], 0, packet);
 			enet_host_flush(g_Server);
-
+#endif
 		}
 	}
 
@@ -357,9 +363,10 @@ void cleanup(void);
 			free(g_Peers);
 		}
 		*/
+#ifdef ORIGCODE
 		incommingPacketQueue.clear();
-
-		enet_deinitialize();
+#endif
+		//enet_deinitialize();
 	}
 
 	void cleanup(void)
@@ -399,11 +406,13 @@ void cleanup(void);
 //
 //-------------------------------------------------
 	short stable_getpacket(short *other, char *bufptr)
-	{	
+	{
+#ifdef ORIGCODE
 		ENetEvent event;
-		g_nMessageLen = 0;
+#endif
+        g_nMessageLen = 0;
 
-		
+#ifdef ORIGCODE
 		//clear out the early packet buffer first
 		if(incommingPacketQueue.size() > 0)
 		{
@@ -420,6 +429,7 @@ void cleanup(void);
 			}
 		}
 		else			
+
 		if (enet_host_service (g_Server, & event, INGAME_CONNECTION_DELAY) > 0) 
 		{
 			// setup the pointers.
@@ -433,6 +443,7 @@ void cleanup(void);
 			}
 
 		}else // check to see if we have a packet of our own to deliver to ourselves.
+#endif
 		{
 			if(g_LastPersonalPacket.command == 1)
 			{
@@ -464,6 +475,7 @@ void cleanup(void);
 //
 int connect_to_everyone()
 {
+#ifdef ORIGCODE
 	ENetAddress		address;
     ENetEvent		event;
 	int i;
@@ -521,12 +533,13 @@ int connect_to_everyone()
 	printf("Negotiating connection order...\n");
 	Send_Peer_Gretting();
 	Wait_For_Ready();
-
+#endif
 	return 0;
 }
 
 void Send_Peer_Gretting()
 {
+#ifdef ORIGCODE
 	int i;
 
 	g_ConnMode = CONN_MODE_GREETING;
@@ -641,12 +654,12 @@ void Send_Peer_Gretting()
 			}
 		}
 	}
-	
+#endif
 }
 
 void Wait_For_Ready()
 {
-
+#ifdef ORIGCODE
 	g_bWaitingForAllReady = gcom->numplayers-1;
 
 	// Create the greeting packet
@@ -694,10 +707,12 @@ void Wait_For_Ready()
 	printf("All players are ready. Start sending game data...\n");
 
 	g_ConnMode = CONN_MODE_CONNECTED;
+#endif
 }
 
-void HandleEvent(ENetEvent *pEvent)
+void HandleEvent(void *pEvent)
 {
+#ifdef ORIGCODE
 	switch(pEvent->type)
 			{
 			case ENET_EVENT_TYPE_CONNECT:
@@ -793,7 +808,9 @@ void HandleEvent(ENetEvent *pEvent)
 									packet.other = GetOtherIndex(pEvent->peer);
 									packet.bufferSize = g_nMessageLen;
 									memcpy(packet.buffer, pEvent->packet->data, g_nMessageLen);
+#ifdef ORIGCODE
 									incommingPacketQueue.push_back(packet);
+#endif
 									printf("Saving early packet...\n");
 									break;
 								}
@@ -896,10 +913,12 @@ void HandleEvent(ENetEvent *pEvent)
 				}
 				break;
 			}
+#endif
 }
 
-unsigned int GetPeerIndex(ENetPeer* peer)
+unsigned int GetPeerIndex(void* peer)
 {
+#ifdef ORIGCODE
 	int i;
 	for(i = 0; i < gcom->numplayers; ++i)
 	{
@@ -911,11 +930,13 @@ unsigned int GetPeerIndex(ENetPeer* peer)
 	}
 
 	printf("Error: GetPeerIndex failed to find the corrent index!\n");
+#endif
 	return 0;
 }
 
-unsigned int GetOtherIndex(ENetPeer* peer)
+unsigned int GetOtherIndex(void* peer)
 {
+#ifdef ORIGCODE
 	int i;
 	for(i = 0; i < gcom->numplayers; ++i)
 	{
@@ -927,16 +948,19 @@ unsigned int GetOtherIndex(ENetPeer* peer)
 	}
 
 	printf("Error: GetOtherIndex failed to find the corrent index!\n");
+#endif
 	return 0;
 }
 
 void ServiceNetwork()
 {
+#ifdef ORIGCODE
 	ENetEvent event;
 	if (enet_host_service (g_Server, & event, INGAME_CONNECTION_DELAY) > 0) 
 	{
 		HandleEvent(&event);
 	}
+#endif
 }
 
 //**************************************************************
@@ -944,7 +968,7 @@ void ServiceNetwork()
 //**************************************************************
 int CreateServer(char* ip, int nPort, int nMaxPlayers)
 {
-
+#ifdef ORIGCODE
 	ENetAddress address;
 
 	printf("Creating server of %d players on port %d.\n", nMaxPlayers, nPort);
@@ -967,7 +991,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 		printf("Error creating server!\n");
 		return 1;
 	}
-
+#endif
 	return 0;
 }
 
@@ -1172,12 +1196,14 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 
 					else if (parse_interface(tok, &host, &port))
 					{
+#ifdef ORIGCODE
 						ENetAddress address;
 						enet_address_set_host(&address, static_ipstring(host));
 						printf("Adding: %s:%d to the list of allowed addresses.\n", static_ipstring(host), port);
 						allowed_addresses[gcom->numplayers].host = address.host;
 						allowed_addresses[gcom->numplayers].port = port;
 						gcom->numplayers++;
+#endif
 						bogus = 0;
 					}
 				}
@@ -1200,11 +1226,6 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 
 		return(0);
 	}
-
-
-
-
-} // end extern "C"
 
 /* end of mmulti.cpp ... */
 

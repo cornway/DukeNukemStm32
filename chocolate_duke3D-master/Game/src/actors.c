@@ -27,7 +27,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 
 extern int32_t numenvsnds;
-uint8_t  actor_tog;
+extern uint8_t  actor_tog;
 
 void updateinterpolations()  //Stick at beginning of domovethings
 {
@@ -37,7 +37,7 @@ void updateinterpolations()  //Stick at beginning of domovethings
 }
 
 
-void setinterpolation(int32_t *posptr)
+void setinterpolation(PACKED int32_t *posptr)
 {
 	int32_t i;
 
@@ -49,7 +49,7 @@ void setinterpolation(int32_t *posptr)
 	numinterpolations++;
 }
 
-void stopinterpolation(int32_t *posptr)
+void stopinterpolation(PACKED int32_t *posptr)
 {
 	int32_t i;
 
@@ -1360,7 +1360,7 @@ void movefx(void)
                     if( x >= ht && T1 == 1 )
                     {
                         FX_SetReverb(0);
-                        FX_SetReverbDelay(0);
+                        //FX_SetReverbDelay(0);
                         T1 = 0;
                     }
                 }

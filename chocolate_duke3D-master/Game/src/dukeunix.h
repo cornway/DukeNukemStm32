@@ -31,16 +31,11 @@
 #define O_BINARY 0
 #endif
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <assert.h>
-
+#include <misc_utils.h>
+#include <duke3d.h>
 struct find_t
 {
-    DIR *dir;
+    int dir;
     char  pattern[MAX_PATH];
     char  name[MAX_PATH];
 };

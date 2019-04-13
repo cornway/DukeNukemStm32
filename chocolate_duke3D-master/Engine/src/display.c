@@ -19,7 +19,11 @@
 #include <assert.h>
 #include <string.h>
 #include "platform.h"
-
+#include "SDL_Video.h"
+#include "SDL_Keysym.h"
+#include "input_main.h"
+#include "unix_compat.h"
+#include <gfx.h>
 #if (!defined PLATFORM_SUPPORTS_SDL)
 #error This platform apparently does not use SDL. Do not compile this.
 #endif
@@ -36,7 +40,6 @@
 #define BUILD_GLDUMP         "BUILD_GLDUMP"
 #define BUILD_SDLJOYSTICK    "BUILD_SDLJOYSTICK"
 
-#include "SDL.h"
 #include "build.h"
 #include "display.h"
 #include "fixedPoint_math.h"
@@ -80,12 +83,10 @@ void TIMER_GetPlatformTicks(int64_t* t);
  */
 
 
-#define DEFAULT_MAXRESWIDTH  1600
-#define DEFAULT_MAXRESHEIGHT 1200
+#define DEFAULT_MAXRESWIDTH  320
+#define DEFAULT_MAXRESHEIGHT 200
 
-
-#define UNLOCK_SURFACE_AND_RETURN  if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface); return;
-
+#define UNLOCK_SURFACE_AND_RETURN  /*if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface); */return;
 
     /* !!! move these elsewhere? */
 int32_t xres, yres, bytesperline, imageSize, maxpages;
@@ -107,6 +108,8 @@ static unsigned int lastkey = 0;
 /* so we can make use of setcolor16()... - DDOI */
 static uint8_t  drawpixel_color=0;
 
+#define SDLK_LAST 0xff
+
 static uint32_t scancodes[SDLK_LAST];
 
 static int32_t last_render_ticks = 0;
@@ -119,7 +122,8 @@ static char *titleNameShort = NULL;
 void restore256_palette (void);
 void set16color_palette (void);
 
-
+int _argc;
+char  **_argv;
 
 static void __append_sdl_surface_flag(SDL_Surface *_surface, char  *str,
                                       size_t strsize, Uint32 flag,
@@ -136,7 +140,7 @@ static void __append_sdl_surface_flag(SDL_Surface *_surface, char  *str,
 
 
 #define append_sdl_surface_flag(a, b, c, fl) __append_sdl_surface_flag(a, b, c, fl, " " #fl)
-#define print_tf_state(str, val) printf("%s: {%s}\n", str, (val) ? "true" : "false" )
+#define print_tf_state(str, val) dprintf("%s: {%s}\n", str, (val) ? "true" : "false" )
 
 static void output_surface_info(SDL_Surface *_surface)
 {
@@ -146,12 +150,12 @@ static void output_surface_info(SDL_Surface *_surface)
 
     if (_surface == NULL)
     {
-        printf("-WARNING- You've got a NULL screen surface!");
+        dprintf("-WARNING- You've got a NULL screen surface!");
     }
     else
     {
         f[0] = '\0';
-        printf("screen surface is (%dx%dx%dbpp).\n",_surface->w, _surface->h, _surface->format->BitsPerPixel);
+        dprintf("screen surface is (%dx%dx%dbpp).\n",_surface->w, _surface->h, _surface->format->BitsPerPixel);
 
         append_sdl_surface_flag(_surface, f, sizeof (f), SDL_SWSURFACE);
         append_sdl_surface_flag(_surface, f, sizeof (f), SDL_HWSURFACE);
@@ -174,10 +178,10 @@ static void output_surface_info(SDL_Surface *_surface)
         if (f[0] == '\0')
             strcpy(f, " (none)");
 
-        printf("New vidmode flags:%s.\n", f);
+        dprintf("New vidmode flags:%s.\n", f);
 
-        info = SDL_GetVideoInfo();
-        assert(info != NULL);
+        //info = SDL_GetVideoInfo();
+        //assert(info != NULL);
 /*
         print_tf_state("hardware surface available", info->hw_available);
         print_tf_state("window manager available", info->wm_available);
@@ -197,15 +201,17 @@ static void output_surface_info(SDL_Surface *_surface)
 
 static void output_driver_info(void)
 {
+#ifdef ORIGCODE
     char  buffer[256];
 
     if (SDL_VideoDriverName(buffer, sizeof (buffer)) == NULL){
-        printf("-WARNING- SDL_VideoDriverName() returned NULL!");
+        dprintf("-WARNING- SDL_VideoDriverName() returned NULL!");
     } /* if */
     else
     {
-        printf("Using SDL video driver \"%s\".", buffer);
+        dprintf("Using SDL video driver \"%s\".", buffer);
     } /* else */
+#endif
 } /* output_driver_info */
 
 
@@ -231,12 +237,12 @@ static void init_new_res_vars(int32_t davidoption)
 
     setupmouse();
 
-    SDL_WM_SetCaption(titleNameLong, titleNameShort);
+    //SDL_WM_SetCaption(titleNameLong, titleNameShort);
 
     xdim = xres = surface->w;
     ydim = yres = surface->h;
 
-	printf("init_new_res_vars %d %d\n",xdim,ydim);
+	dprintf("init_new_res_vars %d %d\n",xdim,ydim);
 
     bytesperline = surface->w;
     vesachecked = 1;
@@ -310,6 +316,7 @@ static void go_to_new_vid_mode(int davidoption, int w, int h)
     getvalidvesamodes();
     SDL_ClearError();
     // don't do SDL_SetVideoMode if SDL_WM_SetIcon not called. See sdl doc for SDL_WM_SetIcon
+#if 0
 	surface = SDL_SetVideoMode(w, h, 8, sdl_flags);
     if (surface == NULL)
     {
@@ -320,10 +327,12 @@ static void go_to_new_vid_mode(int davidoption, int w, int h)
 
     output_surface_info(surface);
     init_new_res_vars(davidoption); // dont be confused between vidoption (global) and davidoption
+#endif
 }
 
-static __inline int sdl_mouse_button_filter(SDL_MouseButtonEvent const *event)
+static __inline int sdl_mouse_button_filter(void const *event)
 {
+#ifdef ORIGCODE
         /*
          * What bits BUILD expects:
          *  0 left button pressed if 1
@@ -354,13 +363,15 @@ static __inline int sdl_mouse_button_filter(SDL_MouseButtonEvent const *event)
     if (bmask & SDL_BUTTON_RMASK) mouse_buttons |= 2;
     if (bmask & SDL_BUTTON_MMASK) mouse_buttons |= 4;
 #endif
-
+#endif
     return(0);
 } /* sdl_mouse_up_filter */
 
 
-static int sdl_mouse_motion_filter(SDL_Event const *event)
+static int sdl_mouse_motion_filter(i_event_t const *event)
 {
+#ifdef ORIGCODE
+
     if (surface == NULL)
 		return(0);
 
@@ -387,7 +398,7 @@ static int sdl_mouse_motion_filter(SDL_Event const *event)
 			else
 				mouse_relative_x = mouse_relative_y = 0;
 	}
-
+#endif
     return(0);
 } /* sdl_mouse_motion_filter */
 
@@ -399,21 +410,23 @@ static int sdl_mouse_motion_filter(SDL_Event const *event)
      *  which we check for explicitly, and give the engine a keypad enter
      *  enter event.
      */
-static __inline int handle_keypad_enter_hack(const SDL_Event *event)
+static __inline int handle_keypad_enter_hack(const i_event_t *event)
 {
     static int kp_enter_hack = 0;
     int retval = 0;
 
-    if (event->key.keysym.sym == SDLK_RETURN)
+    if (event->sym == SDLK_RETURN)
     {
-        if (event->key.state == SDL_PRESSED)
+        if (event->state == keydown)
         {
+#if 0 /*FIXME :*/
             if (event->key.keysym.mod & KMOD_SHIFT)
             {
                 kp_enter_hack = 1;
                 lastkey = scancodes[SDLK_KP_ENTER];
                 retval = 1;
             } /* if */
+#endif
         } /* if */
 
         else  /* key released */
@@ -443,7 +456,9 @@ void fullscreen_toggle_and_change_driver(void)
 	y = surface->h;
 
 	BFullScreen =!BFullScreen;
+#ifdef ORIGCODE
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+#endif
 	_platform_init(0, NULL, "Duke Nukem 3D", "Duke3D");
 	_setgamemode(ScreenMode,x,y);
 	//vscrn();
@@ -451,37 +466,40 @@ void fullscreen_toggle_and_change_driver(void)
 	return;
 }
 
-static int sdl_key_filter(const SDL_Event *event)
+static int sdl_key_filter(const i_event_t *event)
 {
     int extended;
 
-    if ( (event->key.keysym.sym == SDLK_m) &&
-         (event->key.state == SDL_PRESSED) &&
-         (event->key.keysym.mod & KMOD_CTRL) )
+    if ( (event->sym == SDLK_m) &&
+         (event->state == keydown) && 1
+    /*FIXME : (event->key.keysym.mod & KMOD_CTRL) */)
     {
 
 
 		// FIX_00005: Mouse pointer can be toggled on/off (see mouse menu or use CTRL-M)
 		// This is usefull to move the duke window when playing in window mode.
-  
+#ifdef ORIGCODE
+
         if (SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON) 
 		{
             SDL_WM_GrabInput(SDL_GRAB_OFF);
+
 			SDL_ShowCursor(1);
 		}
 		else
 		{
             SDL_WM_GrabInput(SDL_GRAB_ON);
 			SDL_ShowCursor(0);
-		}
 
+		}
+#endif
         return(0);
     } /* if */
 
-    else if ( ( (event->key.keysym.sym == SDLK_RETURN) ||
-                (event->key.keysym.sym == SDLK_KP_ENTER) ) &&
-              (event->key.state == SDL_PRESSED) &&
-              (event->key.keysym.mod & KMOD_ALT) )
+    else if ( ( (event->sym == SDLK_RETURN) ||
+                (event->sym == SDLK_KP_ENTER) ) &&
+              (event->state == keydown) && 1
+              /* FIXME :(event->key.keysym.mod & KMOD_ALT) */)
     {	fullscreen_toggle_and_change_driver();
 
 		// hack to discard the ALT key...
@@ -491,13 +509,14 @@ static int sdl_key_filter(const SDL_Event *event)
 		keyhandler();
 		lastkey=(scancodes[SDLK_LALT]&0xff)+0x80; // Simulating Key up (not extended)
 		keyhandler();
+#ifdef ORIGCODE
 		SDL_SetModState(KMOD_NONE); // SDL doesnt see we are releasing the ALT-ENTER keys
-        
+#endif
 		return(0);					
     }								
 
     if (!handle_keypad_enter_hack(event))
-        lastkey = scancodes[event->key.keysym.sym];
+        lastkey = scancodes[event->sym];
 
 //	printf("key.keysym.sym=%d\n", event->key.keysym.sym);
 
@@ -509,10 +528,10 @@ static int sdl_key_filter(const SDL_Event *event)
     {
         lastkey = extended;
         keyhandler();
-        lastkey = (scancodes[event->key.keysym.sym] & 0xFF);
+        lastkey = (scancodes[event->sym] & 0xFF);
     } /* if */
 
-    if (event->key.state == SDL_RELEASED)
+    if (event->state == keyup)
         lastkey += 128;  /* +128 signifies that the key is released in DOS. */
 
     keyhandler();
@@ -520,8 +539,9 @@ static int sdl_key_filter(const SDL_Event *event)
 } /* sdl_key_filter */
 
 
-static int root_sdl_event_filter(const SDL_Event *event)
+static int root_sdl_event_filter(const i_event_t *event)
 {
+#ifdef ORIGCODE
     switch (event->type)
     {
         case SDL_KEYUP:
@@ -547,22 +567,24 @@ static int root_sdl_event_filter(const SDL_Event *event)
 			return(sdl_mouse_button_filter((const SDL_MouseButtonEvent*)event));
         case SDL_QUIT:
             /* !!! rcg TEMP */
-            Error(EXIT_SUCCESS, "Exit through SDL\n"); 
+            Error(0, "Exit through SDL\n"); 
 		default:
 			//printf("This event is not handled: %d\n",event->type);
 			break;
     } /* switch */
-
+#endif
     return(1);
 } /* root_sdl_event_filter */
 
 
 static void handle_events(void)
 {
-    SDL_Event event;
-
+    i_event_t event;
+#ifdef ORIGCODE
 	while(SDL_PollEvent(&event))
         root_sdl_event_filter(&event);
+#endif
+    /*TODO : */
 } /* handle_events */
 
 
@@ -573,9 +595,10 @@ void _handle_events(void)
 } /* _handle_events */
 
 
-static SDL_Joystick *joystick = NULL;
+static void *joystick = NULL;
 void _joystick_init(void)
 {
+#ifdef ORIGCODE
     const char  *envr = getenv(BUILD_SDLJOYSTICK);
     int favored = 0;
     int numsticks;
@@ -627,17 +650,17 @@ void _joystick_init(void)
         printf("Joystick #%d failed to init: %s\n", favored, SDL_GetError());
         return;
     } /* if */
-
     printf("Joystick initialized. %d axes, %d buttons, %d hats, %d balls.\n",
               SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick),
               SDL_JoystickNumHats(joystick), SDL_JoystickNumBalls(joystick));
-
     SDL_JoystickEventState(SDL_QUERY);
+#endif
 } /* _joystick_init */
 
 
 void _joystick_deinit(void)
 {
+#ifdef ORIGCODE
     if (joystick != NULL)
     {
         printf("Closing joystick device...\n");
@@ -647,45 +670,54 @@ void _joystick_deinit(void)
         printf("SDL joystick subsystem deinitialized.\n");
         joystick = NULL;
     } /* if */
+#endif
 } /* _joystick_deinit */
 
 
 int _joystick_update(void)
 {
+#ifdef ORIGCODE
     if (joystick == NULL)
         return(0);
 
     SDL_JoystickUpdate();
     return(1);
+#endif
 } /* _joystick_update */
 
 
 int _joystick_axis(int axis)
 {
+#ifdef ORIGCODE
     if (joystick == NULL)
     {   
         return(0);
     }
 
     return(SDL_JoystickGetAxis(joystick, axis));
+#endif
 } /* _joystick_axis */
 
 int _joystick_hat(int hat)
 {
+#ifdef ORIGCODE
     if (joystick == NULL)
     {   
         return(-1);
     }
 
     return(SDL_JoystickGetHat(joystick, hat));
+#endif
 } /* _joystick_axis */
 
 int _joystick_button(int button)
 {
+#ifdef ORIGCODE
     if (joystick == NULL)
         return(0);
 
     return(SDL_JoystickGetButton(joystick, button) != 0);
+#endif
 } /* _joystick_button */
 
 
@@ -702,6 +734,7 @@ uint8_t  _readlastkeyhit(void)
 
 static void output_sdl_versions(void)
 {
+#ifdef ORIGCODE
     const SDL_version *linked_ver = SDL_Linked_Version();
     SDL_version compiled_ver;
 
@@ -713,13 +746,14 @@ static void output_sdl_versions(void)
                 compiled_ver.major, compiled_ver.minor, compiled_ver.patch);
     printf("Linked SDL version is %d.%d.%d ...\n",
                 linked_ver->major, linked_ver->minor, linked_ver->patch);
+#endif
 } /* output_sdl_versions */
 
 
 /* lousy -ansi flag.  :) */
 static char  *string_dupe(const char  *str)
 {
-    char  *retval = malloc(strlen(str) + 1);
+    char  *retval = (char *)Sys_Malloc(strlen(str) + 1);
     if (retval != NULL)
         strcpy(retval, str);
     return(retval);
@@ -765,11 +799,11 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     SDL_putenv("SDL_VIDEODRIVER=Quartz");
 #endif
   	
-
+#ifdef ORIGCODE
     if (SDL_Init(SDL_INIT_VIDEO) == -1){
         Error(EXIT_FAILURE, "BUILDSDL: SDL_Init() failed!\nBUILDSDL: SDL_GetError() says \"%s\".\n", SDL_GetError());
     } 
-    
+#endif
 
 	// Set up the correct renderer
 	// Becarfull setenv can't reach dll in VC++
@@ -781,9 +815,9 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
 
     // This requires to recompile the whole sdl and sdl mixer with the lib
     // switch instead of the default dll switch.
-	
+#ifdef ORIGCODE
 	putenv("SDL_VIDEO_CENTERED=1");
-
+#endif
     if (title == NULL)
         title = "BUILD";
 
@@ -909,7 +943,7 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     output_driver_info();
     
 
-	printf("Video Driver: '%s'.\n", SDL_VideoDriverName(dummyString, 20));
+	//dprintf("Video Driver: '%s'.\n", SDL_VideoDriverName(dummyString, 20));
 
 }
 
@@ -920,21 +954,21 @@ int screencapture(char  *filename, uint8_t  inverseit)
 //  Use ./screenshots folder. Screenshot code rerwritten. Faster and
 //  makes smaller files. Doesn't freeze or lag the game anymore.
   
-	SDL_SaveBMP(surface, filename);  
+	//SDL_SaveBMP(surface, filename);  
 	return 0;
 } /* screencapture */
 
 
 void setvmode(int mode)
 {
-
+#ifdef ORIGCODE
     if (mode == 0x3)  /* text mode. */
     {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
         return;
     } else
         printf("setvmode(0x%x) is unsupported in SDL driver.\n", mode);
-
+#endif
 } 
 
 int _setgamemode(uint8_t  davidoption, int32_t daxdim, int32_t daydim)
@@ -946,15 +980,15 @@ int _setgamemode(uint8_t  davidoption, int32_t daxdim, int32_t daydim)
     // don't override higher-res app icon on OS X
 #ifndef PLATFORM_MACOSX
 	// Install icon
-	image = SDL_LoadBMP_RW(SDL_RWFromMem(iconBMP, sizeof(iconBMP)), 1);
-	colorkey = 0; // index in this image to be transparent
-    SDL_SetColorKey(image, SDL_SRCCOLORKEY, colorkey);
-	SDL_WM_SetIcon(image,NULL);
+	//image = SDL_LoadBMP_RW(SDL_RWFromMem(iconBMP, sizeof(iconBMP)), 1);
+	//colorkey = 0; // index in this image to be transparent
+    //SDL_SetColorKey(image, SDL_SRCCOLORKEY, colorkey);
+	//SDL_WM_SetIcon(image,NULL);
 #endif
     
     if (daxdim > MAXXDIM || daydim > MAXYDIM)
     {
-		printf("Resolution %dx%d is too high. Changed to %dx%d\n", daxdim, daydim, MAXXDIM,MAXYDIM);
+		dprintf("Resolution %dx%d is too high. Changed to %dx%d\n", daxdim, daydim, MAXXDIM,MAXYDIM);
 	    daxdim = MAXXDIM;
 	    daydim = MAXYDIM;
     } 
@@ -968,7 +1002,7 @@ int _setgamemode(uint8_t  davidoption, int32_t daxdim, int32_t daydim)
 	}
 
 	if(!validated){
-		printf("Resolution %dx%d unsupported. Changed to 640x480\n", daxdim, daydim);
+		dprintf("Resolution %dx%d unsupported. Changed to 640x480\n", daxdim, daydim);
 	    daxdim = 640;
 	    daydim = 480;
     }
@@ -1028,7 +1062,7 @@ static __inline void get_max_screen_res(int32_t *max_w, int32_t *max_h)
     {
         if (!get_dimensions_from_str(envr, &w, &h))
         {
-            printf("User's resolution ceiling [%s] is bogus!\n", envr);
+            dprintf("User's resolution ceiling [%s] is bogus!\n", envr);
             w = DEFAULT_MAXRESWIDTH;
             h = DEFAULT_MAXRESHEIGHT;
         } /* if */
@@ -1065,12 +1099,13 @@ static __inline void add_user_defined_resolution(void)
     if (get_dimensions_from_str(envr, &w, &h))
         add_vesa_mode("user defined", w, h);
     else
-        printf("User defined resolution [%s] is bogus!\n", envr);
+        dprintf("User defined resolution [%s] is bogus!\n", envr);
 } /* add_user_defined_resolution */
 
 
 static __inline SDL_Rect **get_physical_resolutions(void)
 {
+#if 0
     const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
     SDL_Rect **modes = SDL_ListModes(vidInfo->vfmt, sdl_flags | SDL_FULLSCREEN);
     if (modes == NULL)
@@ -1082,14 +1117,15 @@ static __inline SDL_Rect **get_physical_resolutions(void)
     } /* if */
 
     if (modes == (SDL_Rect **) -1)
-        printf("Couldn't get any physical resolutions.\n");
+        dprintf("Couldn't get any physical resolutions.\n");
     else
     {
-        printf("Highest physical resolution is (%dx%d).\n",
+        dprintf("Highest physical resolution is (%dx%d).\n",
                   modes[0]->w, modes[0]->h);
     } /* else */
 
     return(modes);
+#endif
 } /* get_physical_resolutions */
 
 
@@ -1118,7 +1154,7 @@ static __inline void cull_large_vesa_modes(void)
     int i;
  
     get_max_screen_res(&max_w, &max_h);
-    printf("Setting resolution ceiling to (%dx%d).\n", max_w, max_h);
+    dprintf("Setting resolution ceiling to (%dx%d).\n", max_w, max_h);
 
     for (i = 0; i < validmodecnt; i++)
     {
@@ -1327,6 +1363,10 @@ void WriteLastPaletteToFile(){
     WritePaletteToFile(lastPalette,"lastPalette.tga",16,16);
 }
 
+typedef V_PREPACK struct {
+    uint8_t r, g, b;
+} V_POSTPACK palrgb_t;
+
 int VBE_setPalette(uint8_t  *palettebuffer)
 /*
  * (From Ken's docs:)
@@ -1342,8 +1382,8 @@ int VBE_setPalette(uint8_t  *palettebuffer)
  *  so we do a conversion.
  */
 {
-    SDL_Color fmt_swap[256];
-    SDL_Color *sdlp = fmt_swap;
+    palrgb_t fmt_swap[256];
+    palrgb_t *sdlp = fmt_swap;
     uint8_t  *p = palettebuffer;
     int i;
     //static updated=0;
@@ -1363,11 +1403,10 @@ int VBE_setPalette(uint8_t  *palettebuffer)
         sdlp->b = (Uint8) ((((float) *p++) / 63.0) * 255.0);
         sdlp->g = (Uint8) ((((float) *p++) / 63.0) * 255.0);
         sdlp->r = (Uint8) ((((float) *p++) / 63.0) * 255.0);
-        sdlp->unused = *p++;   /* This byte is unused in BUILD, too. */
         sdlp++;
     }
 
-    return(SDL_SetColors(surface, fmt_swap, 0, 256));
+    return(screen_set_clut(fmt_swap, fmt_swap, 0, 256));
 }
 
 
@@ -1392,7 +1431,9 @@ int VBE_getPalette(int32_t start, int32_t num, uint8_t  *palettebuffer)
 
 void _uninitengine(void)
 {
+#ifdef ORIGCODE
    SDL_QuitSubSystem(SDL_INIT_VIDEO);
+#endif
 } /* _uninitengine */
 
 
@@ -1400,7 +1441,7 @@ void _uninitengine(void)
 
 int setupmouse(void)
 {
-
+#ifdef ORIGCODE
 	SDL_Event event;
 
     if (surface == NULL)
@@ -1421,7 +1462,7 @@ int setupmouse(void)
 	while(SDL_PollEvent(&event)); // Empying the various pending events (especially the mouse one)
 
 	//SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
-
+#endif
     return(1);
 } /* setupmouse */
 
@@ -1514,8 +1555,8 @@ void fillscreen16(int32_t offset, int32_t color, int32_t blocksize)
     Uint8 *wanted_end;
     Uint8 *pixels;
 
-	if (SDL_MUSTLOCK(surface))
-        SDL_LockSurface(surface);
+	//if (SDL_MUSTLOCK(surface))
+        //SDL_LockSurface(surface);
 
     pixels = get_framebuffer();
 
@@ -1536,8 +1577,8 @@ void fillscreen16(int32_t offset, int32_t color, int32_t blocksize)
 
     memset(pixels + offset, (int) color, blocksize);
 
-    if (SDL_MUSTLOCK(surface))
-        SDL_UnlockSurface(surface);
+    //if (SDL_MUSTLOCK(surface))
+        //SDL_UnlockSurface(surface);
 
     _nextpage();
 } /* fillscreen16 */
@@ -1580,8 +1621,8 @@ void drawline16(int32_t XStart, int32_t YStart, int32_t XEnd, int32_t YEnd, uint
     uint8_t  *ScreenPtr;
     int32_t dx, dy;
 
-    if (SDL_MUSTLOCK(surface))
-        SDL_LockSurface(surface);
+    //if (SDL_MUSTLOCK(surface))
+        //SDL_LockSurface(surface);
 
 	dx = XEnd-XStart;
     dy = YEnd-YStart;
@@ -1749,7 +1790,7 @@ void clear2dscreen(void)
             rect.h = 480;
 	} /* else if */
 
-    SDL_FillRect(surface, &rect, 0);
+    //SDL_FillRect(surface, &rect, 0);
 } /* clear2dscreen */
 
 
@@ -1757,7 +1798,7 @@ void _idle(void)
 {
     if (surface != NULL)
         _handle_events();
-    SDL_Delay(1);
+    HAL_Delay(1);
 } /* _idle */
 
 void *_getVideoBase(void)
@@ -1823,7 +1864,7 @@ int inittimer(int tickspersecond)
 	// instead of the global 'timerfreq' or else it gets pissed with an
 	// access violation
 	if (!TIMER_GetPlatformTicksInOneSecond(&t)) {
-		printf("Failed fetching timer frequency\n");
+		dprintf("Failed fetching timer frequency\n");
 		return -1;
 	}
 	timerfreq = t;
@@ -1934,7 +1975,7 @@ int TIMER_GetPlatformTicksInOneSecond(int64_t* t)
     
 void TIMER_GetPlatformTicks(int64_t* t)
 {
-    *t = SDL_GetTicks();
+    *t = HAL_GetTick();
 }
 #endif
 /* end of sdl_driver.c ... */

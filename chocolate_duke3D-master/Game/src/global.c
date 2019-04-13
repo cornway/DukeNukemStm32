@@ -31,6 +31,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <errno.h>
 #include "global.h"
 #include "duke3d.h"
+#include "unix_compat.h"
+#include <dev_io.h>
+#include <dukeunix.h>
 
 char  *mymembuf;
 uint8_t  MusicPtr[72000];
@@ -83,7 +86,7 @@ short moustat = 0;
 
 struct animwalltype animwall[MAXANIMWALLS];
 short numanimwalls;
-int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES], animatevel[MAXANIMATES], animatecnt;
+PACKED int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES], animatevel[MAXANIMATES], animatecnt;
 // int32_t oanimateval[MAXANIMATES];
 short animatesect[MAXANIMATES];
 int32_t msx[2048],msy[2048];
@@ -218,9 +221,9 @@ int32_t myminlag[MAXPLAYERS], mymaxlag, otherminlag, bufferjitter = 1;
 short numclouds,clouds[128],cloudx[128],cloudy[128];
 int32_t cloudtotalclock = 0,totalmemory = 0;
 int32_t numinterpolations = 0, startofdynamicinterpolations = 0;
-int32_t oldipos[MAXINTERPOLATIONS];
-int32_t bakipos[MAXINTERPOLATIONS];
-int32_t *curipos[MAXINTERPOLATIONS];
+PACKED int32_t oldipos[MAXINTERPOLATIONS];
+PACKED int32_t bakipos[MAXINTERPOLATIONS];
+PACKED int32_t *curipos[MAXINTERPOLATIONS];
 
 
 // portability stuff.  --ryan.
@@ -231,13 +234,17 @@ void FixFilePath(char  *filename)
 #if PLATFORM_UNIX
     uint8_t  *ptr;
     uint8_t  *lastsep = filename;
+    int f;
 
     if ((!filename) || (*filename == '\0'))
         return;
 
-    if (access(filename, F_OK) == 0)  /* File exists; we're good to go. */
+    d_open(filename, &f, "r");
+    if (f >= 0)  /* File exists; we're good to go. */ {
+        d_close(f);
         return;
-
+    }
+#ifdef ORIGCODE
     for (ptr = filename; 1; ptr++)
     {
         if (*ptr == '\\')
@@ -246,7 +253,7 @@ void FixFilePath(char  *filename)
         if ((*ptr == PATH_SEP_CHAR) || (*ptr == '\0'))
         {
             uint8_t  pch = *ptr;
-            struct dirent *dent = NULL;
+            struct fobj_t *dent = NULL;
             DIR *dir;
 
             if ((pch == PATH_SEP_CHAR) && (*(ptr + 1) == '\0'))
@@ -299,6 +306,7 @@ void FixFilePath(char  *filename)
         }
     }
 #endif
+#endif
 }
 
 
@@ -308,6 +316,7 @@ void FixFilePath(char  *filename)
 #elif PLATFORM_WIN32
 int _dos_findfirst(uint8_t  *filename, int x, struct find_t *f)
 {
+#ifdef ORIGCODE
     int32_t rc = _findfirst(filename, &f->data);
     f->handle = rc;
     if (rc != -1)
@@ -316,11 +325,13 @@ int _dos_findfirst(uint8_t  *filename, int x, struct find_t *f)
         f->name[sizeof (f->name) - 1] = '\0';
         return(0);
     }
+#endif
     return(1);
 }
 
 int _dos_findnext(struct find_t *f)
 {
+#ifdef ORIGCODE
     int rc = 0;
     if (f->handle == -1)
         return(1);   /* invalid handle. */
@@ -336,11 +347,13 @@ int _dos_findnext(struct find_t *f)
     strncpy(f->name, f->data.name, sizeof (f->name) - 1);
     f->name[sizeof (f->name) - 1] = '\0';
     return(0);
+#endif
 }
 
 #elif defined(PLATFORM_UNIX) || defined(PLATFORM_MACOSX)
 int _dos_findfirst(char  *filename, int x, struct find_t *f)
 {
+#ifdef ORIGCODE
     char  *ptr;
 
     if (strlen(filename) >= sizeof (f->pattern))
@@ -363,6 +376,8 @@ int _dos_findfirst(char  *filename, int x, struct find_t *f)
     }
 
     return(_dos_findnext(f));
+#endif
+    return 1;
 }
 
 
@@ -405,6 +420,7 @@ static int check_pattern_nocase(const char  *x, const char  *y)
 
 int _dos_findnext(struct find_t *f)
 {
+#ifdef ORIGCODE
     struct dirent *dent;
 
     if (f->dir == NULL)
@@ -424,6 +440,7 @@ int _dos_findnext(struct find_t *f)
 
     closedir(f->dir);
     f->dir = NULL;
+#endif
     return(1);  /* no match in whole directory. */
 }
 #else
@@ -434,6 +451,7 @@ int _dos_findnext(struct find_t *f)
 #if !PLATFORM_DOS
 void _dos_getdate(struct dosdate_t *date)
 {
+#ifdef ORIGCODE
 	time_t curtime = time(NULL);
 	struct tm *tm;
 	
@@ -449,6 +467,7 @@ void _dos_getdate(struct dosdate_t *date)
 		date->year = tm->tm_year + 1900;
 		date->dayofweek = tm->tm_wday + 1;
 	}
+#endif
 }
 #endif
 
@@ -498,7 +517,6 @@ int FindDistance3D(int ix, int iy, int iz)
 
    return (ix - (ix>>4) + (t>>2) + (t>>3));
 }
-#include "SDL.h"
 void Error (int errorType, char  *error, ...)
 {
    va_list argptr;
@@ -560,7 +578,7 @@ int32 SafeOpenAppend (const char  *_filename, int32 filetype)
 #if (defined PLATFORM_WIN32)
     handle = open(filename,O_RDWR | O_BINARY | O_CREAT | O_APPEND );
 #else
-	handle = open(filename,O_RDWR | O_BINARY | O_CREAT | O_APPEND , S_IREAD | S_IWRITE);
+    d_open(filename, &handle, "r");
 #endif
 
 	if (handle == -1)
@@ -579,7 +597,13 @@ boolean SafeFileExists ( const char  * _filename )
 #if( defined PLATFORM_WIN32)
         return(access(filename, 6) == 0);
 #else
-    return(access(filename, F_OK) == 0);
+    int h;
+    d_open(filename, &h, "r");
+    if (h >= 0) {
+        d_close(h);
+        return 1;
+    }
+    return 0;
 #endif
 }
 
@@ -595,8 +619,7 @@ int32 SafeOpenWrite (const char  *_filename, int32 filetype)
 #if (defined PLATFORM_WIN32)
     handle = open(filename,O_RDWR | O_BINARY | O_CREAT | O_TRUNC );
 #else
-	handle = open(filename,O_RDWR | O_BINARY | O_CREAT | O_TRUNC
-	, S_IREAD | S_IWRITE);
+    d_open(filename, &handle, "+w");
 #endif
 
 	if (handle == -1)
@@ -616,7 +639,7 @@ int32 SafeOpenRead (const char  *_filename, int32 filetype)
     filename[sizeof (filename) - 1] = '\0';
     FixFilePath(filename);
 
-	handle = open(filename,O_RDONLY | O_BINARY);
+    d_open(filename, &handle, "r");
 
 	if (handle == -1)
 		Error (EXIT_FAILURE, "Error opening %s: %s",filename,strerror(errno));
@@ -632,7 +655,7 @@ void SafeRead (int32 handle, void *buffer, int32 count)
 	while (count)
 	{
 		iocount = count > 0x8000 ? 0x8000 : count;
-		if (read (handle,buffer,iocount) != (int)iocount)
+		if (d_read (handle,buffer,iocount) != (int)iocount)
 			Error (EXIT_FAILURE, "File read failure reading %ld bytes",count);
 		buffer = (void *)( (byte *)buffer + iocount );
 		count -= iocount;
@@ -647,7 +670,7 @@ void SafeWrite (int32 handle, void *buffer, int32 count)
 	while (count)
 	{
 		iocount = count > 0x8000 ? 0x8000 : count;
-		if (write (handle,buffer,iocount) != (int)iocount)
+		if (d_write (handle,buffer,iocount) != (int)iocount)
 			Error (EXIT_FAILURE, "File write failure writing %ld bytes",count);
 		buffer = (void *)( (byte *)buffer + iocount );
 		count -= iocount;
@@ -659,7 +682,7 @@ void SafeWriteString (int handle, char  * buffer)
 	unsigned	iocount;
 
    iocount=strlen(buffer);
-	if (write (handle,buffer,iocount) != (int)iocount)
+	if (d_write (handle,buffer,iocount) != (int)iocount)
 			Error (EXIT_FAILURE, "File write string failure writing %s\n",buffer);
 }
 
@@ -867,8 +890,8 @@ int setup_homedir (void)
 	snprintf (ApogeePath, sizeof (ApogeePath), "%s/.duke3d/", getenv ("HOME"));
 
 	//err = mkdir (ApogeePath, S_IRWXU);
-	err = mkdir (ApogeePath);
-	if (err == -1 && errno != EEXIST)
+	err = d_mkdir (ApogeePath);
+	if (err == -1)
 	{
 		fprintf (stderr, "Couldn't create preferences directory: %s\n", 
 				strerror (errno));

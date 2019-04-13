@@ -37,7 +37,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "scriplib.h"
 #include "build.h"
-
+#include "unix_compat.h"
 
 // we load this in to get default button and key assignments
 // as well as setting up function mappings
@@ -102,18 +102,18 @@ void CONFIG_GetSetupFilename( void )
 
    // Are we trying to load a mod?
    if(getGameDir()[0] != '\0'){
-		FILE *fp = NULL;
+		int fp = -1;
 
 	   //Yes
 		sprintf(setupfilename, "%s\\%s", getGameDir(), SETUPFILENAME);
 		
 		// let's make sure it's actually there
-		fp = fopen(setupfilename, "r");
-		if(fp)
-			fclose(fp);
+		d_open(setupfilename, &fp, "r");
+		if(fp >= 0)
+			d_close(fp);
         else{
 			// It doesn't exist, so revert to the main one.
-			printf("Config file: %s does not exist, using main config.\n", setupfilename);
+			dprintf("Config file: %s does not exist, using main config.\n", setupfilename);
 			sprintf(setupfilename, "%s", SETUPFILENAME);
 		}
 
@@ -122,11 +122,8 @@ void CONFIG_GetSetupFilename( void )
 		strcpy (setupfilename, SETUPFILENAME);
    }
 
-   printf("Using Setup file: '%s'\n",setupfilename);
-   i=clock()+(3*CLOCKS_PER_SEC/4);
-   while (clock()<i){
-      ;
-   }
+   dprintf("Using Setup file: '%s'\n",setupfilename);
+   i=0;
 }
 
 /*
@@ -543,7 +540,7 @@ void readsavenames(void)
     int32_t dummy;
     short i;
     uint8_t  fn[] = "game_.sav";
-    FILE *fil;
+    int fil;
 	char  fullpathsavefilename[16];
 
 
@@ -564,8 +561,9 @@ void readsavenames(void)
 			sprintf(fullpathsavefilename, "%s", fn);
 		}
 
-        if ((fil = fopen(fullpathsavefilename,"rb")) == NULL ) continue;
-        dfread(&dummy,4,1,fil);
+        d_open(fullpathsavefilename, &fil, "r");
+        if (fil <= 0) continue;
+        d_read(fil, &dummy,4);
 
 		//	FIX_00015: Backward compliance with older demos (down to demos v27, 28, 116 and 117 only)
         if(	dummy != BYTEVERSION	 && 
@@ -574,9 +572,9 @@ void readsavenames(void)
 			dummy != BYTEVERSION_116 &&
 			dummy != BYTEVERSION_117) continue;
         // FIX_00092: corrupted saved files making the following saved files invisible (Bryzian)
-		dfread(&dummy,4,1,fil);
-        dfread(&ud.savegame[i][0],19,1,fil);
-        fclose(fil);
+		d_read(fil, &dummy,4);
+        d_read(fil, &ud.savegame[i][0],19);
+        d_close(fil);
     }
 }
 
