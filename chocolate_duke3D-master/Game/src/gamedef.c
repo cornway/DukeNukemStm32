@@ -2819,6 +2819,7 @@ uint8_t  parse(void)
             break;
         case 51:
             {
+                uint32_t bits = READ_LE_I32(sync[g_p].bits);
                 insptr++;
 
                 l = *insptr;
@@ -2826,7 +2827,7 @@ uint8_t  parse(void)
 
                 s = g_sp->xvel;
 
-                if( (l&8) && ps[g_p].on_ground && (sync[g_p].bits&2) )
+                if( (l&8) && ps[g_p].on_ground && (bits&2) )
                        j = 1;
                 else if( (l&16) && ps[g_p].jumping_counter == 0 && !ps[g_p].on_ground &&
                     ps[g_p].poszv > 2048 )
@@ -2835,15 +2836,15 @@ uint8_t  parse(void)
                        j = 1;
                 else if( (l&1) && s >= 0 && s < 8)
                        j = 1;
-                else if( (l&2) && s >= 8 && !(sync[g_p].bits&(1<<5)) )
+                else if( (l&2) && s >= 8 && !(bits&(1<<5)) )
                        j = 1;
-                else if( (l&4) && s >= 8 && sync[g_p].bits&(1<<5) )
+                else if( (l&4) && s >= 8 && bits&(1<<5) )
                        j = 1;
                 else if( (l&64) && ps[g_p].posz < (g_sp->z-(48<<8)) )
                        j = 1;
-                else if( (l&128) && s <= -8 && !(sync[g_p].bits&(1<<5)) )
+                else if( (l&128) && s <= -8 && !(bits&(1<<5)) )
                        j = 1;
-                else if( (l&256) && s <= -8 && (sync[g_p].bits&(1<<5)) )
+                else if( (l&256) && s <= -8 && (bits&(1<<5)) )
                        j = 1;
                 else if( (l&512) && ( ps[g_p].quick_kick > 0 || ( ps[g_p].curr_weapon == KNEE_WEAPON && ps[g_p].kickback_pic > 0 ) ) )
                        j = 1;
@@ -2901,7 +2902,7 @@ uint8_t  parse(void)
             parseifelse( (( hittype[g_i].floorz - hittype[g_i].ceilingz ) >> 8 ) < *insptr);
             break;
         case 63:
-            parseifelse( sync[g_p].bits&(1<<29));
+            parseifelse( READ_LE_I32(sync[g_p].bits)&(1<<29));
             break;
         case 64:
             parseifelse(sector[g_sp->sectnum].ceilingstat&1);

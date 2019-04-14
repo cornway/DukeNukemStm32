@@ -56,6 +56,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <dev_io.h>
 #include <misc_utils.h>
 #include <debug.h>
+#include <arch.h>
 
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2
@@ -483,7 +484,7 @@ void getpackets(void)
 #ifdef _DEBUG_NETWORKING_
 		dprintf("RECEIVED PACKET: type: %d : len %d\n", packbuf[0], packbufleng);
 #endif
-
+        input _loc;
         switch(packbuf[0])
         {
 			case 253:
@@ -529,18 +530,22 @@ void getpackets(void)
                     if (i == myconnectindex)
                         { j += ((l&1)<<1)+(l&2)+((l&4)>>2)+((l&8)>>3)+((l&16)>>4)+((l&32)>>5)+((l&64)>>6)+((l&128)>>7); continue; }
 
+                    d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
+
                     copybufbyte(&osyn[i],&nsyn[i],sizeof(input));
                     if (l&1)   nsyn[i].fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
                     if (l&2)   nsyn[i].svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
                     if (l&4)   nsyn[i].avel = (int8_t  )packbuf[j++];
-                    if (l&8)   nsyn[i].bits = ((nsyn[i].bits&0xffffff00)|((int32_t)packbuf[j++]));
-                    if (l&16)  nsyn[i].bits = ((nsyn[i].bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                    if (l&32)  nsyn[i].bits = ((nsyn[i].bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                    if (l&64)  nsyn[i].bits = ((nsyn[i].bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                    if (l&128) nsyn[i].horz = (int8_t  )packbuf[j++];
+                    if (l&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
+                    if (l&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                    if (l&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                    if (l&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                    if (l&128) _loc.horz = (int8_t  )packbuf[j++];
 
-                    if (nsyn[i].bits&(1<<26)) playerquitflag[i] = 0;
+                    if (_loc.bits&(1<<26)) playerquitflag[i] = 0;
                     movefifoend[i]++;
+
+                    d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
                 }
 
                 while (j != packbufleng)
@@ -571,16 +576,20 @@ void getpackets(void)
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
 
+                d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
+
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
                 if (k&1)   nsyn[other].fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
                 if (k&2)   nsyn[other].svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
                 if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
-                if (k&8)   nsyn[other].bits = ((nsyn[other].bits&0xffffff00)|((int32_t)packbuf[j++]));
-                if (k&16)  nsyn[other].bits = ((nsyn[other].bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                if (k&32)  nsyn[other].bits = ((nsyn[other].bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                if (k&64)  nsyn[other].bits = ((nsyn[other].bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                if (k&128) nsyn[other].horz = (int8_t  )packbuf[j++];
+                if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
+                if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                if (k&128) _loc.horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
+
+                d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
 
                 while (j != packbufleng)
                 {
@@ -711,19 +720,19 @@ void getpackets(void)
 
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
-
+                d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
                 k = packbuf[j++];
                 if (k&1)   nsyn[other].fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
                 if (k&2)   nsyn[other].svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
                 if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
-                if (k&8)   nsyn[other].bits = ((nsyn[other].bits&0xffffff00)|((int32_t)packbuf[j++]));
-                if (k&16)  nsyn[other].bits = ((nsyn[other].bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                if (k&32)  nsyn[other].bits = ((nsyn[other].bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                if (k&64)  nsyn[other].bits = ((nsyn[other].bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                if (k&128) nsyn[other].horz = (int8_t  )packbuf[j++];
+                if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
+                if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                if (k&128) _loc.horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
-
+                d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
                 for(i=1;i<movesperpacket;i++)
                 {
                     copybufbyte(&nsyn[other],&inputfifo[movefifoend[other]&(MOVEFIFOSIZ-1)][other],sizeof(input));
@@ -824,7 +833,7 @@ void faketimerhandler()
      avgsvel += loc.svel; // y
      avgavel += loc.avel;
      avghorz += loc.horz;
-     avgbits |= loc.bits;
+     avgbits |= READ_LE_I32(loc.bits);
      if (movefifoend[myconnectindex]&(movesperpacket-1))
      {
           copybufbyte(&inputfifo[(movefifoend[myconnectindex]-1)&(MOVEFIFOSIZ-1)][myconnectindex],
@@ -9521,60 +9530,62 @@ uint8_t  domovethings(void)
     uint8_t  ch;
 
 
-    for(i=connecthead;i>=0;i=connectpoint2[i])
-        if( sync[i].bits&(1<<17) )
-    {
-        multiflag = 2;
-        multiwhat = (sync[i].bits>>18)&1;
-        multipos = (uint32_t) (sync[i].bits>>19)&15;
-        multiwho = i;
-
-        if( multiwhat )
+    for(i=connecthead;i>=0;i=connectpoint2[i]) {
+        uint32_t bits = READ_LE_I32(sync[i].bits);
+        if( bits&(1<<17) )
         {
-			// FIX_00058: Save/load game crash in both single and multiplayer
-            screencapt = 1;
-            displayrooms(myconnectindex,65536);
-            savetemp("duke3d.tmp",tiles[MAXTILES-1].data,160*100);
-            screencapt = 0;
+            multiflag = 2;
+            multiwhat = (bits>>18)&1;
+            multipos = (uint32_t) (bits>>19)&15;
+            multiwho = i;
 
-            saveplayer( multipos );
-            multiflag = 0;
-
-            if(multiwho != myconnectindex)
+            if( multiwhat )
             {
-                strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
-                strcat(fta_quotes[122]," SAVED A MULTIPLAYER GAME");
-                FTA(122,&ps[myconnectindex],1);
-            }
-            else
-            {
-                strcpy(fta_quotes[122],"MULTIPLAYER GAME SAVED");
-                FTA(122,&ps[myconnectindex],1);
-            }
-            break;
-        }
-        else
-        {
-//            waitforeverybody();
+    			// FIX_00058: Save/load game crash in both single and multiplayer
+                screencapt = 1;
+                displayrooms(myconnectindex,65536);
+                savetemp("duke3d.tmp",tiles[MAXTILES-1].data,160*100);
+                screencapt = 0;
 
-            j = loadplayer( multipos );
+                saveplayer( multipos );
+                multiflag = 0;
 
-            multiflag = 0;
-
-            if(j == 0)
-            {
                 if(multiwho != myconnectindex)
                 {
                     strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
-                    strcat(fta_quotes[122]," LOADED A MULTIPLAYER GAME");
+                    strcat(fta_quotes[122]," SAVED A MULTIPLAYER GAME");
                     FTA(122,&ps[myconnectindex],1);
                 }
                 else
                 {
-                    strcpy(fta_quotes[122],"MULTIPLAYER GAME LOADED");
+                    strcpy(fta_quotes[122],"MULTIPLAYER GAME SAVED");
                     FTA(122,&ps[myconnectindex],1);
                 }
-                return 1;
+                break;
+            }
+            else
+            {
+    //            waitforeverybody();
+
+                j = loadplayer( multipos );
+
+                multiflag = 0;
+
+                if(j == 0)
+                {
+                    if(multiwho != myconnectindex)
+                    {
+                        strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
+                        strcat(fta_quotes[122]," LOADED A MULTIPLAYER GAME");
+                        FTA(122,&ps[myconnectindex],1);
+                    }
+                    else
+                    {
+                        strcpy(fta_quotes[122],"MULTIPLAYER GAME LOADED");
+                        FTA(122,&ps[myconnectindex],1);
+                    }
+                    return 1;
+                }
             }
         }
     }
@@ -9617,7 +9628,8 @@ uint8_t  domovethings(void)
     j = -1;
     for(i=connecthead;i>=0;i=connectpoint2[i])
      {
-          if ((sync[i].bits&(1<<26)) == 0) { j = i; continue; }
+          uint32_t bits = READ_LE_I32(sync[i].bits);
+          if ((bits&(1<<26)) == 0) { j = i; continue; }
 
           closedemowrite();
 

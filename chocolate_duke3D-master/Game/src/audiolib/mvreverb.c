@@ -72,7 +72,7 @@ static void check_buffer()
 		IN_COEF_L = -2.;
 		IN_COEF_R = -2.;
 		if (reverbBuffer) reverbBuffer = (double*) realloc(reverbBuffer, new_delay * sizeof(double));
-		else reverbBuffer = (double*) malloc(new_delay * sizeof(double));
+		else reverbBuffer = (double*) Sys_Malloc(new_delay * sizeof(double));
 		memset(reverbBuffer, 0, new_delay * sizeof(double));
 		delay = new_delay;
 		CurrAddr = 0;

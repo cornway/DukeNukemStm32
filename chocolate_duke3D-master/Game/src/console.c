@@ -529,7 +529,7 @@ void CONSOLE_ClearUsedCommandList()
         pDelElement = pElement;
         pElement = (CONSOLEELEMENT*)pElement->next;
 
-        free(pDelElement);
+        Sys_Free(pDelElement);
     }
 
     console_used_command_list = NULL;

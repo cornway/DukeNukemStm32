@@ -7465,7 +7465,7 @@ void draw2dgrid(int32_t posxe, int32_t posye, short ange, int32_t zoome, short g
             if ((mask != 0) && ((xp2>>3) >= 0) && ((xp2>>3) < 80))
             {
                 /* !!! Does this code ever get hit? Do something with this! */
-                fprintf (stderr, "STUB: %s:%d\n",__FILE__,__LINE__);
+                //fprintf (stderr, "STUB: %s:%d\n",__FILE__,__LINE__);
             }
         }
 

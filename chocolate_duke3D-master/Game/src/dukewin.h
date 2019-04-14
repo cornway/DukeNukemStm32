@@ -12,7 +12,7 @@ typedef int32_t int32_t __int64;
 #endif
 
 #ifdef _DEBUG
-#define STUBBED(x) printf("STUB: %s in %s:%d\n", x, __FILE__, __LINE__)
+#define STUBBED(x) dprintf("STUB: %s in %s:%d\n", x, __FILE__, __LINE__)
 #else
 #define STUBBED(x)
 #endif
@@ -59,7 +59,7 @@ void _dos_getdate(struct dosdate_t *date);
 // 64 megs should be enough for anybody.  :)  --ryan.
 #define Z_AvailHeap() ((64 * 1024) * 1024)
 
-#define printchrasm(x,y,ch) printf("%c", (uint8_t ) (ch & 0xFF))
+#define printchrasm(x,y,ch) dprintf("%c", (uint8_t ) (ch & 0xFF))
 
 #define cdecl
 

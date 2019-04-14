@@ -179,7 +179,7 @@ int   DSL_BeginBufferedPlayback( char *BufferStart,
 	Mix_RegisterEffect(0, mixer_callback, NULL, NULL);
 	
 	/* create a dummy sample just to allocate that channel */
-	blank_buf = (Uint8 *)malloc(4096);
+	blank_buf = (Uint8 *)Sys_Malloc(4096);
 	memset(blank_buf, 0, 4096);
 	
 	blank = Mix_QuickLoad_RAW(blank_buf, 4096);
@@ -204,7 +204,7 @@ void DSL_StopPlayback( void )
 	blank = NULL;
 	
 	if (blank_buf  != NULL) {
-		free(blank_buf);
+		Sys_Free(blank_buf);
 	}
 	
 	blank_buf = NULL;

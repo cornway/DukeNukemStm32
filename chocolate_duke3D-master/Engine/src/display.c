@@ -21,9 +21,10 @@
 #include "platform.h"
 #include "SDL_Video.h"
 #include "SDL_Keysym.h"
-#include "input_main.h"
 #include "unix_compat.h"
 #include <gfx.h>
+#include <input_main.h>
+#include "keyboard.h"
 #if (!defined PLATFORM_SUPPORTS_SDL)
 #error This platform apparently does not use SDL. Do not compile this.
 #endif
@@ -468,7 +469,7 @@ static int sdl_key_filter(const i_event_t *event)
     int extended;
 
     if ( (event->sym == SDLK_m) &&
-         (event->state == keydown) && 1
+         (event->state == keydown) && 0
     /*FIXME : (event->key.keysym.mod & KMOD_CTRL) */)
     {
 
@@ -495,7 +496,7 @@ static int sdl_key_filter(const i_event_t *event)
 
     else if ( ( (event->sym == SDLK_RETURN) ||
                 (event->sym == SDLK_KP_ENTER) ) &&
-              (event->state == keydown) && 1
+              (event->state == keydown) && 0
               /* FIXME :(event->key.keysym.mod & KMOD_ALT) */)
     {	fullscreen_toggle_and_change_driver();
 
@@ -536,7 +537,7 @@ static int sdl_key_filter(const i_event_t *event)
 } /* sdl_key_filter */
 
 
-static int root_sdl_event_filter(const i_event_t *event)
+int root_sdl_event_filter(const i_event_t *event)
 {
 #ifdef ORIGCODE
     switch (event->type)
@@ -569,21 +570,22 @@ static int root_sdl_event_filter(const i_event_t *event)
 			//printf("This event is not handled: %d\n",event->type);
 			break;
     } /* switch */
-    return(1);
 #else
-    return(sdl_key_filter(event));
+    if (event->state == keydown);
+        return(sdl_key_filter(event));
 #endif
+    return(1);
 } /* root_sdl_event_filter */
 
-i_event_t kbdevent;
+extern void Sys_SendKeyEvents(i_event_t *evts);
+
 static void handle_events(void)
 {
 #ifdef ORIGCODE
 	while(SDL_PollEvent(&event))
         root_sdl_event_filter(&kbdevent);
 #else
-        Sys_SendKeyEvents();
-        root_sdl_event_filter(&kbdevent);
+        Sys_SendKeyEvents(NULL);
 #endif
     /*TODO : */
 } /* handle_events */
@@ -834,96 +836,96 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
 
 
     memset(scancodes, '\0', sizeof (scancodes));
-    scancodes[SDLK_ESCAPE]          = 0x01;
-    scancodes[SDLK_1]               = 0x02;
-    scancodes[SDLK_2]               = 0x03;
-    scancodes[SDLK_3]               = 0x04;
-    scancodes[SDLK_4]               = 0x05;
-    scancodes[SDLK_5]               = 0x06;
-    scancodes[SDLK_6]               = 0x07;
-    scancodes[SDLK_7]               = 0x08;
-    scancodes[SDLK_8]               = 0x09;
-    scancodes[SDLK_9]               = 0x0A;
-    scancodes[SDLK_0]               = 0x0B;
-    scancodes[SDLK_MINUS]           = 0x0C; /* was 0x4A */
-    scancodes[SDLK_EQUALS]          = 0x0D; /* was 0x4E */
-    scancodes[SDLK_BACKSPACE]       = 0x0E;
-    scancodes[SDLK_TAB]             = 0x0F;
-    scancodes[SDLK_q]               = 0x10;
-    scancodes[SDLK_w]               = 0x11;
-    scancodes[SDLK_e]               = 0x12;
-    scancodes[SDLK_r]               = 0x13;
-    scancodes[SDLK_t]               = 0x14;
-    scancodes[SDLK_y]               = 0x15;
-    scancodes[SDLK_u]               = 0x16;
-    scancodes[SDLK_i]               = 0x17;
-    scancodes[SDLK_o]               = 0x18;
-    scancodes[SDLK_p]               = 0x19;
-    scancodes[SDLK_LEFTBRACKET]     = 0x1A;
-    scancodes[SDLK_RIGHTBRACKET]    = 0x1B;
-    scancodes[SDLK_RETURN]          = 0x1C;
-    scancodes[SDLK_LCTRL]           = 0x1D;
-    scancodes[SDLK_a]               = 0x1E;
-    scancodes[SDLK_s]               = 0x1F;
-    scancodes[SDLK_d]               = 0x20;
-    scancodes[SDLK_f]               = 0x21;
-    scancodes[SDLK_g]               = 0x22;
-    scancodes[SDLK_h]               = 0x23;
-    scancodes[SDLK_j]               = 0x24;
-    scancodes[SDLK_k]               = 0x25;
-    scancodes[SDLK_l]               = 0x26;
-    scancodes[SDLK_SEMICOLON]       = 0x27;
-    scancodes[SDLK_QUOTE]           = 0x28;
-    scancodes[SDLK_BACKQUOTE]       = 0x29;
-    scancodes[SDLK_LSHIFT]          = 0x2A;
-    scancodes[SDLK_BACKSLASH]       = 0x2B;
-    scancodes[SDLK_z]               = 0x2C;
-    scancodes[SDLK_x]               = 0x2D;
-    scancodes[SDLK_c]               = 0x2E;
-    scancodes[SDLK_v]               = 0x2F;
-    scancodes[SDLK_b]               = 0x30;
-    scancodes[SDLK_n]               = 0x31;
-    scancodes[SDLK_m]               = 0x32;
-    scancodes[SDLK_COMMA]           = 0x33;
-    scancodes[SDLK_PERIOD]          = 0x34;
-    scancodes[SDLK_SLASH]           = 0x35;
-    scancodes[SDLK_RSHIFT]          = 0x36;
-    scancodes[SDLK_KP_MULTIPLY]     = 0x37;
-    scancodes[SDLK_LALT]            = 0x38;
-    scancodes[SDLK_SPACE]           = 0x39;
-    scancodes[SDLK_CAPSLOCK]        = 0x3A;
-    scancodes[SDLK_F1]              = 0x3B;
-    scancodes[SDLK_F2]              = 0x3C;
-    scancodes[SDLK_F3]              = 0x3D;
-    scancodes[SDLK_F4]              = 0x3E;
-    scancodes[SDLK_F5]              = 0x3F;
-    scancodes[SDLK_F6]              = 0x40;
-    scancodes[SDLK_F7]              = 0x41;
-    scancodes[SDLK_F8]              = 0x42;
-    scancodes[SDLK_F9]              = 0x43;
-    scancodes[SDLK_F10]             = 0x44;
-    scancodes[SDLK_NUMLOCK]         = 0x45;
-    scancodes[SDLK_SCROLLOCK]       = 0x46;
-    scancodes[SDLK_KP7]             = 0x47;
-    scancodes[SDLK_KP8]             = 0x48;
-    scancodes[SDLK_KP9]             = 0x49;
-    scancodes[SDLK_KP_MINUS]        = 0x4A;
-    scancodes[SDLK_KP4]             = 0x4B;
-    scancodes[SDLK_KP5]             = 0x4C;
-    scancodes[SDLK_KP6]             = 0x4D;
-    scancodes[SDLK_KP_PLUS]         = 0x4E;
-    scancodes[SDLK_KP1]             = 0x4F;
-    scancodes[SDLK_KP2]             = 0x50;
-    scancodes[SDLK_KP3]             = 0x51;
-    scancodes[SDLK_KP0]             = 0x52;
-    scancodes[SDLK_KP_PERIOD]       = 0x53;
-    scancodes[SDLK_F11]             = 0x57;
-    scancodes[SDLK_F12]             = 0x58;
-    scancodes[SDLK_PAUSE]           = 0x59; /* SBF - technically incorrect */
+    scancodes[SDLK_ESCAPE]          = sc_Escape;
+    scancodes[SDLK_1]               = sc_1;
+    scancodes[SDLK_2]               = sc_2;
+    scancodes[SDLK_3]               = sc_3;
+    scancodes[SDLK_4]               = sc_4;
+    scancodes[SDLK_5]               = sc_5;
+    scancodes[SDLK_6]               = sc_6;
+    scancodes[SDLK_7]               = sc_7;
+    scancodes[SDLK_8]               = sc_8;
+    scancodes[SDLK_9]               = sc_9;
+    scancodes[SDLK_0]               = sc_0;
+    scancodes[SDLK_MINUS]           = sc_Minus; /* was 0x4A */
+    scancodes[SDLK_EQUALS]          = sc_Equals; /* was 0x4E */
+    scancodes[SDLK_BACKSPACE]       = sc_BackSpace;
+    scancodes[SDLK_TAB]             = sc_Tab;
+    scancodes[SDLK_q]               = sc_Q;
+    scancodes[SDLK_w]               = sc_W;
+    scancodes[SDLK_e]               = sc_E;
+    scancodes[SDLK_r]               = sc_R;
+    scancodes[SDLK_t]               = sc_T;
+    scancodes[SDLK_y]               = sc_Y;
+    scancodes[SDLK_u]               = sc_U;
+    scancodes[SDLK_i]               = sc_I;
+    scancodes[SDLK_o]               = sc_O;
+    scancodes[SDLK_p]               = sc_P;
+    scancodes[SDLK_LEFTBRACKET]     = sc_OpenBracket;
+    scancodes[SDLK_RIGHTBRACKET]    = sc_CloseBracket;
+    scancodes[SDLK_RETURN]          = sc_Return;
+    scancodes[SDLK_LCTRL]           = sc_LeftControl;
+    scancodes[SDLK_a]               = sc_A;
+    scancodes[SDLK_s]               = sc_S;
+    scancodes[SDLK_d]               = sc_D;
+    scancodes[SDLK_f]               = sc_F;
+    scancodes[SDLK_g]               = sc_G;
+    scancodes[SDLK_h]               = sc_H;
+    scancodes[SDLK_j]               = sc_J;
+    scancodes[SDLK_k]               = sc_K;
+    scancodes[SDLK_l]               = sc_L;
+    scancodes[SDLK_SEMICOLON]       = sc_SemiColon;
+    scancodes[SDLK_QUOTE]           = sc_Quote;
+    scancodes[SDLK_BACKQUOTE]       = sc_Tilde;/*FIXME*/
+    scancodes[SDLK_LSHIFT]          = sc_LeftShift;
+    scancodes[SDLK_BACKSLASH]       = sc_BackSlash;
+    scancodes[SDLK_z]               = sc_Z;
+    scancodes[SDLK_x]               = sc_X;
+    scancodes[SDLK_c]               = sc_C;
+    scancodes[SDLK_v]               = sc_V;
+    scancodes[SDLK_b]               = sc_B;
+    scancodes[SDLK_n]               = sc_N;
+    scancodes[SDLK_m]               = sc_M;
+    scancodes[SDLK_COMMA]           = sc_Comma;
+    scancodes[SDLK_PERIOD]          = sc_Period;
+    scancodes[SDLK_SLASH]           = sc_Slash;
+    scancodes[SDLK_RSHIFT]          = sc_RightShift;
+    scancodes[SDLK_KP_MULTIPLY]     = -1;
+    scancodes[SDLK_LALT]            = sc_LeftAlt;
+    scancodes[SDLK_SPACE]           = sc_Space;
+    scancodes[SDLK_CAPSLOCK]        = sc_CapsLock;
+    scancodes[SDLK_F1]              = sc_F1;
+    scancodes[SDLK_F2]              = sc_F2;
+    scancodes[SDLK_F3]              = sc_F3;
+    scancodes[SDLK_F4]              = sc_F4;
+    scancodes[SDLK_F5]              = sc_F5;
+    scancodes[SDLK_F6]              = sc_F6;
+    scancodes[SDLK_F7]              = sc_F7;
+    scancodes[SDLK_F8]              = sc_F8;
+    scancodes[SDLK_F9]              = sc_F9;
+    scancodes[SDLK_F10]             = sc_F10;
+    scancodes[SDLK_NUMLOCK]         = sc_NumLock;
+    scancodes[SDLK_SCROLLOCK]       = sc_ScrollLock;
+    scancodes[SDLK_KP7]             = -1;
+    scancodes[SDLK_KP8]             = -1;
+    scancodes[SDLK_KP9]             = -1;
+    scancodes[SDLK_KP_MINUS]        = sc_Minus;
+    scancodes[SDLK_KP4]             = -1;
+    scancodes[SDLK_KP5]             = -1;
+    scancodes[SDLK_KP6]             = -1;
+    scancodes[SDLK_KP_PLUS]         = sc_Plus;
+    scancodes[SDLK_KP1]             = -1;
+    scancodes[SDLK_KP2]             = -1;
+    scancodes[SDLK_KP3]             = -1;
+    scancodes[SDLK_KP0]             = -1;
+    scancodes[SDLK_KP_PERIOD]       = -1;
+    scancodes[SDLK_F11]             = sc_F11;
+    scancodes[SDLK_F12]             = sc_F12;
+    scancodes[SDLK_PAUSE]           = sc_Pause; /* SBF - technically incorrect */
 
-    scancodes[SDLK_KP_ENTER]        = 0xE01C;
-    scancodes[SDLK_RCTRL]           = 0xE01D;
-    scancodes[SDLK_KP_DIVIDE]       = 0xE035;
+    scancodes[SDLK_KP_ENTER]        = 0xE0 | sc_Enter;
+    scancodes[SDLK_RCTRL]           = 0xE0 | sc_RightControl;
+    scancodes[SDLK_KP_DIVIDE]       = 0xE0 | sc_kpad_Slash;
     scancodes[SDLK_PRINT]           = 0xE037; /* SBF - technically incorrect */
     scancodes[SDLK_SYSREQ]          = 0xE037; /* SBF - for windows... */
     scancodes[SDLK_RALT]            = 0xE038;

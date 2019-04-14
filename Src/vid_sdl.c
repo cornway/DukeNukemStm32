@@ -5,6 +5,7 @@
 #include "lcd_main.h"
 #include "input_main.h"
 #include "sdl_keysym.h"
+#include "keyboard.h"
 #include <vid.h>
 
 #define VIDEO_IN_IRAM 1
@@ -199,18 +200,17 @@ const kbdmap_t gamepad_to_kbd_map[JOY_STD_MAX] =
     [JOY_K8]            = {SDLK_PAGEDOWN, 0},
     [JOY_K9]            = {SDLK_RETURN, 0},
     [JOY_K10]           = {SDLK_ESCAPE, PAD_FREQ_LOW},
-    0,
 };
-extern i_event_t kbdevent;
-void input_post_key (i_event_t event)
+
+i_event_t *input_post_key (i_event_t  *evts, i_event_t event)
 {
-    kbdevent = event;
+    root_sdl_event_filter(&event);
 }
 
-void Sys_SendKeyEvents(void)
+void Sys_SendKeyEvents(i_event_t *evts)
 {
     joypad_tickle();
-    input_proc_keys();
+    input_proc_keys(NULL);
 }
 
 void IN_Init (void)

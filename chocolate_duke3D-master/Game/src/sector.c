@@ -2419,7 +2419,7 @@ void cheatkeys(short snum)
     struct player_struct *p;
 	uint8_t  playing_old_demo = 0;
 
-    sb_snum = sync[snum].bits;
+    sb_snum = READ_LE_I32(sync[snum].bits);
     p = &ps[snum];
 
     if(p->cheat_phase == 1) return;
@@ -2455,7 +2455,7 @@ void cheatkeys(short snum)
     if( playing_old_demo && !(sb_snum&((15<<8)|(1<<12)|(1<<15)|(1<<16)|(1<<22)|(1<<19)|(1<<20)|(1<<21)|(1<<24)|(1<<25)|(1<<27)|(1<<28)|(1<<29)|(1<<30)|(1<<31))) )
         p->interface_toggle_flag = 0;
     else if(((p->interface_toggle_flag == 0 && ( sb_snum&(1<<17) ) == 0) && playing_old_demo) ||
-		((sb_snum && ( sync[snum].bits&(1<<17) ) == 0) && !playing_old_demo))
+		((sb_snum && ( READ_LE_I32(sync[snum].bits)&(1<<17) ) == 0) && !playing_old_demo))
     {
 		if(playing_old_demo)
 			p->interface_toggle_flag = 1;
@@ -2912,6 +2912,7 @@ void checksectors(short snum)
     int32_t i = -1,oldz;
     struct player_struct *p;
     short j,hitscanwall;
+    uint32_t bits;
 
     p = &ps[snum];
 
@@ -2961,7 +2962,9 @@ void checksectors(short snum)
 
     if(p->gm&MODE_TYPE || sprite[p->i].extra <= 0) return;
 
-    if( ud.cashman && sync[snum].bits&(1<<29) )
+    bits = READ_LE_I32(sync[snum].bits);
+
+    if( ud.cashman && bits&(1<<29) )
         lotsofmoney(&sprite[p->i],2);
 
     if(p->newowner >= 0)
@@ -2973,13 +2976,13 @@ void checksectors(short snum)
         }
     }
 
-    if( !(sync[snum].bits&(1<<29)) && !(sync[snum].bits&(1<<31)))
+    if( !(bits&(1<<29)) && !(bits&(1<<31)))
         p->toggle_key_flag = 0;
 
     else if(!p->toggle_key_flag)
     {
 
-        if( (sync[snum].bits&(1<<31)) )
+        if( (bits&(1<<31)) )
         {
             if( p->newowner >= 0 )
             {
@@ -2994,6 +2997,10 @@ void checksectors(short snum)
         hitscanwall = -1;
 
         i = hitawall(p,&hitscanwall);
+
+        if (i == 0x9bf) {
+            i = 0x9bf;
+        }
 
         if(i < 1280 && hitscanwall >= 0 && wall[hitscanwall].overpicnum == MIRROR)
             if( wall[hitscanwall].lotag > 0 && Sound[wall[hitscanwall].lotag].num == 0 && snum == screenpeek)
@@ -3190,7 +3197,7 @@ void checksectors(short snum)
             }
         }
 
-        if( (sync[snum].bits&(1<<29)) == 0 ) return;
+        if( (READ_LE_I32(sync[snum].bits)&(1<<29)) == 0 ) return;
         else if(p->newowner >= 0) { i = -1; goto CLEARCAMERAS; }
 
         if(neartagwall == -1 && neartagsector == -1 && neartagsprite == -1)

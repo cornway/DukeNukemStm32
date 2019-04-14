@@ -27,6 +27,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 // Savage Baggage Masters
 
 #include "duke3d.h"
+#include <misc_utils.h>
 
 int32 turnheldtime; //MED
 int32 lastcontroltime; //MED
@@ -1802,7 +1803,9 @@ void getinput(short snum)
     int32 keymove;
     int32 momx,momy;
     struct player_struct *p;
+    input _loc;
 
+    d_memcpy(&_loc, &loc, sizeof(_loc));
 	// FIX_00038: Improved Mouse accuracy (losses of integer computation)    
 	static fixed previousInfoDyaw = 0;
 	static fixed previousInfoDpitch = 0;
@@ -1818,13 +1821,13 @@ void getinput(short snum)
 
     if( (p->gm&MODE_MENU) || (p->gm&MODE_TYPE) || (ud.pause_on && !KB_KeyPressed(sc_Pause)) )
     {
-         loc.fvel = vel = 0;
-         loc.svel = svel = 0;
-         loc.avel = angvel = 0;
-         loc.horz = horiz = 0;
-         loc.bits = (((int32_t)gamequit)<<26);
+         _loc.fvel = vel = 0;
+         _loc.svel = svel = 0;
+         _loc.avel = angvel = 0;
+         _loc.horz = horiz = 0;
+         _loc.bits = (((int32_t)gamequit)<<26);
          info.dz = info.dyaw = 0;
-         return;
+         goto end;
     }
 
     tics = totalclock-lastcontroltime;
@@ -1858,21 +1861,20 @@ void getinput(short snum)
 
     if(multiflag == 1)
     {
-        loc.bits =   1<<17;
-        loc.bits |=   multiwhat<<18;
-		loc.bits |=   multipos<<19;
+        _loc.bits =   1<<17;
+        _loc.bits |=   multiwhat<<18;
+		_loc.bits |=   multipos<<19;
 		multiflag = 0;
-        return;
+        goto end;
     }
-
-    loc.bits =   ACTION(gamefunc_Jump);
-    loc.bits |=   ACTION(gamefunc_Crouch)<<1;
-    loc.bits |=   ACTION(gamefunc_Fire)<<2;
-    loc.bits |=   ACTION(gamefunc_Aim_Up)<<3;
-    loc.bits |=   ACTION(gamefunc_Aim_Down)<<4;
-    loc.bits |=   ACTION(gamefunc_Run)<<5;
-	loc.bits |=   (ud.auto_aim==2)<<6; // 2 = normal, 1 = bullet only, 0 = disabled (not implemented)
-	loc.bits |=   ud.weaponautoswitch<<7;
+    _loc.bits =   ACTION(gamefunc_Jump);
+    _loc.bits |=   ACTION(gamefunc_Crouch)<<1;
+    _loc.bits |=   ACTION(gamefunc_Fire)<<2;
+    _loc.bits |=   ACTION(gamefunc_Aim_Up)<<3;
+    _loc.bits |=   ACTION(gamefunc_Aim_Down)<<4;
+    _loc.bits |=   ACTION(gamefunc_Run)<<5;
+	_loc.bits |=   (ud.auto_aim==2)<<6; // 2 = normal, 1 = bullet only, 0 = disabled (not implemented)
+	_loc.bits |=   ud.weaponautoswitch<<7;
 
     j=0;
     if (ACTION(gamefunc_Weapon_1))
@@ -1904,41 +1906,40 @@ void getinput(short snum)
 	    if (ACTION(gamefunc_Weapon_10))
 	       j = 10;
 	}
-
-    loc.bits |=   j<<8;
-    loc.bits |=   ACTION(gamefunc_Steroids)<<12;
-    loc.bits |=   ACTION(gamefunc_Look_Up)<<13;
-    loc.bits |=   ACTION(gamefunc_Look_Down)<<14;
-    loc.bits |=   ACTION(gamefunc_NightVision)<<15;
+    _loc.bits |=   j<<8;
+    _loc.bits |=   ACTION(gamefunc_Steroids)<<12;
+    _loc.bits |=   ACTION(gamefunc_Look_Up)<<13;
+    _loc.bits |=   ACTION(gamefunc_Look_Down)<<14;
+    _loc.bits |=   ACTION(gamefunc_NightVision)<<15;
 	if(ud.gitdat_mdk)
 	{
 		if(sprite[ps[myconnectindex].i].extra < max_player_health && ps[myconnectindex].firstaid_amount) // avoid medkit overloading controls
-			loc.bits |=   ACTION(gamefunc_MedKit)<<16; 
+			_loc.bits |=   ACTION(gamefunc_MedKit)<<16; 
 	}
 	else
 	{
-		loc.bits |=   ACTION(gamefunc_MedKit)<<16; 
+		_loc.bits |=   ACTION(gamefunc_MedKit)<<16; 
 	}
-    loc.bits |=   ACTION(gamefunc_Center_View)<<18;
-	loc.bits |=   ACTION(gamefunc_Holster_Weapon)<<19;
+    _loc.bits |=   ACTION(gamefunc_Center_View)<<18;
+	_loc.bits |=   ACTION(gamefunc_Holster_Weapon)<<19;
     if(ACTION(gamefunc_Hide_Weapon))
 	{
 		ud.hideweapon = !ud.hideweapon;
 		vscrn(); // FIX_00056: Refresh issue w/FPS, small Weapon and custom FTA, when screen resized down
 		CONTROL_ClearAction(gamefunc_Hide_Weapon);
 	}
-	loc.bits |=   ACTION(gamefunc_Inventory_Left)<<20;
-    loc.bits |=   KB_KeyPressed(sc_Pause)<<21;
-    loc.bits |=   ACTION(gamefunc_Quick_Kick)<<22;
-    loc.bits |=   myaimmode<<23;
-    loc.bits |=   ACTION(gamefunc_Holo_Duke)<<24;
-    loc.bits |=   ACTION(gamefunc_Jetpack)<<25;
-    loc.bits |=   (((int32_t)gamequit)<<26);
-    loc.bits |=   ACTION(gamefunc_Inventory_Right)<<27;
-    loc.bits |=   ACTION(gamefunc_TurnAround)<<28;
-    loc.bits |=   ACTION(gamefunc_Open)<<29;
-    loc.bits |=   ACTION(gamefunc_Inventory)<<30;
-    loc.bits |=   KB_KeyPressed(sc_Escape)<<31;
+	_loc.bits |=   ACTION(gamefunc_Inventory_Left)<<20;
+    _loc.bits |=   KB_KeyPressed(sc_Pause)<<21;
+    _loc.bits |=   ACTION(gamefunc_Quick_Kick)<<22;
+    _loc.bits |=   myaimmode<<23;
+    _loc.bits |=   ACTION(gamefunc_Holo_Duke)<<24;
+    _loc.bits |=   ACTION(gamefunc_Jetpack)<<25;
+    _loc.bits |=   (((int32_t)gamequit)<<26);
+    _loc.bits |=   ACTION(gamefunc_Inventory_Right)<<27;
+    _loc.bits |=   ACTION(gamefunc_TurnAround)<<28;
+    _loc.bits |=   ACTION(gamefunc_Open)<<29;
+    _loc.bits |=   ACTION(gamefunc_Inventory)<<30;
+    _loc.bits |=   KB_KeyPressed(sc_Escape)<<31;
 
     running = ACTION(gamefunc_Run)|ud.auto_run;
     svel = vel = angvel = horiz = 0;
@@ -2099,11 +2100,11 @@ void getinput(short snum)
     {
         ud.folfvel = vel;
         ud.folavel = angvel;
-        loc.fvel = 0;
-        loc.svel = 0;
-        loc.avel = 0;
-        loc.horz = 0;
-        return;
+        _loc.fvel = 0;
+        _loc.svel = 0;
+        _loc.avel = 0;
+        _loc.horz = 0;
+        goto end;
     }
 
     if( numplayers > 1 )
@@ -2119,12 +2120,15 @@ void getinput(short snum)
     momx += fricxv;
     momy += fricyv;
 	
-	loc.fvel = momx;
-	loc.svel = momy;
-    loc.avel = angvel;
+	_loc.fvel = momx;
+	_loc.svel = momy;
+    _loc.avel = angvel;
 //	if(loc.avel)
 //		printf("getinput loc.avel=%d\n", loc.avel);
-    loc.horz = horiz;
+    _loc.horz = horiz;
+end:
+
+    d_memcpy(&loc, &_loc, sizeof(loc));
 }
 
 
@@ -2306,7 +2310,7 @@ uint8_t  doincrements(struct player_struct *p)
             }
             spritesound(DUKE_CRACK_FIRST,p->i);
         }
-        else if( p->knuckle_incs == 22 || (sync[snum].bits&(1<<2)))
+        else if( p->knuckle_incs == 22 || (READ_LE_I32(sync[snum].bits)&(1<<2)))
             p->knuckle_incs=0;
 
         return 1;
@@ -2356,7 +2360,7 @@ void processinput(short snum)
 
     kb = &p->kickback_pic;
 
-    if(p->cheat_phase <= 0) sb_snum = sync[snum].bits;
+    if(p->cheat_phase <= 0) sb_snum = READ_LE_I32(sync[snum].bits);
     else sb_snum = 0;
 
     psect = p->cursectnum;

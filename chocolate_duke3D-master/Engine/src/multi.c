@@ -128,7 +128,7 @@ long convalloc32 (long size)
 	if (r.x.cflag != 0) return ((long)0);   //Failed
 	return ((long)((r.x.eax&0xffff)<<4));   //Returns full 32-bit offset
 #else
-	fprintf (stderr, "%s, line %d; convalloc32() called\n", __FILE__,
+	//fprintf (stderr, "%s, line %d; convalloc32() called\n", __FILE__,
 		__LINE__);
 	return 0;
 #endif	
@@ -177,7 +177,7 @@ long simulateint(char intnum, long daeax, long daebx, long daecx, long daedx, lo
 
 	return(RMI.EAX);
 #else
-	fprintf(stderr, "%s line %d; simulateint() called\n",__FILE__,__LINE__);
+	//fprintf(stderr, "%s line %d; simulateint() called\n",__FILE__,__LINE__);
 	return 0;
 #endif	
 }
@@ -974,8 +974,8 @@ void installbicomhandlers(void)
 	r.x.edx = COMCODEOFFS;         //D32realoff
 	int386(0x31,&r,&r);
 #else
-	fprintf (stderr,"%s, line %d; installbicomhandlers() called\n",
-		__FILE__, __LINE__);
+	//fprintf (stderr,"%s, line %d; installbicomhandlers() called\n",
+		//__FILE__, __LINE__);
 #endif	
 }
 
@@ -999,8 +999,8 @@ void uninstallbicomhandlers(void)
 	r.x.edx = (unsigned long)orig_rm_off;
 	int386(0x31,&r,&r);
 #else
-	fprintf (stderr, "%s line %d; uninstallbicomhandlers() called\n",
-		__FILE__, __LINE__);	
+	//fprintf (stderr, "%s line %d; uninstallbicomhandlers() called\n",
+		//__FILE__, __LINE__);	
 #endif	
 }
 
