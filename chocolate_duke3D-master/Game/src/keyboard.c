@@ -434,6 +434,8 @@ void KB_Startup( void )
     extscanToSC[0x53] = sc_Delete;
     
 	KB_ClearKeysDown();
+
+    IN_Init();
 }
 
 void KB_Shutdown( void )

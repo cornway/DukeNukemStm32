@@ -51,7 +51,7 @@ void    VID_ShiftPalette (unsigned char *palette)
     VID_SetPalette(palette);
 }
 
-void    VID_Init (void)
+void VID_Init (void)
 {
     int chunk;
     uint8_t *cache;
@@ -185,48 +185,40 @@ Sys_SendKeyEvents
 
 const kbdmap_t gamepad_to_kbd_map[JOY_STD_MAX] =
 {
-#if 0
-    [JOY_UPARROW]       = {K_UPARROW, 0},
-    [JOY_DOWNARROW]     = {K_DOWNARROW, 0},
-    [JOY_LEFTARROW]     = {K_LEFTARROW,0},
-    [JOY_RIGHTARROW]    = {K_RIGHTARROW, 0},
+    [JOY_UPARROW]       = {SDLK_UP, 0},
+    [JOY_DOWNARROW]     = {SDLK_DOWN, 0},
+    [JOY_LEFTARROW]     = {SDLK_LEFT,0},
+    [JOY_RIGHTARROW]    = {SDLK_RIGHT, 0},
     [JOY_K1]            = {'/', PAD_FREQ_LOW},
-    [JOY_K4]            = {K_END,  0},
-    [JOY_K3]            = {K_CTRL, 0},
-    [JOY_K2]            = {K_SPACE,    0},
+    [JOY_K4]            = {SDLK_END,  0},
+    [JOY_K3]            = {SDLK_RCTRL, 0},
+    [JOY_K2]            = {SDLK_SPACE,    0},
     [JOY_K5]            = {'a',    0},
     [JOY_K6]            = {'d',    0},
-    [JOY_K7]            = {K_DEL,  0},
-    [JOY_K8]            = {K_PGDN, 0},
-    [JOY_K9]            = {K_ENTER, 0},
-    [JOY_K10]           = {K_ESCAPE, PAD_FREQ_LOW},
-#endif
+    [JOY_K7]            = {SDLK_DELETE,  0},
+    [JOY_K8]            = {SDLK_PAGEDOWN, 0},
+    [JOY_K9]            = {SDLK_RETURN, 0},
+    [JOY_K10]           = {SDLK_ESCAPE, PAD_FREQ_LOW},
     0,
 };
-
+extern i_event_t kbdevent;
 void input_post_key (i_event_t event)
 {
-
+    kbdevent = event;
 }
 
 void Sys_SendKeyEvents(void)
 {
+    joypad_tickle();
     input_proc_keys();
 }
 
 void IN_Init (void)
 {
-#if 0
     input_soft_init(gamepad_to_kbd_map);
-    input_bind_extra(K_EX_LOOKUP, K_HOME);
-    input_bind_extra(K_EX_LOOKUP, K_DEL);
-    input_bind_extra(K_EX_LOOKUP, K_INS);
-
-    if ( COM_CheckParm ("-nomouse") )
-        return;
-    mouse_x = mouse_y = 0.0;
-    mouse_avail = 1;
-#endif
+    input_bind_extra(K_EX_LOOKUP, SDLK_HOME);
+    input_bind_extra(K_EX_LOOKUP, SDLK_DELETE);
+    input_bind_extra(K_EX_LOOKUP, SDLK_INSERT);
 }
 
 void IN_Shutdown (void)

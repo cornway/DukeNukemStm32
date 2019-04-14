@@ -569,17 +569,21 @@ static int root_sdl_event_filter(const i_event_t *event)
 			//printf("This event is not handled: %d\n",event->type);
 			break;
     } /* switch */
-#endif
     return(1);
+#else
+    return(sdl_key_filter(event));
+#endif
 } /* root_sdl_event_filter */
 
-
+i_event_t kbdevent;
 static void handle_events(void)
 {
-    i_event_t event;
 #ifdef ORIGCODE
 	while(SDL_PollEvent(&event))
-        root_sdl_event_filter(&event);
+        root_sdl_event_filter(&kbdevent);
+#else
+        Sys_SendKeyEvents();
+        root_sdl_event_filter(&kbdevent);
 #endif
     /*TODO : */
 } /* handle_events */
