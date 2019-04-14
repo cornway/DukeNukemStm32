@@ -19,8 +19,8 @@
 #define AUDIO_SAMPLE_RATE           (22050U)
 
 #define SDRAM_VOL_START             (0xC0000000)
-#define SDRAM_VOL_END               (0xC1000000)
-#define HEAP_MALLOC_MARGIN          (0x1000)
+#define SDRAM_VOL_END               (0xC0e40000)
+#define HEAP_MALLOC_MARGIN          (0)
 
 #define DEVIO_READONLY              (0)
 #define MAX_HANDLES                 (4)

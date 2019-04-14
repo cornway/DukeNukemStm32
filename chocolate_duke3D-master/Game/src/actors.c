@@ -1360,7 +1360,7 @@ void movefx(void)
                     if( x >= ht && T1 == 1 )
                     {
                         FX_SetReverb(0);
-                        //FX_SetReverbDelay(0);
+                        FX_SetReverbDelay(0);
                         T1 = 0;
                     }
                 }

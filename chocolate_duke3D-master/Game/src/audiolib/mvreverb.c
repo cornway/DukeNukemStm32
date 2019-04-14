@@ -85,7 +85,7 @@ double g_buffer(int iOff, double *ptr)                          // get_buffer co
 	int correctDelay = delay;
 	if(!correctDelay)
 	{
-		printf("Error! Reverb race on g_buffer\n");
+		dprintf("Error! Reverb race on g_buffer\n");
 		correctDelay = cnv_offset(14320);
 	}
 
@@ -106,7 +106,7 @@ void s_buffer(int iOff,double iVal, double *ptr)                // set_buffer co
 	int correctDelay = delay;
 	if(!correctDelay)
 	{
-		printf("Error! Reverb race on s_buffer\n");
+		dprintf("Error! Reverb race on s_buffer\n");
 		correctDelay = cnv_offset(14320);
 	}
 
@@ -127,7 +127,7 @@ void s_buffer1(int iOff,double iVal, double *ptr)                // set_buffer (
 	int correctDelay = delay;
 	if(!correctDelay)
 	{
-		printf("Error! Reverb race on s_buffer1\n");
+		dprintf("Error! Reverb race on s_buffer1\n");
 		correctDelay = cnv_offset(14320);
 	}
 
@@ -210,7 +210,7 @@ void MV_FPReverb(int volume)
 	if(delay == 0)
 	{
 		//get out now!!!
-		printf("Error! MV_FPReverb() delay==0\n");
+		dprintf("Error! MV_FPReverb() delay==0\n");
 		return;
 	}
 

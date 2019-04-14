@@ -408,7 +408,7 @@ void CONTROL_MapKey( int32 which, kb_scancode key1, kb_scancode key2 )
 		else
 			key2=0;
 
-		printf("Discarding ESCAPE key for function : %s\n", gamefunctions[which]);
+		sprintf("Discarding ESCAPE key for function : %s\n", gamefunctions[which]);
 	}
 
 	if(key1 || key2)

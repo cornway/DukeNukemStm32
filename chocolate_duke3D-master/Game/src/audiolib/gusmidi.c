@@ -104,7 +104,7 @@ int GUS_GetPatchMap
    char *ud;
    int  index;
    int  ignore;
-   FILE *fp;
+   int fp;
 
    for( index = 0; index < NUM_PATCHES; index++ )
       {

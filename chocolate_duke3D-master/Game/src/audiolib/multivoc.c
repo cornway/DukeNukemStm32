@@ -417,12 +417,12 @@ void MV_StopVoice( VoiceNode *voice )
 
    if(pPrev == NULL)
    {
-	   printf("(MV_StopVoice) pPrev is NULL, this could be a problem.\n");
+	   dprintf("(MV_StopVoice) pPrev is NULL, this could be a problem.\n");
    }
 
    if(pNext == NULL)
    {
-	   printf("(MV_StopVoice) pNext is NULL, this could be a problem.\n");
+	   dprintf("(MV_StopVoice) pNext is NULL, this could be a problem.\n");
    }
 
    --sounddebugActiveSounds;
@@ -475,7 +475,7 @@ void MV_ServiceVoc
 		if(NULL == voice->GetSound)
 		{
 			#ifdef _DEBUG
-				printf("MV_ServiceVoc() voice->GetSound == NULL, break;\n");
+				dprintf("MV_ServiceVoc() voice->GetSound == NULL, break;\n");
 			#endif
 
 			// This sound is null, early out, or face a nasty crash.

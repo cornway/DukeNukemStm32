@@ -55,6 +55,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "global.h"
 #include <dev_io.h>
 #include <misc_utils.h>
+#include <debug.h>
 
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2
@@ -480,14 +481,14 @@ void getpackets(void)
     while ((packbufleng = getpacket(&other,packbuf)) > 0)
     {
 #ifdef _DEBUG_NETWORKING_
-		printf("RECEIVED PACKET: type: %d : len %d\n", packbuf[0], packbufleng);
+		dprintf("RECEIVED PACKET: type: %d : len %d\n", packbuf[0], packbufleng);
 #endif
 
         switch(packbuf[0])
         {
 			case 253:
 				// This should have already been handled by mmulti.cpp so ignore it
-				printf("Invalid Packet: %d", packbuf[0]);
+				dprintf("Invalid Packet: %d", packbuf[0]);
 			break;
 
             case 125:
@@ -731,7 +732,7 @@ void getpackets(void)
 
                 if (j > packbufleng)
 				{
-					printf("INVALID GAME PACKET!!! (%d too many bytes) (j= %d, packbuflen= %d, type: %d)\n",j-packbufleng, j, packbufleng, packbuf[0]);
+					dprintf("INVALID GAME PACKET!!! (%d too many bytes) (j= %d, packbuflen= %d, type: %d)\n",j-packbufleng, j, packbufleng, packbuf[0]);
 				}
 
                 while (j != packbufleng)
@@ -771,7 +772,7 @@ void getpackets(void)
             case 250:
                 {
 					playerreadyflag[other]++;
-					printf("Player %d '%s' is ready...\n", other, ud.user_name[other]);
+					dprintf("Player %d '%s' is ready...\n", other, ud.user_name[other]);
 				}
                 break;
             case 255:
@@ -2472,9 +2473,9 @@ void gameexit(char  *msg)
         {
             if(*t == ' ' && *(t+1) == 0) *t = 0;
             #if PLATFORM_DOS   // Is there a good reason for this? --ryan.
-            printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+            dprintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
             #else
-            printf("\n%s\n",t);
+            dprintf("\n%s\n",t);
             #endif
         }
 // CTW END - MODIFICATION        
@@ -7088,31 +7089,31 @@ void nonsharedkeys(void)
 
 void comlinehelp(char  **argv)
 {
-    printf("Command line help.  %s [/flags...]\n",argv[0]);
-    puts(" ?, /?         This help message");
-    puts(" /l##          Level (1-11)");
-    puts(" /v#           Volume (1-4)");
-    puts(" /s#           Skill (1-4)");
-    puts(" /r            Record demo");
-    puts(" /dFILE        Start to play demo FILE");
-    puts(" /m            No monsters");
-    puts(" /ns           No sound");
-    puts(" /nm           No music");
-    puts(" /t#           Respawn, 1 = Monsters, 2 = Items, 3 = Inventory, x = All");
-    puts(" /c#           MP mode, 1 = DukeMatch(spawn), 2 = Coop, 3 = Dukematch(no spawn)");
-    puts(" /q#           Fake multiplayer (2-8 players)");
-    puts(" /a            Use player AI (fake multiplayer only)");
-    puts(" /i#           Network mode (1/0) (multiplayer only) (default == 1)");
-    puts(" /f#           Send fewer packets (1, 2, 4) (multiplayer only)");
-    puts(" /gFILE, /g... Use multiple group files (must be last on command line)");
-    puts(" /xFILE        Compile FILE (default GAME.CON)");
-    puts(" /u#########   User's favorite weapon order (default: 3425689071)");
-    puts(" /#            Load and run a game (slot 0-9)");
-    puts(" /z            Skip memory check");
-    puts(" -map FILE     Use a map FILE");
-    puts(" -name NAME    Foward NAME");
-    puts(" -net          Net mode game");
-    printf("\n");
+    dprintf("Command line help.  %s [/flags...]\n",argv[0]);
+    //puts(" ?, /?         This help message");
+    //puts(" /l##          Level (1-11)");
+    //puts(" /v#           Volume (1-4)");
+    //puts(" /s#           Skill (1-4)");
+    //puts(" /r            Record demo");
+    //puts(" /dFILE        Start to play demo FILE");
+    //puts(" /m            No monsters");
+    //puts(" /ns           No sound");
+    //puts(" /nm           No music");
+    //puts(" /t#           Respawn, 1 = Monsters, 2 = Items, 3 = Inventory, x = All");
+    //puts(" /c#           MP mode, 1 = DukeMatch(spawn), 2 = Coop, 3 = Dukematch(no spawn)");
+    //puts(" /q#           Fake multiplayer (2-8 players)");
+    //puts(" /a            Use player AI (fake multiplayer only)");
+    //puts(" /i#           Network mode (1/0) (multiplayer only) (default == 1)");
+    //puts(" /f#           Send fewer packets (1, 2, 4) (multiplayer only)");
+    //puts(" /gFILE, /g... Use multiple group files (must be last on command line)");
+    //puts(" /xFILE        Compile FILE (default GAME.CON)");
+    //puts(" /u#########   User's favorite weapon order (default: 3425689071)");
+    //puts(" /#            Load and run a game (slot 0-9)");
+    //puts(" /z            Skip memory check");
+    //puts(" -map FILE     Use a map FILE");
+    //puts(" -name NAME    Foward NAME");
+    //puts(" -net          Net mode game");
+    dprintf("\n");
 }
 
 void checkcommandline(int argc,char  **argv)
@@ -7135,14 +7136,14 @@ void checkcommandline(int argc,char  **argv)
     return;
 #endif
 
-	printf("Commands: ");
+	dprintf("Commands: ");
 	i=1;
 	while(i < argc)
 	{
-   		printf("%s ",argv[i]);
+   		dprintf("%s ",argv[i]);
    		i++;
 	}
-	printf("\n");
+	dprintf("\n");
 
 	i = 1;
 
@@ -7158,7 +7159,7 @@ void checkcommandline(int argc,char  **argv)
 				strcpy(boardfilename,argv[i]);
 				if( strchr(boardfilename,'.') == 0)
 					strcat(boardfilename,".map");
-				printf("Using level: '%s'.\n",boardfilename);
+				dprintf("Using level: '%s'.\n",boardfilename);
 				continue;
 
 			}
@@ -7195,17 +7196,17 @@ void checkcommandline(int argc,char  **argv)
             if (stricmp(c, "/disableautoaim") == 0)
             {
 
-				printf(	"\nThe Host used the /disableautoaim option to turn your Weapon AutoAim OFF\n"
+				dprintf(	"\nThe Host used the /disableautoaim option to turn your Weapon AutoAim OFF\n"
 						"Playing without AutoAim is usually extremely difficult and can make boring\n" 
 						"games ruining Duke's playability. Duke3D was not designed to play with\n"
 						"AutoAim OFF like in modern FPS.\n\n"
 						"Do you authorize the HOST to turn your AutoAim OFF (Y/N)? ");
 
 				do
-					kbdKey = getch()|' ';
+					kbdKey = getch() |' ';
 				while(kbdKey != 'n' && kbdKey != 'y');
 
-				printf("%c \n", kbdKey);
+				dprintf("%c \n", kbdKey);
 
 				if(kbdKey == 'y')
 					nHostForceDisableAutoaim = 1;
@@ -7249,7 +7250,7 @@ void checkcommandline(int argc,char  **argv)
                             if(SafeFileExists(confilename) == 0){
                                 Error(EXIT_SUCCESS, "Could not find con file '%s'.\n",confilename);
                             }
-                            else printf("Using con file: '%s'\n",confilename);
+                            else dprintf("Using con file: '%s'\n",confilename);
                         }
                         break;
                     case 'g':
@@ -7272,7 +7273,7 @@ void checkcommandline(int argc,char  **argv)
 
                             j = initgroupfile(fullpathgrpfile);
                             if( j == -1 )
-                                printf("Could not find group file %s.\n",fullpathgrpfile);
+                                dprintf("Could not find group file %s.\n",fullpathgrpfile);
                         }
 
                         break;
@@ -7305,7 +7306,7 @@ void checkcommandline(int argc,char  **argv)
                             networkmode = 0;
                         if(*c == '1')
                             networkmode = 1;
-                        printf("Network Mode %d\n",networkmode);
+                        dprintf("Network Mode %d\n",networkmode);
                         break;
                     case 'c':
                     case 'C':
@@ -7395,7 +7396,7 @@ void checkcommandline(int argc,char  **argv)
                         c++;
                         if( strchr(c,'.') == 0)
                             strcat(c,".dmo");
-                        printf("Play demo %s.\n",c);
+                        dprintf("Play demo %s.\n",c);
                         strcpy(firstdemofile,c);
                         break;
                     case 'l':
@@ -7548,9 +7549,10 @@ void Logo(void)
         
         
 	    totalclock = 0;
+#ifdef ORIGCODE
 	    while( totalclock < (120*7) && !KB_KeyWaiting() )
 	        getpackets();
-	
+#endif
 
 
 
@@ -7762,7 +7764,7 @@ void Startup(void)
 // CTW END - MODIFICATION
    inittimer(TICRATE);
 
-   puts("Loading art header.");
+   //puts("Loading art header.");
 
   loadpics("tiles000.art", "\0");
    
@@ -7775,7 +7777,7 @@ void Startup(void)
    initmultiplayers(0,0,0);
 
    if(numplayers > 1)
-    puts("Multiplayer initialized.");
+    //puts("Multiplayer initialized.");
 
    ps[myconnectindex].palette = (uint8_t  *) &palette[0];
    SetupGameButtons();
@@ -7784,15 +7786,15 @@ void Startup(void)
        networkmode = 1;
 
 #ifdef PLATFORM_DOS
-   puts("Checking music inits.");
+   //puts("Checking music inits.");
    MusicStartup();
-   puts("Checking sound inits.");
+   //puts("Checking sound inits.");
    SoundStartup();
 #else
    /* SBF - wasn't sure if swapping them would harm anything. */
-   puts("Checking sound inits.");
+   //puts("Checking sound inits.");
    SoundStartup();
-   puts("Checking music inits.");
+   //puts("Checking music inits.");
    MusicStartup();
 #endif
 
@@ -7800,7 +7802,7 @@ void Startup(void)
 	if(nHostForceDisableAutoaim)
 		ud.auto_aim = 0;
 
-   puts("loadtmb()");
+   //puts("loadtmb()");
    loadtmb();
 }
 
@@ -7935,9 +7937,9 @@ void getnames(void)
 
 		if(l)
 		{
-			printf("\n*** One or more players do not have the same xDuke version:\n\n");
+			dprintf("\n*** One or more players do not have the same xDuke version:\n\n");
 			for(l=0,i=connecthead;i>=0;i=connectpoint2[i])
-				printf("Player [%-10s] is using Chocolate DukeNukem3D v%d.%d\n", ud.user_name[i], 
+				dprintf("Player [%-10s] is using Chocolate DukeNukem3D v%d.%d\n", ud.user_name[i], 
 				ud.rev[i][2],ud.rev[i][3]);
 			Error(EXIT_SUCCESS, "");
 		}		
@@ -7953,21 +7955,21 @@ void getnames(void)
 
 		if(l)
 		{
-			printf("\n*** One or more players do not have the same GRP/CON version:\n\n");
+			dprintf("\n*** One or more players do not have the same GRP/CON version:\n\n");
 			for(i=connecthead;i>=0;i=connectpoint2[i])
 			{
 				for(j=0; j<MAXGROUPFILES && ud.groupefil_crc32[i][j]; j++)
 				{
 					if(j)
-						printf("                    GRP (Add-on) : %s CRC=%X\n",
+						dprintf("                    GRP (Add-on) : %s CRC=%X\n",
 						grpVersion2char_from_crc(ud.groupefil_crc32[i][j]),
 						ud.groupefil_crc32[i][j]);
 					else
-						printf("Player [%-10s] GRP (base)   : %s CRC=%X\n", ud.user_name[i],
+						dprintf("Player [%-10s] GRP (base)   : %s CRC=%X\n", ud.user_name[i],
 						grpVersion2char_from_crc(ud.groupefil_crc32[i][j]),
 						ud.groupefil_crc32[i][j]);
 				}
-				printf("                    CON code size: %d\n\n",ud.conSize[i]);
+				dprintf("                    CON code size: %d\n\n",ud.conSize[i]);
 			}
 			Error(EXIT_SUCCESS,	"");
 		}
@@ -8008,7 +8010,7 @@ void findGRPToUse(uint8_t * groupfilefullpath)
 	else
 		sprintf(groupfilefullpath, "%s", baseDir);
     
-	printf("Searching '%d':\n\n",groupfilefullpath);
+	dprintf("Searching '%d':\n\n",groupfilefullpath);
 	hFind = FindFirstFile(groupfilefullpath,&FindFileData);
     
 	if ( hFind==INVALID_HANDLE_VALUE )
@@ -8018,18 +8020,18 @@ void findGRPToUse(uint8_t * groupfilefullpath)
 	{
 		i++;
 		sprintf(groupfile[i-1], "%s", FindFileData.cFileName);
-		printf("Found GRP #%d:\t%d Bytes\t %s \n", i, FindFileData.nFileSizeLow, groupfile[i-1]);
+		dprintf("Found GRP #%d:\t%d Bytes\t %s \n", i, FindFileData.nFileSizeLow, groupfile[i-1]);
 	} while ( FindNextFile(hFind, &FindFileData) && i < 9 );
     
 	if(i==1)
 		grpID = 0;
 	else
 	{
-		printf("\n-> Choose a base GRP file from 1 to %c: ",'0' + i);
+		dprintf("\n-> Choose a base GRP file from 1 to %c: ",'0' + i);
 		do
 			kbdKey = getch();
 		while(kbdKey < '1' || kbdKey > ('0' + i));
-		printf("%c\n", kbdKey);
+		dprintf("%c\n", kbdKey);
 		grpID =  groupfile[kbdKey-'1'];
 		
 	}
@@ -8064,14 +8066,20 @@ void findGRPToUse(char * groupfilefullpath){
     if (getGameDir()[0] != '\0')
     {
         strcat(directoryToScan,getGameDir());
+#ifdef ORIGCODE
         if (directoryToScan[strlen(directoryToScan)-1] != '/')
             strcat(directoryToScan,"/");
+#endif
     }
     else{
+#ifdef ORIGCODE
         strcat(directoryToScan, "./");    
+#else
+        strcat(directoryToScan, ".");
+#endif
     }
     
-    printf("Scanning directory '%s' for a GRP file like '%s'.\n",directoryToScan,baseDir);
+    dprintf("Scanning directory '%s' for a GRP file like '%s'.\n",directoryToScan,baseDir);
     
     int dir =  d_opendir(directoryToScan);
     
@@ -8084,7 +8092,8 @@ void findGRPToUse(char * groupfilefullpath){
         if (dukeGRP_Match(dirEntry.name,strlen(dirEntry.name)))
 #endif
         {
-            sprintf(groupfilefullpath,"%s",dirEntry.name);
+            sprintf(groupfilefullpath,"%s/%s", directoryToScan, dirEntry.name);
+            d_closedir(dir);
             return;
         }
         
@@ -8111,6 +8120,8 @@ static int load_duke3d_groupfile(void)
 
 	return(initgroupfile(groupfilefullpath) != -1);
 }
+
+extern const char *gamedir_path;
 
 int duke_main(int argc,char  **argv)
 {
@@ -8143,7 +8154,9 @@ int duke_main(int argc,char  **argv)
 	//		"group of known dukers who know what they are doing should be using\n"
 	//		"it. Please report new bugs at xd@m-klein.com or on DX forums. Thx!\n\n");
 	
-	printf("*** Chocolate DukeNukem3D v%d.%d ***\n\n", CHOCOLATE_DUKE_REV_X, CHOCOLATE_DUKE_REV_DOT_Y);
+	dprintf("*** Chocolate DukeNukem3D v%d.%d ***\n\n", CHOCOLATE_DUKE_REV_X, CHOCOLATE_DUKE_REV_DOT_Y);
+
+    setGameDir((char *)gamedir_path);
 
 	// FIX_00033: Fake multi and AI are now fully working
 	ud.multimode = 1;  // xduke: must be done before checkcommandline or that will prevent Fakeplayer and AI
@@ -8210,22 +8223,26 @@ int duke_main(int argc,char  **argv)
 				groupefil_crc32[0]==CRC_BASE_GRP_PLUTONIUM_14 ||
 				groupefil_crc32[0]==CRC_BASE_GRP_ATOMIC_15 )
 	{
-		printf("GRP identified as: %s\n", grpVersion2char_from_crc(groupefil_crc32[0]));
+		dprintf("GRP identified as: %s\n", grpVersion2char_from_crc(groupefil_crc32[0]));
 	}
 	else
 	{
-		printf(	"The content of your original BASE *.GRP is corrupted. CRC=%X\n"
+		dprintf(	"The content of your original BASE *.GRP is corrupted. CRC=%X\n"
 			"You may run in troubles. Official GRP are:\n\n", groupefil_crc32[0]);
 
 		for(i=0; i<MAX_KNOWN_GRP; i++)
-			printf("%s -> CRC32=%X  Size=%d bytes\n", crc32lookup[i].name, crc32lookup[i].crc32, crc32lookup[i].size);
+			dprintf("%s -> CRC32=%X  Size=%d bytes\n", crc32lookup[i].name, crc32lookup[i].crc32, crc32lookup[i].size);
 
-		printf(	"\nYou should try to get one of these GRP only as a base GRP\n"
+		dprintf(	"\nYou should try to get one of these GRP only as a base GRP\n"
 				"Do you want to continue anyway? (Y/N): ");
+#ifdef ORIGFILE
 		do
 			kbdKey = getch() | ' ';
 		while(kbdKey != 'y' && kbdKey != 'n');
-		printf("%c\n", kbdKey);
+#else
+        kbdKey = 'y';
+#endif
+		dprintf("%c\n", kbdKey);
 
 		if(kbdKey == 'n')
 			Error(EXIT_SUCCESS,"");
@@ -8259,15 +8276,14 @@ int duke_main(int argc,char  **argv)
     {
         if(totalmemory < (3162000-350000))
         {
-            puts("You don't have enough free memory to run Duke Nukem 3D.");
-            puts("The DOS \"mem\" command should report 6,800K (or 6.8 megs)");
-            puts("of \"total memory free\".\n");
-            printf("Duke Nukem 3D requires %d more bytes to run.\n",3162000-350000-totalmemory);
+            //puts("You don't have enough free memory to run Duke Nukem 3D.");
+            //puts("The DOS \"mem\" command should report 6,800K (or 6.8 megs)");
+            dprintf("Duke Nukem 3D requires %d more bytes to run.\n",3162000-350000-totalmemory);
             Error(EXIT_SUCCESS, "");
         }
     }
     else
-        printf("Using %d bytes for heap.\n",totalmemory);
+        dprintf("Using %d bytes for heap.\n",totalmemory);
 
     RegisterShutdownFunction( ShutDown );
 
@@ -8276,13 +8292,13 @@ int duke_main(int argc,char  **argv)
 
     if( eightytwofifty && numplayers > 1 && (MusicDevice != NumSoundCards) )
     {
-        puts("\n=========================================================================");
-        puts("WARNING: 8250 UART detected.");
-        puts("Music is being disabled and lower quality sound is being set.  We apologize");
-        puts("for this, but it is necessary to maintain high frame rates while trying to");
-        puts("play the game on an 8250.  We suggest upgrading to a 16550 or better UART");
-        puts("for maximum performance.  Press any key to continue.");
-        puts("=========================================================================\n");
+        //puts("\n=========================================================================");
+        //puts("WARNING: 8250 UART detected.");
+        //puts("Music is being disabled and lower quality sound is being set.  We apologize");
+        //puts("for this, but it is necessary to maintain high frame rates while trying to");
+        //puts("play the game on an 8250.  We suggest upgrading to a 16550 or better UART");
+        //puts("for maximum performance.  Press any key to continue.");
+        //puts("=========================================================================\n");
 
         while( !KB_KeyWaiting() ) getpackets();
     }
@@ -8325,15 +8341,17 @@ int duke_main(int argc,char  **argv)
 
    RTS_Init(ud.rtsname);
    if(numlumps) 
-	   printf("Using .RTS file:%s\n",ud.rtsname);
+	   dprintf("Using .RTS file:%s\n",ud.rtsname);
 
    if (CONTROL_JoystickEnabled)
        CONTROL_CenterJoystick(CenterCenter,UpperLeft,LowerRight,CenterThrottle,CenterRudder);
         
-   puts("Loading palette/lookups.");
-    if( setgamemode(ScreenMode,ScreenWidth,ScreenHeight) < 0 )
+   //puts("Loading palette/lookups.");
+#ifdef ORIGCODE
+   if( setgamemode(ScreenMode,ScreenWidth,ScreenHeight) < 0 )
+#endif
     {
-        printf("\nVESA driver for ( %i * %i ) not found/supported!\n",xdim,ydim);
+        dprintf("\nVESA driver for ( %i * %i ) not found/supported!\n",xdim,ydim);
         ScreenMode = 2;
         ScreenWidth = 320;
         ScreenHeight = 200;
@@ -8341,7 +8359,7 @@ int duke_main(int argc,char  **argv)
     }
 
 
-    printf("genspriteremaps()\n");
+    dprintf("genspriteremaps()\n");
     genspriteremaps();
 
 
@@ -8616,14 +8634,14 @@ uint8_t  opendemoread(uint8_t  which_demo) // 0 = mine
      kread(recfilep,&ud.reccnt,sizeof(int32_t));
      kread(recfilep,&ver,sizeof(uint8_t ));
 	
-	 printf("%s has version = %d\n", fname, ver);
+	 dprintf("%s has version = %d\n", fname, ver);
 
 	// FIX_00015: Backward compliance with older demos (down to demos v27, 28, 116, 117 and 118)
 	if (PLUTOPAK)
 	{
 		if( (ver != BYTEVERSION && ver != BYTEVERSION_116 && ver != BYTEVERSION_117 && ver != BYTEVERSION_118) ) // || (ud.reccnt < 512) )
 		{
-			printf("%s is a demo version %d. We want v. %d, %d, %d, or %d (1.5 Atomic versions)\n",
+			dprintf("%s is a demo version %d. We want v. %d, %d, %d, or %d (1.5 Atomic versions)\n",
 					fname, (int) ver, BYTEVERSION_116, BYTEVERSION_117, BYTEVERSION_118, BYTEVERSION);
 			kclose(recfilep);
 			return 0;
@@ -8633,7 +8651,7 @@ uint8_t  opendemoread(uint8_t  which_demo) // 0 = mine
 	{
 		if( (ver != BYTEVERSION && ver != BYTEVERSION_27 && ver != BYTEVERSION_28 && ver != BYTEVERSION_29) ) // || (ud.reccnt < 512) )
 		{
-			printf("%s is a demo version %d. We want v. %d, %d, %d or %d (1.3/1.3d versions)\n",
+			dprintf("%s is a demo version %d. We want v. %d, %d, %d or %d (1.3/1.3d versions)\n",
 					fname, (int) ver, BYTEVERSION_27, BYTEVERSION_28, BYTEVERSION_29, BYTEVERSION);
 			kclose(recfilep);
 			return 0;
@@ -8650,7 +8668,7 @@ uint8_t  opendemoread(uint8_t  which_demo) // 0 = mine
 			{
 				for(j=0; j<=i; j++)
 				{
-					printf("You have GRP #%d:  %s (CRC32=%X)\n"
+					dprintf("You have GRP #%d:  %s (CRC32=%X)\n"
 						   "this demo expects %s (CRC32=%X)\n",
 						j, grpVersion2char_from_crc(groupefil_crc32[j]),groupefil_crc32[j],
 						grpVersion2char_from_crc(groupefil_crc32_from_demo[j]),groupefil_crc32_from_demo[j]);
@@ -8930,7 +8948,7 @@ int32_t playback(void)
 
         if( (ps[myconnectindex].gm&MODE_MENU) && (ps[myconnectindex].gm&MODE_EOL) )
 		{
-			printf("playback(1) :: goto RECHECK:\n");
+			dprintf("playback(1) :: goto RECHECK:\n");
 			goto RECHECK;
 		}
 
@@ -10531,7 +10549,7 @@ int32_t GetTime(void)
 
 void CenterCenter(void)
    {
-   printf("Center the joystick and press a button\n");
+   dprintf("Center the joystick and press a button\n");
    }
 
 /*
@@ -10544,7 +10562,7 @@ void CenterCenter(void)
 
 void UpperLeft(void)
    {
-   printf("Move joystick to upper-left corner and press a button\n");
+   dprintf("Move joystick to upper-left corner and press a button\n");
    }
 
 /*
@@ -10557,7 +10575,7 @@ void UpperLeft(void)
 
 void LowerRight(void)
    {
-   printf("Move joystick to lower-right corner and press a button\n");
+   dprintf("Move joystick to lower-right corner and press a button\n");
    }
 
 /*
@@ -10570,7 +10588,7 @@ void LowerRight(void)
 
 void CenterThrottle(void)
    {
-   printf("Center the throttle control and press a button\n");
+   dprintf("Center the throttle control and press a button\n");
    }
 
 /*
@@ -10583,7 +10601,7 @@ void CenterThrottle(void)
 
 void CenterRudder(void)
 {
-   printf("Center the rudder control and press a button\n");
+   dprintf("Center the rudder control and press a button\n");
 }
 
 // FIX_00006: better naming system for screenshots + message when pic is taken. 

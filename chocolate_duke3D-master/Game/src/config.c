@@ -592,18 +592,18 @@ void CONFIG_ReadSetup( void )
 {
    int32 dummy;
    char  commmacro[] = COMMMACRO;
-   FILE* setup_file_hdl;
+   int setup_file_hdl;
 
-   printf("CONFIG_ReadSetup...\n");
+   dprintf("CONFIG_ReadSetup...\n");
    
    if (!SafeFileExists(setupfilename))
       {
 		// FIX_00011: duke3d.cfg not needed anymore to start the game. Will create a default one
 		//            if not found and use default keys.
-      printf("%s does not exist. Don't forget to set it up!\n" ,setupfilename);
-	  setup_file_hdl = fopen (setupfilename, "w"); // create it...
-	  if(setup_file_hdl)
-		  fclose(setup_file_hdl);
+      dprintf("%s does not exist. Don't forget to set it up!\n" ,setupfilename);
+      d_open(setupfilename, &setup_file_hdl, "+w");
+	  if(setup_file_hdl >= 0)
+		  d_close(setup_file_hdl);
       }
 
    CONFIG_SetDefaults();
@@ -634,7 +634,7 @@ void CONFIG_ReadSetup( void )
 			strcpy(boardfilename,_argv[dummy+1]);
 			if( strchr(boardfilename,'.') == 0)
 				strcat(boardfilename,".map");
-			printf("Using level: '%s'.\n",boardfilename);
+			sprintf("Using level: '%s'.\n",boardfilename);
 		}
 		else
 		{
@@ -798,7 +798,7 @@ void CONFIG_WriteSetup( void )
 
    if (!setupread) return;
 
-   printf("CONFIG_WriteSetup...\n");
+   dprintf("CONFIG_WriteSetup...\n");
 
    SCRIPT_PutNumber( scripthandle, "Screen Setup", "Shadows",ud.shadows,false,false);
    SCRIPT_PutString( scripthandle, "Screen Setup", "Password",ud.pwlockout);

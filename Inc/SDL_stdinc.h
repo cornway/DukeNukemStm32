@@ -178,7 +178,7 @@ extern DECLSPEC void * SDLCALL SDL_realloc(void *mem, size_t size);
 #endif
 
 #ifdef HAVE_FREE
-#define SDL_free	free
+#define SDL_free	Sys_Free
 #else
 extern DECLSPEC void SDLCALL SDL_free(void *mem);
 #endif

@@ -19,7 +19,7 @@
 #ifdef __SUNPRO_C
 #define STUBBED(x) fprintf(stderr,"STUB: %s (??? %s:%d)\n",x,__FILE__,__LINE__)
 #else
-#define STUBBED(x) fprintf(stderr,"STUB: %s (%s, %s:%d)\n",x,__FUNCTION__,__FILE__,__LINE__)
+#define STUBBED(x) /*fprintf(stderr,"STUB: %s (%s, %s:%d)\n",x,__FUNCTION__,__FILE__,__LINE__)*/
 #endif
 
 #define PATH_SEP_CHAR '/'
@@ -66,20 +66,30 @@ void _dos_getdate(struct dosdate_t *date);
 #define strcmpi(x, y) strcasecmp(x, y)
 #endif
 
-#ifdef DC
+#ifndef __STM32__
+#define __STM32__
+#endif
+
+#if defined(__STM32__)
+
+#define stderr (-1)
+#define stdout (-1)
+#define Z_AvailHeap() Sys_AllocBytesLeft()
+
+#elif defined(DC)
 #undef stderr
 #undef stdout
 #undef getchar
 /* kos compat */
-#define stderr ((FILE*)2)
-#define stdout ((FILE*)2)
+#define stderr (-1)
+#define stdout (-1)
 #define Z_AvailHeap() ((10 * 1024) * 1024)
 #else
 // 64 megs should be enough for anybody.  :)  --ryan.
 #define Z_AvailHeap() ((64 * 1024) * 1024)
 #endif
 
-#define printchrasm(x,y,ch) printf("%c", (uint8_t ) (ch & 0xFF))
+#define printchrasm(x,y,ch) dprintf("%c", (uint8_t ) (ch & 0xFF))
 
 #ifdef __GNUC__
 #define GCC_PACK1_EXT __attribute__((packed,aligned(1)))
@@ -90,6 +100,6 @@ void _dos_getdate(struct dosdate_t *date);
 // Giving all access is ugly but it is just game OK !
 #define mkdir(X) mkdir(X,0777)
 
-#define getch getchar
+#define getch() 0
 
 #endif

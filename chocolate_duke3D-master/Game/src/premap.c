@@ -1331,11 +1331,11 @@ void waitforeverybody()
 #ifdef _DEBUG_NETWORKING_
 	else
 	{
-		printf("numplayers == %d\n", numplayers);
+		dprintf("numplayers == %d\n", numplayers);
 	}
 #endif
 
-	printf("waitforeverybody()\n");
+	dprintf("waitforeverybody()\n");
 
     packbuf[0] = 250;
     for(i=connecthead;i>=0;i=connectpoint2[i])
@@ -1504,7 +1504,7 @@ if (!VOLUMEONE)
 		{
 			sprintf(fulllevelfilename, "%s", level_file_names[ (ud.volume_number*11)+ud.level_number]);
 		}
-		printf("filename=%s\n",fulllevelfilename );
+		dprintf("filename=%s\n",fulllevelfilename );
 		if ( loadboard(fulllevelfilename ,&ps[0].posx, &ps[0].posy, &ps[0].posz, &ps[0].ang,&ps[0].cursectnum ) == -1)
         {
 			sprintf(text,"Internal Map %s not found! Not using the right grp file?\n",level_file_names[(ud.volume_number*11)+ud.level_number]);
@@ -1518,7 +1518,7 @@ if (!VOLUMEONE)
     copybufbyte( level_file_names[ (ud.volume_number*11)+ud.level_number],&levname[0],l);
     levname[l] = 0; 
 
-	printf("levname=%s\n",levname );
+	dprintf("levname=%s\n",levname );
 
     if ( (ud.volume_number > 1) || loadboard( levname,&ps[0].posx, &ps[0].posy, &ps[0].posz, &ps[0].ang,&ps[0].cursectnum ) == -1)
     {

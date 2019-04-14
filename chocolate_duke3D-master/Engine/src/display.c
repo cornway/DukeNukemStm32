@@ -75,6 +75,7 @@ void TIMER_GetPlatformTicks(int64_t* t);
 
 #include "draw.h"
 #include "cache.h"
+#include "SDL_Keysym.h"
 
 
 /*
@@ -94,7 +95,7 @@ uint8_t* frameplace;
 
 //The frambuffer address
 uint8_t* frameoffset;
-uint8_t  *screen, vesachecked;
+uint8_t  *screen_raw, vesachecked;
 int32_t buffermode, origbuffermode, linearmode;
 uint8_t  permanentupdate = 0, vgacompatible;
 
@@ -107,8 +108,6 @@ static short mouse_buttons = 0;
 static unsigned int lastkey = 0;
 /* so we can make use of setcolor16()... - DDOI */
 static uint8_t  drawpixel_color=0;
-
-#define SDLK_LAST 0xff
 
 static uint32_t scancodes[SDLK_LAST];
 
@@ -272,13 +271,13 @@ static void init_new_res_vars(int32_t davidoption)
     	j = ydim*4*sizeof(int32_t);  /* Leave room for horizlookup&horizlookup2 */
 
 		if(horizlookup)
-			free(horizlookup);
+			Sys_Free(horizlookup);
 
 		if(horizlookup2)
-			free(horizlookup2);
+			Sys_Free(horizlookup2);
 		
-		horizlookup = (int32_t*)malloc(j);
-		horizlookup2 = (int32_t*)malloc(j);
+		horizlookup = (int32_t*)Sys_Malloc(j);
+		horizlookup2 = (int32_t*)Sys_Malloc(j);
 
     j = 0;
     
@@ -316,7 +315,6 @@ static void go_to_new_vid_mode(int davidoption, int w, int h)
     getvalidvesamodes();
     SDL_ClearError();
     // don't do SDL_SetVideoMode if SDL_WM_SetIcon not called. See sdl doc for SDL_WM_SetIcon
-#if 0
 	surface = SDL_SetVideoMode(w, h, 8, sdl_flags);
     if (surface == NULL)
     {
@@ -327,7 +325,6 @@ static void go_to_new_vid_mode(int davidoption, int w, int h)
 
     output_surface_info(surface);
     init_new_res_vars(davidoption); // dont be confused between vidoption (global) and davidoption
-#endif
 }
 
 static __inline int sdl_mouse_button_filter(void const *event)
@@ -606,28 +603,28 @@ void _joystick_init(void)
 
     if (joystick != NULL)
     {
-        printf("Joystick appears to be already initialized.\n");
-        printf("...deinitializing for stick redetection...\n");
+        sprintf("Joystick appears to be already initialized.\n");
+        sprintf("...deinitializing for stick redetection...\n");
         _joystick_deinit();
     } /* if */
 
     if ((envr != NULL) && (strcmp(envr, "none") == 0))
     {
-        printf("Skipping joystick detection/initialization at user request\n");
+        sprintf("Skipping joystick detection/initialization at user request\n");
         return;
     } /* if */
 
-    printf("Initializing SDL joystick subsystem...");
-    printf(" (export environment variable BUILD_SDLJOYSTICK=none to skip)\n");
+    sprintf("Initializing SDL joystick subsystem...");
+    sprintf(" (export environment variable BUILD_SDLJOYSTICK=none to skip)\n");
 
     if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_NOPARACHUTE) != 0)
     {
-        printf("SDL_Init(SDL_INIT_JOYSTICK) failed: [%s].\n", SDL_GetError());
+        sprintf("SDL_Init(SDL_INIT_JOYSTICK) failed: [%s].\n", SDL_GetError());
         return;
     } /* if */
 
     numsticks = SDL_NumJoysticks();
-    printf("SDL sees %d joystick%s.\n", numsticks, numsticks == 1 ? "" : "s");
+    sprintf("SDL sees %d joystick%s.\n", numsticks, numsticks == 1 ? "" : "s");
     if (numsticks == 0)
         return;
 
@@ -637,20 +634,20 @@ void _joystick_init(void)
         if ((envr != NULL) && (strcmp(envr, stickname) == 0))
             favored = i;
 
-        printf("Stick #%d: [%s]\n", i, stickname);
+        dprintf("Stick #%d: [%s]\n", i, stickname);
     } /* for */
 
-    printf("Using Stick #%d.", favored);
+    dprintf("Using Stick #%d.", favored);
     if ((envr == NULL) && (numsticks > 1))
-        printf("Set BUILD_SDLJOYSTICK to one of the above names to change.\n");
+        dprintf("Set BUILD_SDLJOYSTICK to one of the above names to change.\n");
 
     joystick = SDL_JoystickOpen(favored);
     if (joystick == NULL)
     {
-        printf("Joystick #%d failed to init: %s\n", favored, SDL_GetError());
+        dprintf("Joystick #%d failed to init: %s\n", favored, SDL_GetError());
         return;
     } /* if */
-    printf("Joystick initialized. %d axes, %d buttons, %d hats, %d balls.\n",
+    dprintf("Joystick initialized. %d axes, %d buttons, %d hats, %d balls.\n",
               SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick),
               SDL_JoystickNumHats(joystick), SDL_JoystickNumBalls(joystick));
     SDL_JoystickEventState(SDL_QUERY);
@@ -663,11 +660,11 @@ void _joystick_deinit(void)
 #ifdef ORIGCODE
     if (joystick != NULL)
     {
-        printf("Closing joystick device...\n");
+        dprintf("Closing joystick device...\n");
         SDL_JoystickClose(joystick);
-        printf("Joystick device closed. Deinitializing SDL subsystem...\n");
+        dprintf("Joystick device closed. Deinitializing SDL subsystem...\n");
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-        printf("SDL joystick subsystem deinitialized.\n");
+        dprintf("SDL joystick subsystem deinitialized.\n");
         joystick = NULL;
     } /* if */
 #endif
@@ -740,11 +737,11 @@ static void output_sdl_versions(void)
 
     SDL_VERSION(&compiled_ver);
 
-    printf("SDL display driver for the BUILD engine initializing.\n");
-    printf("  sdl_driver.c by Ryan C. Gordon (icculus@clutteredmind.org).\n");
-    printf("Compiled %s against SDL version %d.%d.%d ...\n", __DATE__,
+    dprintf("SDL display driver for the BUILD engine initializing.\n");
+    dprintf("  sdl_driver.c by Ryan C. Gordon (icculus@clutteredmind.org).\n");
+    dprintf("Compiled %s against SDL version %d.%d.%d ...\n", __DATE__,
                 compiled_ver.major, compiled_ver.minor, compiled_ver.patch);
-    printf("Linked SDL version is %d.%d.%d ...\n",
+    dprintf("Linked SDL version is %d.%d.%d ...\n",
                 linked_ver->major, linked_ver->minor, linked_ver->patch);
 #endif
 } /* output_sdl_versions */
@@ -967,7 +964,7 @@ void setvmode(int mode)
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
         return;
     } else
-        printf("setvmode(0x%x) is unsupported in SDL driver.\n", mode);
+        dprintf("setvmode(0x%x) is unsupported in SDL driver.\n", mode);
 #endif
 } 
 
@@ -1102,10 +1099,17 @@ static __inline void add_user_defined_resolution(void)
         dprintf("User defined resolution [%s] is bogus!\n", envr);
 } /* add_user_defined_resolution */
 
+static SDL_Rect sdl320x200 = {0, 0, 320, 200};
+
+static SDL_Rect *phys_modes[] =
+{
+   &sdl320x200,
+   NULL,
+};
 
 static __inline SDL_Rect **get_physical_resolutions(void)
 {
-#if 0
+#ifdef ORIGCODE
     const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
     SDL_Rect **modes = SDL_ListModes(vidInfo->vfmt, sdl_flags | SDL_FULLSCREEN);
     if (modes == NULL)
@@ -1123,9 +1127,8 @@ static __inline SDL_Rect **get_physical_resolutions(void)
         dprintf("Highest physical resolution is (%dx%d).\n",
                   modes[0]->w, modes[0]->h);
     } /* else */
-
-    return(modes);
 #endif
+    return(phys_modes);
 } /* get_physical_resolutions */
 
 
@@ -1236,7 +1239,7 @@ static __inline void output_vesa_modelist(void)
             strcat(buffer, numbuf);
     } /* for */
 
-    printf("Final sorted modelist:%s", buffer);
+    dprintf("Final sorted modelist:%s", buffer);
 } 
 
 
@@ -1246,8 +1249,8 @@ void getvalidvesamodes(void)
     int i;
     SDL_Rect **modes = NULL;
     int stdres[][2] = {
-                        {320, 200}, {640, 350}, {640, 480},
-                        {800, 600}, {1024, 768}
+                        {320, 200}/*, {640, 350}, {640, 480},
+                        {800, 600}, {1024, 768}*/
                       };
 
     if (already_checked)
@@ -1284,7 +1287,7 @@ void WriteTranslucToFile(void){
     uint8_t* transPointer = transluc;
     uint8_t* bufferPointer = buffer;
     int i;
-    FILE* file;
+    int file;
     
     for (i=0; i < 65535; i++) {
         
@@ -1293,9 +1296,9 @@ void WriteTranslucToFile(void){
         bufferPointer[2] = (lastPalette[(*transPointer)*3+2]) / 63.0 * 255;
         bufferPointer[3] = 255;
         
-        printf("%d,",*transPointer);
+        dprintf("%d,",*transPointer);
         if (i%255 ==0)
-            printf("\n");
+            dprintf("\n");
         
         transPointer +=1;
         bufferPointer+=4;
@@ -1303,8 +1306,10 @@ void WriteTranslucToFile(void){
     
     
     
-    file = fopen("transluc.tga", "w");
-    
+    d_open("transluc.tga", &file, "+w");
+    if (file < 0) {
+        return;
+    }
     memset(tga_header, 0, 18);
     tga_header[2] = 2;
     tga_header[12] = (256 & 0x00FF);
@@ -1313,9 +1318,9 @@ void WriteTranslucToFile(void){
     tga_header[15] =(256 & 0xFF00) / 256;
     tga_header[16] = 32 ;
     
-    fwrite(&tga_header, 18, sizeof(uint8_t), file);
-    fwrite(buffer, 65535, 4, file);
-    fclose(file);
+    d_write(file, &tga_header, 18);
+    d_write(file, buffer, 65535 * 4);
+    d_close(file);
 }
 
 void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int height){
@@ -1326,9 +1331,10 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
     uint8_t* bufferPointer ;
     int i;
     
-    FILE* file = fopen(filename, "w");
-    
-    
+    int file;
+
+    d_open(filename, &file, "+w");
+
     memset(tga_header, 0, 18);
     tga_header[2] = 2;
     tga_header[12] = (width & 0x00FF);
@@ -1337,9 +1343,9 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
     tga_header[15] =(height & 0xFF00) / 256;
     tga_header[16] = 32 ;
     
-    fwrite(&tga_header, 18, sizeof(uint8_t), file);
+    d_write(file, &tga_header, 18);
     
-    bufferPointer = buffer = malloc(width*height*4);
+    bufferPointer = buffer = Sys_Malloc(width*height*4);
     
     for (i = 0 ; i < width*height ; i++)
     {
@@ -1352,20 +1358,18 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
         palettePointer+= 3;
     }
     
-    fwrite(buffer, width*height, 4, file);
-    fclose(file);
+    d_write(file, buffer, width*height * 4);
+    d_close(file);
     
-    free(buffer);
+    Sys_Free(buffer);
 }
 
 
 void WriteLastPaletteToFile(){
-    WritePaletteToFile(lastPalette,"lastPalette.tga",16,16);
+    //WritePaletteToFile(lastPalette,"lastPalette.tga",16,16);
 }
 
-typedef V_PREPACK struct {
-    uint8_t r, g, b;
-} V_POSTPACK palrgb_t;
+extern void    VID_Init (void);
 
 int VBE_setPalette(uint8_t  *palettebuffer)
 /*
@@ -1382,8 +1386,9 @@ int VBE_setPalette(uint8_t  *palettebuffer)
  *  so we do a conversion.
  */
 {
-    palrgb_t fmt_swap[256];
-    palrgb_t *sdlp = fmt_swap;
+    pal_t fmt_swap[256];
+    pix_t r, g, b;
+    pal_t *sdlp = fmt_swap;
     uint8_t  *p = palettebuffer;
     int i;
     //static updated=0;
@@ -1400,13 +1405,16 @@ int VBE_setPalette(uint8_t  *palettebuffer)
     memcpy(lastPalette, palettebuffer, 768);
     
     for (i = 0; i < 256; i++){
-        sdlp->b = (Uint8) ((((float) *p++) / 63.0) * 255.0);
-        sdlp->g = (Uint8) ((((float) *p++) / 63.0) * 255.0);
-        sdlp->r = (Uint8) ((((float) *p++) / 63.0) * 255.0);
+        
+        b = (Uint8) ((((float) *p++) / 63.0) * 255.0);
+        g = (Uint8) ((((float) *p++) / 63.0) * 255.0);
+        r = (Uint8) ((((float) *p++) / 63.0) * 255.0);
+        *sdlp = GFX_RGB(r,g,b, 0xff);
+        p++;
         sdlp++;
     }
-
-    return(screen_set_clut(fmt_swap, fmt_swap, 0, 256));
+    screen_set_clut(fmt_swap, 256);
+    return 0;
 }
 
 
@@ -1507,7 +1515,7 @@ void _nextpage(void)
     _handle_events();
 
     
-    SDL_UpdateRect(surface, 0, 0, 0, 0);
+    SDL_UpdateRect(surface, 0, 0, surface->w, surface->h);
     
     //sprintf(bmpName,"%d.bmp",counter++);
     //SDL_SaveBMP(surface,bmpName);

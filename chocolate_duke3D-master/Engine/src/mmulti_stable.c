@@ -264,7 +264,7 @@ void cleanup(void);
 #endif
 		atexit(cleanup);
 
-		retval = (gcomtype *)malloc(sizeof (gcomtype));
+		retval = (gcomtype *)Sys_Malloc(sizeof (gcomtype));
 		if (retval != NULL)
 		{
 			int rc;
@@ -283,14 +283,14 @@ void cleanup(void);
 
 			if(!rc)
 			{
-				printf("Network transport initialization error!\n");
+				dprintf("Network transport initialization error!\n");
 			}
 
 			gcom = retval;
 		}
 		else
 		{
-				printf("Error allocating gcomtype!\n");
+				dprintf("Error allocating gcomtype!\n");
 		}
 
 		numplayers = gcom->numplayers;
@@ -327,7 +327,7 @@ void cleanup(void);
 		if(other == (myconnectindex))
 		{
 			#ifdef _DEBUG_NETWORKING_
-				printf("Send Packet to myself %d : type: %d len: %d\n", other, bufptr[0], messleng);
+				dprintf("Send Packet to myself %d : type: %d len: %d\n", other, bufptr[0], messleng);
 			#endif
 			memcpy(g_LastPersonalPacket.buffer, bufptr, messleng);
 			g_LastPersonalPacket.numbytes = (short)messleng;
@@ -337,7 +337,7 @@ void cleanup(void);
 		{
 
 			#ifdef _DEBUG_NETWORKING_
-				printf("Send Packet to peer %d : type: %d len: %d\n", other, bufptr[0], messleng);
+				dprintf("Send Packet to peer %d : type: %d len: %d\n", other, bufptr[0], messleng);
 			#endif
 #ifdef ORIGCODE
 			ENetPacket * packet = enet_packet_create (bufptr, sizeof(char) * messleng, ENET_PACKET_FLAG_RELIABLE);//ENET_PACKET_FLAG_RELIABLE
@@ -484,7 +484,7 @@ int connect_to_everyone()
 
 	while(bWaiting)
 	{
-		printf( (g_bAllPlayersFound) ? "." : "Waiting for connections...\n");
+		dprintf( (g_bAllPlayersFound) ? "." : "Waiting for connections...\n");
 
 		//wait for conencts to/from them
 		if (enet_host_service (g_Server, & event, (bCreatedPeers == 1) ? CONNECTION_DELAY : INITIAL_CONNECTION_DELAY) > 0) 
@@ -506,13 +506,13 @@ int connect_to_everyone()
 				address.port = allowed_addresses[i].port; //m_nPort;
 
 				enet_address_get_host(&address, szHostName, 64);
-				printf("Creating peer: %s:%d\n", szHostName, address.port);
+				dprintf("Creating peer: %s:%d\n", szHostName, address.port);
 	
 				g_Peers[i] = enet_host_connect (g_Server, & address, 2); 
 	
 				if(g_Peers[i] == NULL)
 				{
-					printf("Error creating peer! \n");
+					dprintf("Error creating peer! \n");
 					//return 1;
 				}else
 				{
@@ -530,7 +530,7 @@ int connect_to_everyone()
 
 	}
 
-	printf("Negotiating connection order...\n");
+	dprintf("Negotiating connection order...\n");
 	Send_Peer_Gretting();
 	Wait_For_Ready();
 #endif
@@ -549,7 +549,7 @@ void Send_Peer_Gretting()
 		my_id = (unsigned short)enet_time_get_raw();//(unsigned short) rand();
 	}
 
-	printf("My client id is %d\n", my_id);
+	dprintf("My client id is %d\n", my_id);
 
 	for(i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -564,7 +564,7 @@ void Send_Peer_Gretting()
 	// Create the greeting packet
 	ENetPacket * packet = enet_packet_create (&greetpacket, sizeof(PacketPeerGreeting), ENET_PACKET_FLAG_RELIABLE);//ENET_PACKET_FLAG_RELIABLE
 
-	printf("Broadcasting Greating...\n");
+	dprintf("Broadcasting Greating...\n");
 
 	// Broadcast it to all the peers
 	enet_host_broadcast(g_Server, 0, packet);
@@ -602,7 +602,7 @@ void Send_Peer_Gretting()
 				int k = 0;
 				unsigned short nCurrentHigh = 0;
 
-				printf("Sorting player IDs...\n");
+				dprintf("Sorting player IDs...\n");
 
 				for(iteration = 0; iteration < gcom->numplayers; ++iteration)
 				{					
@@ -611,7 +611,7 @@ void Send_Peer_Gretting()
 					{
 						if(allowed_addresses[iteration].id == allowed_addresses[k].id)
 						{
-							printf("ERROR!!!!! Two players with the same Unique ID found, please restart...\n");
+							dprintf("ERROR!!!!! Two players with the same Unique ID found, please restart...\n");
 						}
 						else
 						{
@@ -633,17 +633,17 @@ void Send_Peer_Gretting()
 				}
 
 				// Find our slot	
-				printf("Finding our player index...\n");
+				dprintf("Finding our player index...\n");
 
 				for(i = 0; i < (gcom->numplayers); ++i)
 				{	
-					printf("Index[%d] = %d\n", i, allowed_addresses[i].id);
+					dprintf("Index[%d] = %d\n", i, allowed_addresses[i].id);
 
 
 					if(allowed_addresses[i].id == my_id)
 					{
 						gcom->myconnectindex = i;
-						printf("You are player #%d\n", i);
+						dprintf("You are player #%d\n", i);
 
 						// We're all greated, switch to waiting for all ready
 						g_ConnMode = CONN_MODE_WAITFORREADY;
@@ -667,7 +667,7 @@ void Wait_For_Ready()
 
 	ENetPacket * packet = enet_packet_create (&message, sizeof(unsigned char), ENET_PACKET_FLAG_RELIABLE);//ENET_PACKET_FLAG_RELIABLE
 
-	printf("Broadcasting Ready Packet...\n");
+	dprintf("Broadcasting Ready Packet...\n");
 
 	// Broadcast it to all the peers
 	enet_host_broadcast(g_Server, 0, packet);
@@ -698,13 +698,13 @@ void Wait_For_Ready()
 			// Check to make sure we didn't subtract 1 from 0 to make 255. (unsigned char)
 			if(g_bWaitingForAllReady > gcom->numplayers)
 			{
-				printf("Error: we have a problem with the waiting for ready packets...\n");
+				dprintf("Error: we have a problem with the waiting for ready packets...\n");
 			}
 
 		}
 	}
 
-	printf("All players are ready. Start sending game data...\n");
+	dprintf("All players are ready. Start sending game data...\n");
 
 	g_ConnMode = CONN_MODE_CONNECTED;
 #endif
@@ -726,7 +726,7 @@ void HandleEvent(void *pEvent)
 					char szHostName[64];
 					enet_address_get_host(&address, szHostName, 64);
 					
-					printf("Connection Established with: (%s)\n", szHostName);
+					dprintf("Connection Established with: (%s)\n", szHostName);
 
 					for(i = 0; i < gcom->numplayers-1; ++i)
 					{
@@ -746,7 +746,7 @@ void HandleEvent(void *pEvent)
 
 					// All players have been found... YAY!
 					g_bAllPlayersFound = 1;
-					printf("All Players Connected...\n");
+					dprintf("All Players Connected...\n");
 
 				}
 				break;
@@ -767,10 +767,10 @@ void HandleEvent(void *pEvent)
 
 								if(pEvent->packet->data[0] != HEADER_PEER_GREETING)
 								{
-									printf("Invalid greeting!!!!\n");
+									dprintf("Invalid greeting!!!!\n");
 								}
 
-								printf("Received greeting from (%x)...\n", pEvent->peer->address.host);
+								dprintf("Received greeting from (%x)...\n", pEvent->peer->address.host);
 
 								memcpy(&packet, pEvent->packet->data, g_nMessageLen);
 								if(packet.header == HEADER_PEER_GREETING)
@@ -793,7 +793,7 @@ void HandleEvent(void *pEvent)
 								}
 								else
 								{
-									printf("Invalid READY packet!!!\n");
+									dprintf("Invalid READY packet!!!\n");
 								}
 									
 
@@ -811,17 +811,17 @@ void HandleEvent(void *pEvent)
 #ifdef ORIGCODE
 									incommingPacketQueue.push_back(packet);
 #endif
-									printf("Saving early packet...\n");
+									dprintf("Saving early packet...\n");
 									break;
 								}
 
 								if(pEvent->packet->data[0] == 16)
 								{
-									printf("PACKET 16: len:[%d]\n", g_nMessageLen);
+									dprintf("PACKET 16: len:[%d]\n", g_nMessageLen);
 								}
 
 								#ifdef _DEBUG_NETWORKING_LEVEL2_
-									printf("RECEIVE: type[%d] len:[%d]\n", pEvent->packet->data[0], g_nMessageLen);
+									dprintf("RECEIVE: type[%d] len:[%d]\n", pEvent->packet->data[0], g_nMessageLen);
 								#endif						
 								memcpy(&lastpacket[0], pEvent->packet->data, g_nMessageLen);
 								*g_other = GetOtherIndex(pEvent->peer);
@@ -904,12 +904,12 @@ void HandleEvent(void *pEvent)
 				break;
 			case ENET_EVENT_TYPE_DISCONNECT:
 				{
-					printf("DISCONNECT: someone left!\n");
+					dprintf("DISCONNECT: someone left!\n");
 				}
 				break;
 			default:
 				{
-					printf("Error: unknown event! : %d\n", pEvent->type);
+					dprintf("Error: unknown event! : %d\n", pEvent->type);
 				}
 				break;
 			}
@@ -929,7 +929,7 @@ unsigned int GetPeerIndex(void* peer)
 		}
 	}
 
-	printf("Error: GetPeerIndex failed to find the corrent index!\n");
+	dprintf("Error: GetPeerIndex failed to find the corrent index!\n");
 #endif
 	return 0;
 }
@@ -947,7 +947,7 @@ unsigned int GetOtherIndex(void* peer)
 		}
 	}
 
-	printf("Error: GetOtherIndex failed to find the corrent index!\n");
+	dprintf("Error: GetOtherIndex failed to find the corrent index!\n");
 #endif
 	return 0;
 }
@@ -971,7 +971,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 #ifdef ORIGCODE
 	ENetAddress address;
 
-	printf("Creating server of %d players on port %d.\n", nMaxPlayers, nPort);
+	dprintf("Creating server of %d players on port %d.\n", nMaxPlayers, nPort);
 
     /* Bind the server to the default localhost.
      * A specific host address can be specified by
@@ -988,7 +988,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
    
 	if (g_Server == NULL)
     {
-		printf("Error creating server!\n");
+		dprintf("Error creating server!\n");
 		return 1;
 	}
 #endif
@@ -1026,12 +1026,12 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 		handle = kopen4load(cfgfile,0);
 		if (handle == -1)
 		{
-			printf("ERROR: Failed to open config file [%s].\n", cfgfile);
+			dprintf("ERROR: Failed to open config file [%s].\n", cfgfile);
 			return(NULL);
 		}
 
 		len = kfilelength(handle);
-		buf = (char *) malloc(len + 2);
+		buf = (char *) Sys_Malloc(len + 2);
 		if (!buf)
 		{
 			kclose(handle);
@@ -1042,7 +1042,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 		kclose(handle);
 		if (rc != len)
 		{
-			free(buf);
+			Sys_Free(buf);
 			return(NULL);
 		}
 
@@ -1087,7 +1087,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 
 		if (sscanf(str, "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4) != 4)
 		{
-			printf("\"%s\" is not a valid IP address.\n", str);
+			dprintf("\"%s\" is not a valid IP address.\n", str);
 			return(0);
 		}
 
@@ -1147,7 +1147,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 				{
 					bogus = 0;
 				}
-				printf("Interface %s:%d chosen.\n",
+				dprintf("Interface %s:%d chosen.\n",
 						static_ipstring(ip), (int) udpport);
 			}
 
@@ -1166,7 +1166,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 						bogus = 1;
 
 					if (!bogus)
-						printf("You want to be in [%s] mode\n", tok);
+						dprintf("You want to be in [%s] mode\n", tok);
 				}
 			}
 
@@ -1177,7 +1177,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 					bcast = atoi(tok);
 					if (bcast > MAX_PLAYERS - 1)
 					{
-						printf("WARNING: Too many broadcast players.\n");
+						dprintf("WARNING: Too many broadcast players.\n");
 						bcast = MAX_PLAYERS - 1;
 					}
 
@@ -1192,7 +1192,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 				if ((tok = get_token(&ptr)) != NULL)
 				{
 					if (gcom->numplayers >= MAX_PLAYERS - 1)
-						printf("WARNING: Too many allowed IP addresses.\n");
+						dprintf("WARNING: Too many allowed IP addresses.\n");
 
 					else if (parse_interface(tok, &host, &port))
 					{
@@ -1210,10 +1210,10 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 			}
 
 			if (bogus)
-				printf("bogus token! [%s]\n", tok);
+				dprintf("bogus token! [%s]\n", tok);
 		}
 
-		free(buf);
+		Sys_Free(buf);
 
 		// Create the server
 		int ret = CreateServer(static_ipstring(ip), udpport, gcom->numplayers);

@@ -215,7 +215,7 @@ void MusicShutdown( void )
 
 int USRHOOKS_GetMem(void  **ptr, uint32_t size )
 {
-   *ptr = malloc(size);
+   *ptr = Sys_Malloc(size);
 
    if (*ptr == NULL)
       return(USRHOOKS_Error);
@@ -226,7 +226,7 @@ int USRHOOKS_GetMem(void  **ptr, uint32_t size )
 
 int USRHOOKS_FreeMem(void  *ptr)
 {
-   free(ptr);
+   Sys_Free(ptr);
    return( USRHOOKS_Ok);
 }
 

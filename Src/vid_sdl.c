@@ -29,7 +29,9 @@ pix_t screenbuf[BASEWIDTH * BASEHEIGHT * sizeof(pix_t) + sizeof(SDL_Surface)] = 
 int    VGA_width, VGA_height, VGA_rowbytes, VGA_bufferrowbytes = 0;
 uint8_t    *VGA_pagebase;
 
-static SDL_Surface *screen = NULL;
+extern SDL_Surface *surface;
+extern int32_t xdim, ydim;
+SDL_Surface *screen = NULL;
 
 static boolean mouse_avail;
 static float   mouse_x, mouse_y;
@@ -49,7 +51,7 @@ void    VID_ShiftPalette (unsigned char *palette)
     VID_SetPalette(palette);
 }
 
-void    VID_Init (unsigned char *palette)
+void    VID_Init (void)
 {
     int chunk;
     uint8_t *cache;
@@ -89,8 +91,6 @@ void    VID_Init (unsigned char *palette)
     screen->offset = 0;
     screen->pitch = BASEWIDTH;
 
-    VID_SetPalette(palette);
-
     // now know everything we need to know about the buffer
     VGA_width = vid.conwidth = vid.width;
     VGA_height = vid.conheight = vid.height;
@@ -103,6 +103,10 @@ void    VID_Init (unsigned char *palette)
     vid.conbuffer = vid.buffer;
     vid.conrowbytes = vid.rowbytes;
     vid.direct = 0;
+
+    surface = screen;
+    xdim = screen->w;
+    ydim = screen->h;
 }
 
 void    VID_Shutdown (void)

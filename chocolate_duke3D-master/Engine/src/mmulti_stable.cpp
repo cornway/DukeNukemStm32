@@ -256,7 +256,7 @@ void cleanup(void);
 
 		atexit(cleanup);
 
-		retval = (gcomtype *)malloc(sizeof (gcomtype));
+		retval = (gcomtype *)Sys_Malloc(sizeof (gcomtype));
 		if (retval != NULL)
 		{
 			int rc;

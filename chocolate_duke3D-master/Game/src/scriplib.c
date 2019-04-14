@@ -69,7 +69,7 @@ static scriptnode_t *SCRIPT_constructnode (void)
 {
 	scriptnode_t *s;
 
-	s = (scriptnode_t *) malloc (sizeof (scriptnode_t));
+	s = (scriptnode_t *) Sys_Malloc (sizeof (scriptnode_t));
 	if (s != NULL)
 	{
 		s->child = NULL;
@@ -87,19 +87,19 @@ static void SCRIPT_freenode (scriptnode_t *node)
 	assert (node != NULL);
 
 	if (node->type == SCRIPTFLAG_ONESTRING) {
-		free (node->data.string[0]);
+		Sys_Free (node->data.string[0]);
 	} else if (node->type == SCRIPTFLAG_TWOSTRING) {
-		free (node->data.string[0]);
-		free (node->data.string[1]);
+		Sys_Free (node->data.string[0]);
+		Sys_Free (node->data.string[1]);
 	}
 
-	free (node->key);
-	free (node->sibling);
-	free (node->child);
-	free (node);
+	Sys_Free (node->key);
+	Sys_Free (node->sibling);
+	Sys_Free (node->child);
+	Sys_Free (node);
 }
 
-static void SCRIPT_writenode (scriptnode_t *node, FILE *fp)
+static void SCRIPT_writenode (scriptnode_t *node, int fp)
 {
 	switch (node->type)
 	{
@@ -107,27 +107,27 @@ static void SCRIPT_writenode (scriptnode_t *node, FILE *fp)
 			return;
 			break;
 		case SCRIPTFLAG_CATEGORY:
-			fprintf (fp, "\n[%s]\n", node->key);
+			d_printf (fp, "\n[%s]\n", node->key);
 			break;
 		case SCRIPTFLAG_ONESTRING:
-			fprintf (fp, "%s = \"%s\"\n", node->key, node->data.string[0]);
+			d_printf (fp, "%s = \"%s\"\n", node->key, node->data.string[0]);
 			break;
 		case SCRIPTFLAG_TWOSTRING:
-			fprintf (fp, "%s = \"%s\" \"%s\"\n", node->key, node->data.string[0], node->data.string[1]);
+			d_printf (fp, "%s = \"%s\" \"%s\"\n", node->key, node->data.string[0], node->data.string[1]);
 			break;
 		case SCRIPTFLAG_HEX:
-			fprintf (fp, "%s = 0x%X\n", node->key, node->data.number);
+			d_printf (fp, "%s = 0x%X\n", node->key, node->data.number);
 			break;
 		case SCRIPTFLAG_DECIMAL:
-			fprintf (fp, "%s = %d\n", node->key, node->data.number);
+			d_printf (fp, "%s = %d\n", node->key, node->data.number);
 			break;
 		case SCRIPTFLAG_FLOAT:
-			fprintf (fp, "%s = %ff\n", node->key, node->data.floatnumber);
+			d_printf (fp, "%s = %ff\n", node->key, node->data.floatnumber);
 			break;
 	}
 }
 
-static void SCRIPT_recursivewrite (scriptnode_t *node, FILE *fp)
+static void SCRIPT_recursivewrite (scriptnode_t *node, int fp)
 {
 	if (node == NULL) return;
 
@@ -192,7 +192,7 @@ static char  *SCRIPT_copystring (char  * s)
 {
 	char  *ret;
 
-	ret = (char  *) malloc (strlen (s)+1);
+	ret = (char  *) Sys_Malloc (strlen (s)+1);
 	if (ret != NULL)
 	{
 		strcpy (ret, s);
@@ -392,7 +392,7 @@ int32 SCRIPT_Parse ( uint8_t  *data, int32 length, char  * name )
 
 int32 SCRIPT_Load ( char  * filename )
 {
-	FILE *fp;
+	int fp;
 	char  curline[128];
 	scriptnode_t *headnode = NULL;
 	scriptnode_t *cur_subsection = NULL;
@@ -402,9 +402,9 @@ int32 SCRIPT_Load ( char  * filename )
 	/* The main program does not check for any sort of */
 	/* error in loading, so each SCRIPT_ function needs */
 	/* to check if the handle is -1 before doing anything */
-	fp = fopen (filename, "r");
+	d_open (filename, &fp, "r");
 
-	if (fp == NULL) return -1;
+	if (fp < 0) return -1;
 
 	/* Start loading the script */
 	/* Loads and parse the entire file into a tree */
@@ -415,7 +415,7 @@ int32 SCRIPT_Load ( char  * filename )
 	headnode = script_headnode[script_nexthandle];
 
 	memset (curline, 0, 128);
-	while (fgets (curline, 128, fp))
+	while (d_gets (fp, curline, 128))
 	{
 		/* Skip comments */
 		if (curline[0] == ';') continue;
@@ -469,7 +469,7 @@ int32 SCRIPT_Load ( char  * filename )
 		memset (curline, 0, 128);
 	}
 
-	fclose (fp);
+	d_close (fp);
 
 	return script_nexthandle++;	/* postincrement is important here */
 }
@@ -483,20 +483,19 @@ int32 SCRIPT_Load ( char  * filename )
 */
 void SCRIPT_Save (int32 scripthandle, char*  filename)
 {
-	FILE *fp;
+	int fp;
 	scriptnode_t *head;
 
 	if(scripthandle >= MAX_SCRIPTS || scripthandle < 0)
 		return;
 
-	fp = fopen (filename, "w");
-	if (fp == NULL) return;
+	d_open (filename, &fp, "+w");
+	if (fp < 0) return;
 
 	head = script_headnode[scripthandle];
 	SCRIPT_recursivewrite (head, fp);
 
-	fclose (fp);
-
+	d_close (fp);
 }
 
 
@@ -906,7 +905,7 @@ void SCRIPT_PutString
 		node->key = SCRIPT_copystring (entryname);
 		SCRIPT_addchild (section, node);
 	} else {
-		free (node->data.string[0]);
+		Sys_Free (node->data.string[0]);
 	}
 
 	node->data.string[0] = SCRIPT_copystring (string);
@@ -959,8 +958,8 @@ void SCRIPT_PutDoubleString
 		node->key = SCRIPT_copystring (entryname);
 		SCRIPT_addchild (section, node);
 	} else {
-		free (node->data.string[0]);
-		free (node->data.string[1]);
+		Sys_Free (node->data.string[0]);
+		Sys_Free (node->data.string[1]);
 	}
 
 	node->data.string[0] = SCRIPT_copystring (string1);

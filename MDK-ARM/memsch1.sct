@@ -22,10 +22,10 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
   RW_IRAM2 0x2007C000 0x00001000  {  ; RW data
    .ANY (iram2, +RW +ZI)
   }
-  RW_RAM2 0xc0000000 0x002c0000  {  ; RW data
+  RW_RAM2 0xc0000000 0x001c0000  {  ; RW data
    .ANY (+RW +ZI)
   }
-  RW_RAM3 0xC02c0000 0x00d40000  { ; External SDRAM
+  RW_RAM3 0xC01c0000 0x00e40000  { ; External SDRAM
    *(HEAP)
   }
 }

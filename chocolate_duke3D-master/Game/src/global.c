@@ -550,7 +550,8 @@ void write2disk(int line, char * cfilename, char  *filename2write, char  *messag
 
 	int i, k=0;
 	char  filename[2048];
-	FILE *pFile;
+	int pFile;
+    int size;
 
 	for(i=0; cfilename[i]; i++)
 	{
@@ -561,9 +562,10 @@ void write2disk(int line, char * cfilename, char  *filename2write, char  *messag
 		}
 		filename[k++]=(cfilename[i]=='.')?0:cfilename[i];
 	}
-	pFile = fopen(filename2write,"a");
-	fprintf(pFile,"%-4d %-5s %s", line, filename, message);
-	fclose(pFile);
+	d_open(filename2write, &pFile, "r");
+    size = snprintf(filename, sizeof(filename), "%-4d %-5s %s", line, filename, message);
+	d_write(pFile, filename, size);
+	d_close(pFile);
 }
 
 int32 SafeOpenAppend (const char  *_filename, int32 filetype)
@@ -893,7 +895,7 @@ int setup_homedir (void)
 	err = d_mkdir (ApogeePath);
 	if (err == -1)
 	{
-		fprintf (stderr, "Couldn't create preferences directory: %s\n", 
+		dprintf ("Couldn't create preferences directory: %s\n", 
 				strerror (errno));
 		return -1;
 	}

@@ -37,8 +37,9 @@
 #include "main.h"
 #include "lcd_main.h"
 
-const char *mus_dir_path = "./music";
-const char *snd_dir_path = "./sound/";
+const char *mus_dir_path = "./music/";
+const char *snd_dir_path = "./sound";
+const char *gamedir_path = "duke";
 
 extern int duke_main(int argc,char  **argv);
 extern int dev_main (void);
@@ -47,6 +48,8 @@ int main(void)
 {
     dev_main();
 }
+
+char *__argv[1] = {""};
 
 void VID_PreConfig (void)
 {
@@ -59,7 +62,7 @@ void VID_PreConfig (void)
 
 int mainloop (int argc, const char *argv[])
 {
-    duke_main(0, NULL);
+    duke_main(arrlen(__argv), __argv);
     return 0;
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

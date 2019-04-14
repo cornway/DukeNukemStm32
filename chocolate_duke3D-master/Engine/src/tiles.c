@@ -135,9 +135,8 @@ void loadtile(short tilenume)
         artfil = TCkopen4load(artfilename,0);
         
         if (artfil == -1){
-            printf("Error, unable to load artfile:'%s'.\n",artfilename);
-            getchar();
-            exit(0);
+            dprintf("Error, unable to load artfile:'%s'.\n",artfilename);
+            fatal_error("");
         }
         
         faketimerhandler();
@@ -262,7 +261,7 @@ int loadpics(char  *filename, char * gamedir)
     }
     while (k != numtilefiles);
     
-    printf("Art files loaded\n");
+    dprintf("Art files loaded\n");
     
     clearbuf(gotpic,(MAXTILES+31)>>5,0L);
     

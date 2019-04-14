@@ -372,16 +372,16 @@ int32_t transword(void) //Returns its code #
     textptr += l;
 
     if( tempbuf[0] == '{' && tempbuf[1] != 0)
-        printf("  * ERROR!(L%hd) Expecting a SPACE or CR between '{' and '%s'.\n",line_number,tempbuf+1);
+        dprintf("  * ERROR!(L%hd) Expecting a SPACE or CR between '{' and '%s'.\n",line_number,tempbuf+1);
     else if( tempbuf[0] == '}' && tempbuf[1] != 0)
-        printf("  * ERROR!(L%hd) Expecting a SPACE or CR between '}' and '%s'.\n",line_number,tempbuf+1);
+        dprintf("  * ERROR!(L%hd) Expecting a SPACE or CR between '}' and '%s'.\n",line_number,tempbuf+1);
     else if( tempbuf[0] == '/' && tempbuf[1] == '/' && tempbuf[2] != 0 )
-        printf("  * ERROR!(L%hd) Expecting a SPACE between '//' and '%s'.\n",line_number,tempbuf+2);
+        dprintf("  * ERROR!(L%hd) Expecting a SPACE between '//' and '%s'.\n",line_number,tempbuf+2);
     else if( tempbuf[0] == '/' && tempbuf[1] == '*' && tempbuf[2] != 0 )
-        printf("  * ERROR!(L%hd) Expecting a SPACE between '/*' and '%s'.\n",line_number,tempbuf+2);
+        dprintf("  * ERROR!(L%hd) Expecting a SPACE between '/*' and '%s'.\n",line_number,tempbuf+2);
     else if( tempbuf[0] == '*' && tempbuf[1] == '/' && tempbuf[2] != 0 )
-        printf("  * ERROR!(L%hd) Expecting a SPACE between '*/' and '%s'.\n",line_number,tempbuf+2);
-    else printf("  * ERROR!(L%hd) Expecting key word, but found '%s'.\n",line_number,tempbuf);
+        dprintf("  * ERROR!(L%hd) Expecting a SPACE between '*/' and '%s'.\n",line_number,tempbuf+2);
+    else dprintf("  * ERROR!(L%hd) Expecting key word, but found '%s'.\n",line_number,tempbuf);
 
     error++;
     return -1;
@@ -412,7 +412,7 @@ void transnum(void)
         if( strcmp( label+(labelcnt<<6),keyw[i]) == 0 )
     {
         error++;
-        printf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
+        dprintf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
         textptr+=l;
     }
 
@@ -430,7 +430,7 @@ void transnum(void)
 
     if( isdigit(*textptr) == 0 && *textptr != '-')
     {
-        printf("  * ERROR!(L%hd) Parameter '%s' is undefined.\n",line_number,tempbuf);
+        dprintf("  * ERROR!(L%hd) Parameter '%s' is undefined.\n",line_number,tempbuf);
         error++;
         textptr+=l;
         return;
@@ -470,7 +470,7 @@ uint8_t  parsecommand(int readfromGRP)
                 if(*textptr == 0x0a) line_number++;
                 if( *textptr == 0 )
                 {
-                    printf("  * ERROR!(L%d) Found '/*' with no '*/'.\n",j);
+                    dprintf("  * ERROR!(L%d) Found '/*' with no '*/'.\n",j);
                     error++;
                     return 0;
                 }
@@ -497,7 +497,7 @@ uint8_t  parsecommand(int readfromGRP)
                 if( strcmp( label+(labelcnt<<6),keyw[i]) == 0 )
                 {
                     error++;
-                    printf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
+                    dprintf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
                     return 0;
                 }
 
@@ -512,7 +512,7 @@ uint8_t  parsecommand(int readfromGRP)
 
             if(j==labelcnt)
             {
-                printf("  * ERROR!(L%hd) State '%s' not found.\n",line_number,label+(labelcnt<<6));
+                dprintf("  * ERROR!(L%hd) State '%s' not found.\n",line_number,label+(labelcnt<<6));
                 error++;
             }
             scriptptr++;
@@ -529,19 +529,19 @@ uint8_t  parsecommand(int readfromGRP)
         case 18:
             if( parsing_state == 0 )
             {
-                printf("  * ERROR!(L%hd) Found 'ends' with no 'state'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'ends' with no 'state'.\n",line_number);
                 error++;
             }
 //            else
             {
                 if( num_squigilly_brackets > 0 )
                 {
-                    printf("  * ERROR!(L%hd) Found more '{' than '}' before 'ends'.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Found more '{' than '}' before 'ends'.\n",line_number);
                     error++;
                 }
                 if( num_squigilly_brackets < 0 )
                 {
-                    printf("  * ERROR!(L%hd) Found more '}' than '{' before 'ends'.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Found more '}' than '{' before 'ends'.\n",line_number);
                     error++;
                 }
                 parsing_state = 0;
@@ -555,7 +555,7 @@ uint8_t  parsecommand(int readfromGRP)
                 if( strcmp( label+(labelcnt<<6),keyw[i]) == 0 )
                 {
                     error++;
-                    printf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
+                    dprintf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
                     return 0;
                 }
 
@@ -564,7 +564,7 @@ uint8_t  parsecommand(int readfromGRP)
                 if( strcmp(label+(labelcnt<<6),label+(i<<6)) == 0 )
                 {
                     warning++;
-                    printf("  * WARNING.(L%hd) Duplicate definition '%s' ignored.\n",line_number,label+(labelcnt<<6));
+                    dprintf("  * WARNING.(L%hd) Duplicate definition '%s' ignored.\n",line_number,label+(labelcnt<<6));
                     break;
                 }
             }
@@ -616,7 +616,7 @@ uint8_t  parsecommand(int readfromGRP)
                     if( strcmp( label+(labelcnt<<6),keyw[i]) == 0 )
                 {
                     error++;
-                    printf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
+                    dprintf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
                     return 0;
                 }
 
@@ -624,7 +624,7 @@ uint8_t  parsecommand(int readfromGRP)
                     if( strcmp(label+(labelcnt<<6),label+(i<<6)) == 0 )
                     {
                         warning++;
-                        printf("  * WARNING.(L%hd) Duplicate move '%s' ignored.\n",line_number,label+(labelcnt<<6));
+                        dprintf("  * WARNING.(L%hd) Duplicate move '%s' ignored.\n",line_number,label+(labelcnt<<6));
                         break;
                     }
                 if(i == labelcnt)
@@ -726,16 +726,16 @@ uint8_t  parsecommand(int readfromGRP)
 				if(fp <= 0)
 				{
 					error++;
-					printf("  * ERROR!(ln%hd) Could not find '%s'.\n",line_number,label+(labelcnt<<6));
+					dprintf("  * ERROR!(ln%hd) Could not find '%s'.\n",line_number,label+(labelcnt<<6));
 
-					printf("ERROR: could not open (%s)\n", includedconfile);
+					dprintf("ERROR: could not open (%s)\n", includedconfile);
 					gameexit("");
 					return 0;
 				}
 
 				j = kfilelength(fp);
 
-				printf("Including: '%s'.\n", includedconfile);
+				dprintf("Including: '%s'.\n", includedconfile);
 
 				temp_line_number = line_number;
 				line_number = 1;
@@ -773,7 +773,7 @@ uint8_t  parsecommand(int readfromGRP)
                     if( strcmp( label+(labelcnt<<6),keyw[i]) == 0 )
                     {
                         error++;
-                        printf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
+                        dprintf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
                         return 0;
                     }
 
@@ -781,7 +781,7 @@ uint8_t  parsecommand(int readfromGRP)
                     if( strcmp(label+(labelcnt<<6),label+(i<<6)) == 0 )
                     {
                         warning++;
-                        printf("  * WARNING.(L%hd) Duplicate ai '%s' ignored.\n",line_number,label+(labelcnt<<6));
+                        dprintf("  * WARNING.(L%hd) Duplicate ai '%s' ignored.\n",line_number,label+(labelcnt<<6));
                         break;
                     }
 
@@ -827,7 +827,7 @@ uint8_t  parsecommand(int readfromGRP)
                     if( strcmp( label+(labelcnt<<6),keyw[i]) == 0 )
                     {
                         error++;
-                        printf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
+                        dprintf("  * ERROR!(L%hd) Symbol '%s' is a key word.\n",line_number,label+(labelcnt<<6));
                         return 0;
                     }
 
@@ -835,7 +835,7 @@ uint8_t  parsecommand(int readfromGRP)
                     if( strcmp(label+(labelcnt<<6),label+(i<<6)) == 0 )
                     {
                         warning++;
-                        printf("  * WARNING.(L%hd) Duplicate action '%s' ignored.\n",line_number,label+(labelcnt<<6));
+                        dprintf("  * WARNING.(L%hd) Duplicate action '%s' ignored.\n",line_number,label+(labelcnt<<6));
                         break;
                     }
 
@@ -858,13 +858,13 @@ uint8_t  parsecommand(int readfromGRP)
         case 1:
             if( parsing_state )
             {
-                printf("  * ERROR!(L%hd) Found 'actor' within 'state'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'actor' within 'state'.\n",line_number);
                 error++;
             }
 
             if( parsing_actor )
             {
-                printf("  * ERROR!(L%hd) Found 'actor' within 'actor'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'actor' within 'actor'.\n",line_number);
                 error++;
             }
 
@@ -913,13 +913,13 @@ uint8_t  parsecommand(int readfromGRP)
 
             if( parsing_state )
             {
-                printf("  * ERROR!(L%hd) Found 'useritem' within 'state'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'useritem' within 'state'.\n",line_number);
                 error++;
             }
 
             if( parsing_actor )
             {
-                printf("  * ERROR!(L%hd) Found 'useritem' within 'actor'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'useritem' within 'actor'.\n",line_number);
                 error++;
             }
 
@@ -1023,7 +1023,7 @@ uint8_t  parsecommand(int readfromGRP)
             {
                 scriptptr--;
                 error++;
-                printf("  * ERROR!(L%hd) Found 'else' with no 'if'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'else' with no 'if'.\n",line_number);
             }
 
             return 0;
@@ -1112,7 +1112,7 @@ uint8_t  parsecommand(int readfromGRP)
             num_squigilly_brackets--;
             if( num_squigilly_brackets < 0 )
             {
-                printf("  * ERROR!(L%hd) Found more '}' than '{'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found more '}' than '{'.\n",line_number);
                 error++;
             }
             return 1;
@@ -1149,7 +1149,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 32)
                 {
-                    printf("  * ERROR!(L%hd) Volume name exceeds character size limit of 32.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Volume name exceeds character size limit of 32.\n",line_number);
                     error++;
                     while( *textptr != 0x0a ) textptr++;
                     break;
@@ -1176,7 +1176,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 32)
                 {
-                    printf("  * ERROR!(L%hd) Skill name exceeds character size limit of 32.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Skill name exceeds character size limit of 32.\n",line_number);
                     error++;
                     while( *textptr != 0x0a ) textptr++;
                     break;
@@ -1206,7 +1206,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i > 127)
                 {
-                    printf("  * ERROR!(L%hd) Level file name exceeds character size limit of 128.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Level file name exceeds character size limit of 128.\n",line_number);
                     error++;
                     while( *textptr != ' ') textptr++;
                     break;
@@ -1242,7 +1242,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 32)
                 {
-                    printf("  * ERROR!(L%hd) Level name exceeds character size limit of 32.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Level name exceeds character size limit of 32.\n",line_number);
                     error++;
                     while( *textptr != 0x0a ) textptr++;
                     break;
@@ -1261,7 +1261,7 @@ uint8_t  parsecommand(int readfromGRP)
             k = *(scriptptr-1);
             if(k >= NUMOFFIRSTTIMEACTIVE)
             {
-                printf("  * ERROR!(L%hd) Quote amount exceeds limit of %d characters.\n",line_number,NUMOFFIRSTTIMEACTIVE);
+                dprintf("  * ERROR!(L%hd) Quote amount exceeds limit of %d characters.\n",line_number,NUMOFFIRSTTIMEACTIVE);
                 error++;
             }
             scriptptr--;
@@ -1275,7 +1275,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 64)
                 {
-                    printf("  * ERROR!(L%hd) Quote exceeds character size limit of 64.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Quote exceeds character size limit of 64.\n",line_number);
                     error++;
                     while( *textptr != 0x0a ) textptr++;
                     break;
@@ -1289,7 +1289,7 @@ uint8_t  parsecommand(int readfromGRP)
             k = *(scriptptr-1);
             if(k >= NUM_SOUNDS)
             {
-                printf("  * ERROR!(L%hd) Exceeded sound limit of %d.\n",line_number,NUM_SOUNDS);
+                dprintf("  * ERROR!(L%hd) Exceeded sound limit of %d.\n",line_number,NUM_SOUNDS);
                 error++;
             }
             scriptptr--;
@@ -1303,8 +1303,8 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 13)
                 {
-                    puts(sounds[k]);
-                    printf("  * ERROR!(L%hd) Sound filename exceeded limit of 13 characters.\n",line_number);
+                    //puts(sounds[k]);
+                    dprintf("  * ERROR!(L%hd) Sound filename exceeded limit of 13 characters.\n",line_number);
                     error++;
                     while( *textptr != ' ' ) textptr++;
                     break;
@@ -1332,14 +1332,14 @@ uint8_t  parsecommand(int readfromGRP)
         case 4:
             if( parsing_actor == 0 )
             {
-                printf("  * ERROR!(L%hd) Found 'enda' without defining 'actor'.\n",line_number);
+                dprintf("  * ERROR!(L%hd) Found 'enda' without defining 'actor'.\n",line_number);
                 error++;
             }
 //            else
             {
                 if( num_squigilly_brackets > 0 )
                 {
-                    printf("  * ERROR!(L%hd) Found more '{' than '}' before 'enda'.\n",line_number);
+                    dprintf("  * ERROR!(L%hd) Found more '{' than '}' before 'enda'.\n",line_number);
                     error++;
                 }
                 parsing_actor = 0;
@@ -1490,8 +1490,8 @@ void passone(int readfromGRP)
 
     while( parsecommand(readfromGRP) == 0 );
 
-    if( (error+warning) > 12)
-        puts(  "  * ERROR! Too many warnings or errors.");
+    //if( (error+warning) > 12)
+        //puts(  "  * ERROR! Too many warnings or errors.");
 
 }
 
@@ -1505,18 +1505,18 @@ char  *defaultcons[3] =
 void copydefaultcons(void)
 {
     int32_t i, fs, fpi;
-    FILE *fpo;
+    int fpo;
 
     for(i=0;i<3;i++)
     {
         fpi = TCkopen4load(defaultcons[i],1);
-        fpo = fopen( defaultcons[i],"wb");
+        d_open( defaultcons[i],&fpo, "+w");
 
         if(fpi == 0)
         {
 // CTW - MODIFICATION
 //          if(fpo == -1) fclose(fpo);
-            if(fpo == NULL) fclose(fpo);
+            if(fpo == NULL) d_close(fpo);
 // CTW END - MODIFICATION
             continue;
         }
@@ -1532,10 +1532,10 @@ void copydefaultcons(void)
         fs = kfilelength(fpi);
 
         kread(fpi,&hittype[0],fs);
-        fwrite(&hittype[0],fs,1,fpo);
+        d_write(fpo, &hittype[0],fs);
 
         kclose(fpi);
-        fclose(fpo);
+        d_close(fpo);
     }
 }
 
@@ -1555,7 +1555,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
     }
     else
     {
-        printf("Compiling: '%s'.\n",filenam);
+        dprintf("Compiling: '%s'.\n",filenam);
 
         fs = kfilelength(fp);
 
@@ -1588,7 +1588,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
     *script = (int32_t) scriptptr;
 
     if(warning|error)
-        printf("Found %hhd warning(s), '%c' error(s).\n",warning,error);
+        dprintf("Found %hhd warning(s), '%c' error(s).\n",warning,error);
 
     if(error)
     {
@@ -1597,13 +1597,13 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
     else
     {
         total_lines += line_number;
-        printf("Code Size:%d bytes(%d labels).\n",(int32_t)((scriptptr-script)<<2)-4,labelcnt);
+        dprintf("Code Size:%d bytes(%d labels).\n",(int32_t)((scriptptr-script)<<2)-4,labelcnt);
 		ud.conSize[0] = (int32_t)(scriptptr-script)-1;
 
 		// FIX_00062: Better support and identification for GRP and CON files for 1.3/1.3d/1.4/1.5
 		if( ud.conSize[0] == 16208 && labelcnt == 1794 && conVersion == 15)
 			conVersion = 14;
-		printf("Con version: Looks like v%d\n", conVersion);
+		dprintf("Con version: Looks like v%d\n", conVersion);
 
 			// FIX_00022: Automatically recognize the shareware grp (v1.3) + full version (1.3d) +
 			//            atomic (1.4/1.5 grp) and the con files version (either 1.3 or 1.4) (JonoF's idea)
@@ -1611,7 +1611,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 		if(conVersion != 13 && (getGRPcrc32(0)==CRC_BASE_GRP_SHAREWARE_13 ||
 			getGRPcrc32(0)==CRC_BASE_GRP_FULL_13) && !getGRPcrc32(1))
 		{
-			printf(	"\nYou are trying to use a v1.3 Shareware/Full *.GRP with v1.4 or v1.5\n"
+			dprintf(	"\nYou are trying to use a v1.3 Shareware/Full *.GRP with v1.4 or v1.5\n"
 					"external *.CON files. You may run in troubles by doing so and/or get\n"
 					"Out Of Synch errors. You can safely delete those files so xDuke will\n"
 					"always use the GRP internal CON files.\n"
@@ -1619,7 +1619,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 			do
 				kbdKey = ' ';//getch() | ' ';
 			while(kbdKey != 'y' && kbdKey != 'n');
-			printf("%c\n", kbdKey);
+			dprintf("%c\n", kbdKey);
 
 			if(kbdKey == 'y')
 			{
@@ -1629,7 +1629,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 		}
 		else if(conVersion != 15 && getGRPcrc32(0)==CRC_BASE_GRP_ATOMIC_15 && !getGRPcrc32(1))
 		{
-			printf(	"\nYou are trying to use a v1.5 ATOMIC *.GRP with v1.4 or v1.3\n"
+			dprintf(	"\nYou are trying to use a v1.5 ATOMIC *.GRP with v1.4 or v1.3\n"
 					"external *.CON files. You may run in troubles by doing so and/or get\n"
 					"Out Of Synch errors. You can safely delete those files so xDuke will\n"
 					"always use the GRP internal CON files.\n"
@@ -1637,7 +1637,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 			do
 				kbdKey = ' ';//getch() | ' ';
 			while(kbdKey != 'y' && kbdKey != 'n');
-			printf("%c\n", kbdKey);
+			dprintf("%c\n", kbdKey);
 
 			if(kbdKey == 'y')
 			{
@@ -1645,7 +1645,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 			}
 		}else if(conVersion != 14 && getGRPcrc32(0)==CRC_BASE_GRP_PLUTONIUM_14 && !getGRPcrc32(1))
 		{
-			printf(	"\nYou are trying to use a v1.4 PLUTONIUM *.GRP with v1.3 or v1.5\n"
+			dprintf(	"\nYou are trying to use a v1.4 PLUTONIUM *.GRP with v1.3 or v1.5\n"
 					"external *.CON files. You may run in troubles by doing so and/or get\n"
 					"Out Of Synch errors. You can safely delete those files so xDuke will\n"
 					"always use the GRP internal CON files.\n"
@@ -1653,7 +1653,7 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
 			do
 				kbdKey = ' ';//getch() | ' ';
 			while(kbdKey != 'y' && kbdKey != 'n');
-			printf("%c\n", kbdKey);
+			dprintf("%c\n", kbdKey);
 
 			if(kbdKey == 'y')
 			{
@@ -2498,7 +2498,7 @@ uint8_t  parse(void)
             break;
         case 68:
             insptr++;
-            printf("%d\n",*insptr);
+            dprintf("%d\n",*insptr);
             insptr++;
             break;
         case 69:

@@ -48,8 +48,9 @@ typedef struct grpSet_s{
 // but also that the content will be set to 0.
 static grpSet_t grpSet;
 
-
+#ifdef ORIGCODE
 uint8_t         crcBuffer[ 1 << 20]     ;
+#endif
 int32_t initgroupfile(const char  *filename)
 {
 	uint8_t         buf[16]                 ;
@@ -58,7 +59,7 @@ int32_t initgroupfile(const char  *filename)
     
     
     
-	printf("Loading %s ...\n", filename);
+	dprintf("Loading %s ...\n", filename);
     
 	if (grpSet.num == MAXGROUPFILES){
         printf("Error: Unable to open an extra GRP archive <= No more slot available.\n");
@@ -138,10 +139,11 @@ int32_t initgroupfile(const char  *filename)
 	//groupfil_memory[numgroupfiles] = malloc(i);
     
     //Load the full GRP in RAM.
+#ifdef ORIGCODE
 	while((j=d_read(archive->fileDescriptor, crcBuffer, sizeof(crcBuffer)))){
 		archive->crc32 = crc32_update(crcBuffer,j,archive->crc32);
 	}
-    
+#endif
     // The game layer seems to absolutely need to access an array int[4] groupefil_crc32
     // so we need to store the crc32 in there too.
     groupefil_crc32[grpSet.num] = archive->crc32;

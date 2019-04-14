@@ -76,7 +76,7 @@ void CONSOLE_Reset()
         pDelElement = pElement;
         pElement = (CONSOLEELEMENT*)pElement->next;
 
-        free(pDelElement);
+        Sys_Free(pDelElement);
     }
 
     console_buffer = NULL;
@@ -95,21 +95,23 @@ void CONSOLE_ParseStartupScript()
 	// FIX_00017: heavy autoexec.cfg not needed anymore.
     char  *sStartupScript = "startup.cfg";
 
-    FILE* fp = fopen(sStartupScript, "r");
+    int fp;
+
+    d_open(sStartupScript, &fp, "r");
 
     // If the file exists
-    if(NULL != fp)
+    if(fp >= 0)
     {
         char  line[128];
         memset(line, 0, 128);
 
-        while(fgets(line ,128-1, fp) != NULL)
+        while(d_gets(fp, line ,128-1) != NULL)
         {
             CONSOLE_ParseCommand(line);
 
             memset(line, 0, 128);
         }
-        fclose(fp);
+        d_close(fp);
     }
 }
 
@@ -340,7 +342,7 @@ void CONSOLE_HandleInput()
                 {
                     strncat(dirty_buffer, lastKey, 1);
                     console_cursor_pos++;
-                    //printf("Key %s : %s\n", lastKey, console_buffer[0]);
+                    //sprintf("Key %s : %s\n", lastKey, console_buffer[0]);
                 }
             }
 
@@ -490,7 +492,7 @@ void CONSOLE_ParseCommand(char * command)
 void CONSOLE_InsertUsedCommand(const char * szUsedCommand)
 {
     //create a new element in the list, and add it to the front
-    CONSOLEELEMENT *pElement = (CONSOLEELEMENT*)malloc(sizeof(CONSOLEELEMENT));
+    CONSOLEELEMENT *pElement = (CONSOLEELEMENT*)Sys_Malloc(sizeof(CONSOLEELEMENT));
     if(pElement)
     {
         //Store our newly created member as the prev address
@@ -569,7 +571,7 @@ void CONSOLE_Printf(const char  *newmsg, ...)
     va_end (argptr);
 
     //create a new element in the list, and add it to the front
-    pElement = (CONSOLEELEMENT*)malloc(sizeof(CONSOLEELEMENT));
+    pElement = (CONSOLEELEMENT*)Sys_Malloc(sizeof(CONSOLEELEMENT));
     if(pElement)
     {
         //Store our newly created member as the prev address

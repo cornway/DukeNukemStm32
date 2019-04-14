@@ -215,8 +215,8 @@ void initmultiplayers(char damultioption, char dacomrateoption, char dapriority)
 	{
 		if ((i = neton()) != 0)
 		{
-			if (i == -1) printf("IPX driver not found\n");
-			if (i == -2) printf("Socket could not be opened\n");
+			if (i == -1) dprintf("IPX driver not found\n");
+			if (i == -2) dprintf("Socket could not be opened\n");
 			exit(0);
 		}
 	}
@@ -256,7 +256,7 @@ int neton(void)
 
 		//Special stuff for WATCOM C
 	if ((rmoffset32 = convalloc32(1380L+NETCODEBYTES+COMBUFSIZ)) == 0)
-		{ printf("Can't allocate memory for IPX\n"); exit; }
+		{ dprintf("Can't allocate memory for IPX\n"); exit; }
 	rmsegment16 = (rmoffset32>>4);
 
 	i = rmoffset32;
@@ -943,7 +943,7 @@ void installbicomhandlers(void)
 
 		//Allocate memory in low memory to store real mode handler
 	if ((lowp = convalloc32(COMCODEBYTES+(COMBUFSIZ<<1))) == 0)
-		{ printf("Can't allocate conventional memory.\n"); exit; }
+		{ dprintf("Can't allocate conventional memory.\n"); exit; }
 
 	inbufplc = (short *)(lowp+0);
 	inbufend = (short *)(lowp+2);
