@@ -198,6 +198,7 @@ double MixREVERBRight(void)
 
 void MV_FPReverb(int volume)
 {
+#ifdef ORIGCODE
 	int i, count = MV_BufferSize / MV_SampleSize * MV_Channels;
 
 //	sprintf(err, "count: %d, old_delay: %d", count, delay);
@@ -241,10 +242,12 @@ void MV_FPReverb(int volume)
 
 	//LeaveCriticalSection(&reverbCS);
 	SDL_mutexV(reverbMutex);
+#endif
 }
 
 void MV_FPReverbFree(void)
 {
+#ifdef ORIGCODE
 	SDL_mutexP(reverbMutex);
 	//EnterCriticalSection(&reverbCS);
 	delay = 0;
@@ -255,6 +258,7 @@ void MV_FPReverbFree(void)
 	}
 	//LeaveCriticalSection(&reverbCS);
 	SDL_mutexV(reverbMutex);
+#endif
 }
 
 void MV_16BitDownmix(char *dest, int count)

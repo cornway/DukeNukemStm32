@@ -25,10 +25,13 @@
 #include <gfx.h>
 #include <input_main.h>
 #include "keyboard.h"
+#include "sndcards.h"
+
 #if (!defined PLATFORM_SUPPORTS_SDL)
 #error This platform apparently does not use SDL. Do not compile this.
 #endif
 
+extern int DSL_Init( void );
 
 #define BUILD_NOMOUSEGRAB    "BUILD_NOMOUSEGRAB"
 #define BUILD_WINDOWED       "BUILD_WINDOWED"
@@ -571,7 +574,6 @@ int root_sdl_event_filter(const i_event_t *event)
 			break;
     } /* switch */
 #else
-    if (event->state == keydown);
         return(sdl_key_filter(event));
 #endif
     return(1);
@@ -944,8 +946,14 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
 
     output_sdl_versions();
     output_driver_info();
-    
 
+    DSL_Init();
+    MV_Init(stm32769idisco, 11025, 16, 2, 16);
+    /*int soundcard,
+   int MixRate,
+   int Voices,
+   int numchannels,
+   int samplebits*/
 	//dprintf("Video Driver: '%s'.\n", SDL_VideoDriverName(dummyString, 20));
 
 }
@@ -1374,8 +1382,6 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
 void WriteLastPaletteToFile(){
     //WritePaletteToFile(lastPalette,"lastPalette.tga",16,16);
 }
-
-extern void    VID_Init (void);
 
 int VBE_setPalette(uint8_t  *palettebuffer)
 /*

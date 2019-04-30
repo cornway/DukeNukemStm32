@@ -43,7 +43,7 @@
 ;   <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Stack_Size		EQU     0x4000
+Stack_Size		EQU     0x8000
 
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
 Stack_Mem       SPACE   Stack_Size
@@ -605,7 +605,12 @@ MDIOS_IRQHandler
                 
                  IMPORT  __use_two_region_memory
                  EXPORT  __user_initial_stackheap
-                 
+
+                 EXPORT  Stack_Mem
+                 EXPORT  Stack_Size
+                 EXPORT  Heap_Mem
+                 EXPORT  Heap_Size
+
 __user_initial_stackheap
 
                  LDR     R0, = __heap_base

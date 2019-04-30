@@ -32,6 +32,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include "sndcards.h"
 #include "multivoc.h"
+#include <audio_main.h>
 
 
 
@@ -63,7 +64,7 @@ int FX_Installed = FALSE;
 char *FX_ErrorString(int ErrorNumber)
 
    {
-   return( 0 );
+   return( FX_Ok );
    }
 
 
@@ -80,7 +81,7 @@ int FX_SetupCard
    )
 
    {
-   return( 0 );
+   return( FX_Ok );
    }
 
 
@@ -306,7 +307,7 @@ int FX_VoiceAvailable
    )
 
    {
-   return 0;
+       return audio_chk_priority(priority);
    }
 
 /*---------------------------------------------------------------------
@@ -396,9 +397,19 @@ int FX_PlayVOC
    uint32_t callbackval
    )
 
-   {
-   return( 0 );
-   }
+{
+    int handle;
+
+    handle = MV_PlayVOC( ptr, pitchoffset, vol, left, right,
+    priority, callbackval );
+    if ( handle < MV_Ok )
+    {
+        FX_SetErrorCode( FX_MultiVocError );
+        handle = FX_Warning;
+    }
+
+    return( handle );
+}
 
 
 /*---------------------------------------------------------------------
@@ -420,9 +431,18 @@ int FX_PlayLoopedVOC
    uint32_t callbackval
    )
 
-   {
-   return( 0 );
-   }
+{
+   int handle;
+
+    handle = MV_PlayLoopedVOC( ptr, loopstart, loopend, pitchoffset,
+    vol, left, right, priority, callbackval );
+    if ( handle < MV_Ok ) {
+        FX_SetErrorCode( FX_MultiVocError );
+        handle = FX_Warning;
+    }
+
+    return( handle );
+}
 
 
 /*---------------------------------------------------------------------
@@ -442,9 +462,19 @@ int FX_PlayWAV
    uint32_t callbackval
    )
 
-   {
-   return( 0 );
-   }
+{
+   int handle;
+
+   handle = MV_PlayWAV( ptr, pitchoffset, vol, left, right,
+                        priority, callbackval );
+   if ( handle < MV_Ok )
+      {
+      FX_SetErrorCode( FX_MultiVocError );
+      handle = FX_Warning;
+      }
+
+    return( handle );
+}
 
 
 /*---------------------------------------------------------------------
@@ -488,9 +518,19 @@ int FX_PlayVOC3D
    uint32_t callbackval
    )
 
-   {
-   return( 0 );
-   }
+{
+    int handle;
+
+    handle = MV_PlayVOC3D( ptr, pitchoffset, angle, distance,
+    priority, callbackval );
+    if ( handle < MV_Ok )
+    {
+        FX_SetErrorCode( FX_MultiVocError );
+        handle = FX_Warning;
+    }
+
+        return( handle );
+}
 
 
 /*---------------------------------------------------------------------

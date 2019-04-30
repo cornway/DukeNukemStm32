@@ -218,7 +218,7 @@ void CONFIG_SetDefaults( void )
    OpponentSoundToggle = 1;
    FXVolume = 220;
    MusicVolume = 200;
-   FXDevice = SoundScape;
+   FXDevice = stm32769idisco;
    MusicDevice = -1;
    ReverseStereo = 0;
    

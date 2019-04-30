@@ -59,13 +59,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "pitch.h"
 #include "multivoc.h"
+#include <audio_main.h>
 #include "_multivc.h"
 #include "debugio.h"
 #include "../sounddebugdefs.h"
-
-// for the Mutex
-#include <SDL.h>
-
+#include <arch.h>
 #define RoundFixed( fixedval, bits )            \
         (                                       \
           (                                     \
@@ -483,11 +481,10 @@ void MV_ServiceVoc
 		}
 		
 		MV_BufferEmpty[ MV_MixPage ] = FALSE;
-		
+
+        next = voice->next;
+
 		MV_MixFunction( voice );
-	
-		next = voice->next;
-		
 		// Is this voice done?
 		if ( !voice->Playing )
 		{
@@ -594,7 +591,7 @@ playbackstatus MV_GetNextVOCBlock
          }
 
       blocktype = ( int )*ptr;
-      blocklength = ( *( unsigned long * )( ptr + 1 ) ) & 0x00ffffff;
+      blocklength = READ_LE_I32_P(ptr + 1) & 0x00ffffff;
       ptr += 4;
 
       switch( blocktype )
@@ -673,7 +670,7 @@ playbackstatus MV_GetNextVOCBlock
             // Repeat begin
             if ( voice->LoopEnd == NULL )
                {
-               voice->LoopCount = *( uint16_t * )ptr;
+               voice->LoopCount = READ_LE_I16_P(ptr);
                voice->LoopStart = ptr + blocklength;
                }
             ptr += blocklength;
@@ -706,7 +703,7 @@ playbackstatus MV_GetNextVOCBlock
          case 8 :
             // Extended block
             voice->bits  = 8;
-            tc = *( uint16_t * )ptr;
+            tc = READ_LE_I16_P(ptr);
             packtype = *( ptr + 2 );
             voicemode = *( ptr + 3 );
             ptr += blocklength;
@@ -715,10 +712,10 @@ playbackstatus MV_GetNextVOCBlock
          case 9 :
             // New sound data block
 
-            samplespeed = *( unsigned long * )ptr;
+            samplespeed = READ_LE_I32_P(ptr);
             BitsPerSample = ( unsigned )*( ptr + 4 );
             Channels = ( unsigned )*( ptr + 5 );
-            Format = ( unsigned )*( uint16_t * )( ptr + 6 );
+            Format = READ_LE_I32_P( ptr + 6 );
 
             if ( ( BitsPerSample == 8 ) && ( Channels == 1 ) &&
                ( Format == VOC_8BIT ) )
@@ -1265,7 +1262,11 @@ void MV_SetVoicePitch
 
    {
    voice->SamplingRate = rate;
+#ifdef ORIGCODE
    voice->PitchScale   = PITCH_GetScale( pitchoffset );
+#else
+    voice->PitchScale = 1;
+#endif
    voice->RateScale    = ( rate * voice->PitchScale ) / MV_MixRate;
 
    // Multiply by MixBufferSize - 1
@@ -2569,7 +2570,7 @@ int MV_PlayLoopedVOC
    voice->wavetype    = VOC;
    voice->bits        = 8;
    voice->GetSound    = MV_GetNextVOCBlock;
-   voice->NextBlock   = ptr + *( uint16_t  * )( ptr + 0x14 );
+   voice->NextBlock   = ptr + READ_LE_I16_P(ptr + 0x14);
    voice->DemandFeed  = NULL;
    voice->LoopStart   = NULL;
    voice->LoopCount   = 0;
@@ -3042,7 +3043,9 @@ int MV_Init
             }
          break;
       #endif
-
+      case stm32769idisco:
+            status = DSL_Ok;
+      break;
       default :
          MV_SetErrorCode( MV_UnsupportedCard );
          break;
@@ -3086,8 +3089,9 @@ int MV_Init
    MV_SetMixMode( numchannels, samplebits );
    MV_ReverbDelay = 14320; // MV_BufferSize * 3;
    //InitializeCriticalSection(&reverbCS);
+#ifdef ORIGCODE
    reverbMutex = SDL_CreateMutex();
-
+#endif
 #ifdef PLAT_DOS
    // Make sure we don't cross a physical page
    if ( ( ( unsigned long )ptr & 0xffff ) + TotalBufferSize > 0x10000 )
@@ -3135,7 +3139,7 @@ int MV_Init
 	   return( MV_Error );
    }
 
-   MV_FooBuffer = ptr;
+   MV_FooBuffer = (double *)ptr;
 
 // Start the playback engine
    status = MV_StartPlayback();
@@ -3198,8 +3202,9 @@ int MV_Shutdown
    // Free reverb buffer, if allocated
    MV_FPReverbFree();
    //DeleteCriticalSection(&reverbCS);
+#ifdef ORIGCODE
    SDL_DestroyMutex(reverbMutex);
-
+#endif
    // Shutdown the sound card
 #ifdef PLAT_DOS
    switch( MV_SoundCard )

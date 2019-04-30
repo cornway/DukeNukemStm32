@@ -24,7 +24,7 @@ unsigned short  d_8to16table[256];
 #define D_SCREEN_BYTE_CNT (D_SCREEN_PIX_CNT * sizeof(pix_t))
 
 #if VIDEO_IN_IRAM
-pix_t screenbuf[BASEWIDTH * BASEHEIGHT * sizeof(pix_t) + sizeof(SDL_Surface)] = {0};
+uint8_t screenbuf[BASEWIDTH * BASEHEIGHT * sizeof(pix_t) + sizeof(SDL_Surface)] = {0};
 #endif
 
 int    VGA_width, VGA_height, VGA_rowbytes, VGA_bufferrowbytes = 0;
@@ -44,20 +44,19 @@ void (*vid_menukeyfn)(int key) = NULL;
 
 void VID_SetPalette (uint8_t* palette)
 {
-}
 
+}
 
 void    VID_ShiftPalette (unsigned char *palette)
 {
     VID_SetPalette(palette);
 }
 
-void VID_Init (void)
+static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
 {
     int chunk;
     uint8_t *cache;
     int cachesize;
-    Uint32 flags;
     screen_t lcd_screen;
 
     // Set up display mode (width and height)
@@ -108,7 +107,26 @@ void VID_Init (void)
     surface = screen;
     xdim = screen->w;
     ydim = screen->h;
+
+    return screen;
 }
+
+DECLSPEC void SDLCALL SDL_UpdateRect
+        (SDL_Surface *sdlscreen, Sint32 x, Sint32 y, Uint32 w, Uint32 h)
+{
+    screen_t screen;
+    screen.buf = sdlscreen->pixels;
+    screen.width = w;
+    screen.height = h;
+    screen_update(&screen);
+}
+
+extern DECLSPEC SDL_Surface * SDLCALL SDL_SetVideoMode
+			(int width, int height, int bpp, Uint32 flags)
+{
+    return VID_Init(width, height, bpp, flags);
+}
+
 
 void    VID_Shutdown (void)
 {

@@ -60,8 +60,11 @@ void VID_PreConfig (void)
     screen_win_cfg(&screen);
 }
 
+extern int dumpstack (void);
+
 int mainloop (int argc, const char *argv[])
 {
+    dumpstack();
     duke_main(arrlen(__argv), __argv);
     return 0;
 }

@@ -31,6 +31,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include <string.h>
 #include "dpmi.h"
+#include "misc_utils.h"
 
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
@@ -151,7 +152,7 @@ int DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length )
 {
 	/* Lovely... */
 	
-	*ptr = (void *)malloc(length);
+	*ptr = (void *)Sys_Malloc(length);
 	
 	*descriptor = (int) *ptr;
 	
@@ -160,7 +161,7 @@ int DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length )
 
 int DPMI_FreeDOSMemory( int descriptor )
 {
-	free((void *)descriptor);
+	Sys_Free((void *)descriptor);
 	
 	return (descriptor == 0) ? DPMI_Error : DPMI_Ok;
 }

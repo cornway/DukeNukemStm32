@@ -48,11 +48,11 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>STM32F769I_DISCOVERY\Exe\</OutputDirectory>
+          <OutputDirectory>.\obj\</OutputDirectory>
           <OutputName>Project</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
-          <CreateHexFile>0</CreateHexFile>
+          <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
           <ListingPath></ListingPath>
@@ -80,13 +80,13 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <UserProg1Name>E:\Work\Duke32\common\pc\win\postbuild.bat E:\Keil_v5\ARM</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
-            <nStopA1X>0</nStopA1X>
+            <nStopA1X>2</nStopA1X>
             <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
@@ -588,7 +588,7 @@
             <File>
               <FileName>startup_stm32f769xx.s</FileName>
               <FileType>2</FileType>
-              <FilePath>startup_stm32f769xx.s</FilePath>
+              <FilePath>..\common\misc\arch\Arm\m7\src\startup_stm32f769xx.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -861,9 +861,9 @@
               <FilePath>..\common\hdmi_mem.c</FilePath>
             </File>
             <File>
-              <FileName>misc_utils.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\common\inc\misc_utils.h</FilePath>
+              <FileName>machM7.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\common\misc\arch\Arm\m7\src\machM7.s</FilePath>
             </File>
           </Files>
         </Group>
@@ -1010,10 +1010,50 @@
               <FileType>1</FileType>
               <FilePath>..\chocolate_duke3D-master\Engine\src\mmulti_stable.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>audio</GroupName>
+          <Files>
             <File>
               <FileName>fx_man.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\fx_man.c</FilePath>
+            </File>
+            <File>
+              <FileName>multivoc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\multivoc.c</FilePath>
+            </File>
+            <File>
+              <FileName>nodpmi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\nodpmi.c</FilePath>
+            </File>
+            <File>
+              <FileName>dsl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\dsl.c</FilePath>
+            </File>
+            <File>
+              <FileName>pitch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\pitch.c</FilePath>
+            </File>
+            <File>
+              <FileName>mv_mix.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\mv_mix.c</FilePath>
+            </File>
+            <File>
+              <FileName>mvreverb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\mvreverb.c</FilePath>
+            </File>
+            <File>
+              <FileName>ll_man.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\ll_man.c</FilePath>
             </File>
           </Files>
         </Group>

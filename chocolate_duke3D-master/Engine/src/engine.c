@@ -4373,6 +4373,8 @@ void nextpage(void)
 
     beforedrawrooms = 1;
     numframes++;
+
+    dev_tickle();
 }
 
 
