@@ -16,7 +16,7 @@
 
 #define HEAP_CACHE_SIZE             (0)
 
-#define AUDIO_SAMPLE_RATE           (22050U)
+#define AUDIO_SAMPLE_RATE           (11025U)
 
 #define DEVIO_READONLY              (0)
 #define MAX_HANDLES                 (4)
