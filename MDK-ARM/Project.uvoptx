@@ -150,18 +150,82 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>81</LineNumber>
+          <LineNumber>72</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134281296</Address>
+          <Address>134346116</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Src/stm32f7xx_it.c</Filename>
+          <Filename>..\common\dev_main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Project\../Src/stm32f7xx_it.c\81</Expression>
+          <Expression>\\Project\../common/dev_main.c\72</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>83</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134496476</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\common\dev_main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Project\../common/dev_main.c\83</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>222</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134653282</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\common\music_main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Project\../common/music_main.c\222</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>88</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134349898</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\common\music_main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Project\../common/music_main.c\88</Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>40</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>..\Src\stub.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -204,6 +268,16 @@
           <count>7</count>
           <WinNumber>1</WinNumber>
           <ItemText>globalskillsound</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>cd_track</ItemText>
+        </Ww>
+        <Ww>
+          <count>9</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>cdaudio</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -774,7 +848,7 @@
 
   <Group>
     <GroupName>Example/User</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1210,7 +1284,7 @@
 
   <Group>
     <GroupName>common</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

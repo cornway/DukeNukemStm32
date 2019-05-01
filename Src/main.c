@@ -37,8 +37,8 @@
 #include "main.h"
 #include "lcd_main.h"
 
-const char *mus_dir_path = "./music/";
-const char *snd_dir_path = "./sound";
+const char *mus_dir_path = "duke/music";
+const char *snd_dir_path = "duke/sound";
 const char *gamedir_path = "duke";
 
 extern int duke_main(int argc,char  **argv);
