@@ -561,9 +561,9 @@ void readsavenames(void)
 			sprintf(fullpathsavefilename, "%s", fn);
 		}
 
-        d_open(fullpathsavefilename, &fil, "r");
-        if (fil < 0) continue;
-        d_read(fil, &dummy,4);
+        fil = TCkopen4load(fullpathsavefilename,0);
+        if (fil == -1) continue;
+        kdfread(&dummy,sizeof(dummy),1,fil);
 
 		//	FIX_00015: Backward compliance with older demos (down to demos v27, 28, 116 and 117 only)
         if(	dummy != BYTEVERSION	 && 
@@ -572,9 +572,9 @@ void readsavenames(void)
 			dummy != BYTEVERSION_116 &&
 			dummy != BYTEVERSION_117) continue;
         // FIX_00092: corrupted saved files making the following saved files invisible (Bryzian)
-		d_read(fil, &dummy,4);
-        d_read(fil, &ud.savegame[i][0],19);
-        d_close(fil);
+        kdfread(&dummy,sizeof(dummy),1,fil);
+        kdfread(&ud.savegame[i][0],19,1,fil);
+        kclose(fil);
     }
 }
 
