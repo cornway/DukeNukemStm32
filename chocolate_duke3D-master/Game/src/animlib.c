@@ -34,6 +34,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "util_lib.h"
 //#include "_animlib.h"
 #include "animlib.h"
+#include <platform.h>
+#include <misc_utils.h>
 
 //****************************************************************************
 //
@@ -72,12 +74,12 @@ uint16 findpage (uint16 framenumber)
    uint16 i;
 
    CheckAnimStarted ( "findpage" );
-   for(i=0; i<anim->lpheader.nLps; i++)
+   for(i=0; i<READ_LE_U16(anim->lpheader.nLps); i++)
       {
       if
          (
-         anim->LpArray[i].baseRecord <= framenumber &&
-         anim->LpArray[i].baseRecord + anim->LpArray[i].nRecords > framenumber
+         READ_LE_U16(anim->LpArray[i].baseRecord) <= framenumber &&
+         READ_LE_U16(anim->LpArray[i].baseRecord) + READ_LE_U16(anim->LpArray[i].nRecords) > framenumber
          )
          return(i);
       }
@@ -96,17 +98,20 @@ void loadpage (uint16 pagenumber, uint16 *pagepointer)
    {
    int32 size;
    byte * buffer;
+   int cnt;
 
    CheckAnimStarted ( "loadpage" );
-   buffer = anim->buffer;
-   if (anim->curlpnum != pagenumber)
+   buffer = (byte *)READ_LE_I32(anim->buffer);
+   if (READ_LE_U16(anim->curlpnum) != pagenumber)
       {
-      anim->curlpnum = pagenumber;
+      writeShort(&anim->curlpnum, pagenumber);
       buffer += 0xb00 + (pagenumber*0x10000);
       size = sizeof(lp_descriptor);
-      memcpy(&anim->curlp,buffer,size);
+      d_memcpy(&anim->curlp,buffer,size);
       buffer += size + sizeof(uint16);
-      memcpy(pagepointer,buffer,anim->curlp.nBytes+(anim->curlp.nRecords*2));
+      cnt = READ_LE_U16(anim->curlp.nBytes);
+      cnt += READ_LE_U16(anim->curlp.nRecords)*2;
+      d_memcpy(pagepointer,buffer, cnt);
       }
    }
 
@@ -153,7 +158,7 @@ run:
 
    goto nextOp;
 longOp:
-   wordCnt = *((uint16 *)srcP);
+   wordCnt = READ_LE_U16(srcP);
    srcP += sizeof(uint16);
    if ((int16)wordCnt <= 0)
       goto notLongSkip;       /* Do SIGNED test. */
@@ -206,14 +211,14 @@ void renderframe (uint16 framenumber, uint16 *pagepointer)
    byte *ppointer;
 
    CheckAnimStarted ( "renderframe" );
-   destframe = framenumber - anim->curlp.baseRecord;
+   destframe = framenumber - READ_LE_U16(anim->curlp.baseRecord);
 
    for(i = 0; i < destframe; i++)
       offset += pagepointer[i];
       
    ppointer = (byte *)pagepointer;
 
-   ppointer+=anim->curlp.nRecords*2+offset;
+   ppointer+=READ_LE_U16(anim->curlp.nRecords)*2+offset;
    if(ppointer[1])
       ppointer += (4 + (((uint16 *)ppointer)[1] + (((uint16 *)ppointer)[1] & 1)));
    else
@@ -251,9 +256,9 @@ void ANIM_LoadAnim (byte * buffer)
 
    if (!Anim_Started) Anim_Started = true;
 
-   anim->buffer = buffer;
-   anim->curlpnum = 0xffff;
-   anim->currentframe = -1;
+   writeLong(&anim->buffer, (unsigned long)buffer);
+   writeShort(&anim->curlpnum, 0xffff);
+   writeLong(&anim->currentframe, -1);
    size = sizeof(lpfileheader);
    memcpy(&anim->lpheader, buffer, size );
    buffer += size+128;
@@ -294,7 +299,7 @@ void ANIM_FreeAnim ( void )
 int32 ANIM_NumFrames ( void )
    {
    CheckAnimStarted ( "NumFrames" );
-   return anim->lpheader.nRecords;
+   return READ_LE_I32(anim->lpheader.nRecords);
    }
 
 //****************************************************************************
@@ -306,11 +311,12 @@ int32 ANIM_NumFrames ( void )
 byte * ANIM_DrawFrame (int32 framenumber)
    {
    int32 cnt;
+   int32_t currentframe = READ_LE_I32(anim->currentframe);
 
    CheckAnimStarted ( "DrawFrame" );
-   if ((anim->currentframe != -1) && (anim->currentframe<=framenumber))
+   if ((currentframe != -1) && (currentframe<=framenumber))
       {
-      for (cnt = anim->currentframe; cnt < framenumber; cnt++)
+      for (cnt = currentframe; cnt < framenumber; cnt++)
           drawframe (cnt);
       }
    else
@@ -318,7 +324,7 @@ byte * ANIM_DrawFrame (int32 framenumber)
       for (cnt = 0; cnt < framenumber; cnt++)
          drawframe (cnt);
       }
-   anim->currentframe = framenumber;
+   writeLong(&anim->currentframe, framenumber);
    return anim->imagebuffer;
    }
 

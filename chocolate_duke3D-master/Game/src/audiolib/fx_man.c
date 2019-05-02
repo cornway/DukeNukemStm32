@@ -64,7 +64,7 @@ int FX_Installed = FALSE;
 char *FX_ErrorString(int ErrorNumber)
 
    {
-   return( FX_Ok );
+   return( "FX_Ok" );
    }
 
 
@@ -497,7 +497,17 @@ int FX_PlayLoopedWAV
    )
 
    {
-   return( 0 );
+   int handle;
+
+    handle = MV_PlayLoopedWAV( ptr, loopstart, loopend, pitchoffset,
+    vol, left, right, priority, callbackval );
+    if ( handle < MV_Ok )
+    {
+        FX_SetErrorCode( FX_MultiVocError );
+        handle = FX_Warning;
+    }
+
+        return( handle );
    }
 
 
@@ -551,7 +561,16 @@ int FX_PlayWAV3D
    )
 
    {
-   return( 0 );
+   int handle;
+
+   handle = MV_PlayWAV3D( ptr, pitchoffset, angle, distance,
+                        priority, callbackval );
+   if ( handle < MV_Ok )
+      {
+      FX_SetErrorCode( FX_MultiVocError );
+      handle = FX_Warning;
+      }
+   return( handle );
    }
 
 
@@ -684,7 +703,8 @@ int FX_StopAllSounds
    )
 
    {
-   return( FX_Ok );
+        audio_stop_all();
+        cd_stop(NULL);
    }
 
 

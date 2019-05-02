@@ -533,9 +533,9 @@ void getpackets(void)
                     d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
 
                     copybufbyte(&osyn[i],&nsyn[i],sizeof(input));
-                    if (l&1)   nsyn[i].fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                    if (l&2)   nsyn[i].svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                    if (l&4)   nsyn[i].avel = (int8_t  )packbuf[j++];
+                    if (l&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
+                    if (l&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
+                    if (l&4)   _loc.avel = (int8_t  )packbuf[j++];
                     if (l&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
                     if (l&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
                     if (l&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
@@ -576,12 +576,12 @@ void getpackets(void)
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
 
-                d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
+                d_memcpy(&_loc, &nsyn[other], sizeof(_loc));
 
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
-                if (k&1)   nsyn[other].fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&2)   nsyn[other].svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
+                if (k&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
+                if (k&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
+                if (k&4)   _loc.avel = (int8_t  )packbuf[j++];
                 if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
                 if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
                 if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
@@ -589,7 +589,7 @@ void getpackets(void)
                 if (k&128) _loc.horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
 
-                d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
+                d_memcpy(&nsyn[other], &_loc, sizeof(_loc));
 
                 while (j != packbufleng)
                 {
@@ -720,19 +720,19 @@ void getpackets(void)
 
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
-                d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
+                d_memcpy(&_loc, &nsyn[other], sizeof(_loc));
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
                 k = packbuf[j++];
-                if (k&1)   nsyn[other].fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&2)   nsyn[other].svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
+                if (k&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
+                if (k&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
+                if (k&4)   _loc.avel = (int8_t  )packbuf[j++];
                 if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
                 if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
                 if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
                 if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
                 if (k&128) _loc.horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
-                d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
+                d_memcpy(&nsyn[other], &_loc, sizeof(_loc));
                 for(i=1;i<movesperpacket;i++)
                 {
                     copybufbyte(&nsyn[other],&inputfifo[movefifoend[other]&(MOVEFIFOSIZ-1)][other],sizeof(input));

@@ -35,6 +35,25 @@ unsigned int _swap32(unsigned int D);
 #define BUILDSWAP_INTEL32(x) (x)
 #endif
 
+static inline void
+writeShort (void *_buf, short v)
+{
+    uint8_t *buf = (uint8_t *)_buf;
+    buf[0] = v & 0xff;
+    buf[1] = v >> 8;
+}
+
+static inline void
+writeLong (void *_buf, unsigned long v)
+{
+    uint8_t *buf = (uint8_t *)_buf;
+    buf[0] = v & 0xff;
+    buf[1] = v >> 8;
+    buf[2] = v >> 16;
+    buf[3] = v >> 24;
+}
+
+
 #endif  /* !defined _INCLUDE_PLATFORM_H_ */
 
 /* end of platform.h ... */

@@ -459,24 +459,6 @@ void kclose(int32_t handle)
     
 }
 
-static inline void
-writeShort (void *_buf, short v)
-{
-    uint8_t *buf = (uint8_t *)_buf;
-    buf[0] = v & 0xff;
-    buf[1] = v >> 8;
-}
-
-static inline void
-writeLong (void *_buf, unsigned long v)
-{
-    uint8_t *buf = (uint8_t *)_buf;
-    buf[0] = v & 0xff;
-    buf[1] = v >> 8;
-    buf[2] = v >> 16;
-    buf[3] = v >> 24;
-}
-
 /* Internal LZW variables */
 #define LZWSIZE 16384           /* Watch out for shorts! */
 static uint8_t  *lzwbuf1, *lzwbuf4, *lzwbuf5;
