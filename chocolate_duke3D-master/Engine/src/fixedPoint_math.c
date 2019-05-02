@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include "platform.h"
 #include "fixedPoint_math.h"
+#include <misc_utils.h>
 
 void clearbuf(void *d, int32_t c, int32_t a)
 {
 	int32_t *p = (int32_t*)d;
-	while ((c--) > 0) *(p++) = a;
+	while ((c--) > 0) d_memcpy(p++, &a, sizeof(*p));
 }
 
 void clearbufbyte(void *D, int32_t c, int32_t a)
@@ -25,7 +26,7 @@ void clearbufbyte(void *D, int32_t c, int32_t a)
 void copybuf(void *s, void *d, int32_t c)
 {
 	int32_t *p = (int32_t*)s, *q = (int32_t*)d;
-	while ((c--) > 0) *(q++) = *(p++);
+	while ((c--) > 0) d_memcpy((q++), (p++), sizeof(*q));
 }
 
 void copybufbyte(void *S, void *D, int32_t c)
@@ -37,7 +38,7 @@ void copybufbyte(void *S, void *D, int32_t c)
 void copybufreverse(void *S, void *D, int32_t c)
 {
 	uint8_t  *p = (uint8_t *)S, *q = (uint8_t *)D;
-	while((c--) > 0) *(q++) = *(p--);
+	while((c--) > 0) d_memcpy((q++), (p--), sizeof(*q));
 }
 
 void qinterpolatedown16(int32_t* bufptr, int32_t num, int32_t val, int32_t add)

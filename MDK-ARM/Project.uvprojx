@@ -870,11 +870,6 @@
               <FileType>1</FileType>
               <FilePath>..\common\mpu.c</FilePath>
             </File>
-            <File>
-              <FileName>mpu.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\common\inc\mpu.h</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>

@@ -1,4 +1,5 @@
 #include "multivoc.h"
+#include <arch.h>
 
 extern char  *MV_MixDestination;
 extern uint32_t MV_MixPosition;
@@ -71,7 +72,7 @@ static int MV_cubic16(const short *src, int position, int rate)
 
 	while (hpos > *MV_GLast)
 	{
-		gval0 = src[temp++];
+		gval0 = READ_LE_I16(src[temp++]);
 		*MV_GPos = (*MV_GPos + 1) & 3;
 		(*MV_GLast)++;
 	}

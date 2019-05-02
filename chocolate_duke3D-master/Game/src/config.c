@@ -562,7 +562,7 @@ void readsavenames(void)
 		}
 
         d_open(fullpathsavefilename, &fil, "r");
-        if (fil <= 0) continue;
+        if (fil < 0) continue;
         d_read(fil, &dummy,4);
 
 		//	FIX_00015: Backward compliance with older demos (down to demos v27, 28, 116 and 117 only)

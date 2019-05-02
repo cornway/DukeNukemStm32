@@ -1476,7 +1476,7 @@ void menus(void)
     if(!(current_menu >= 1000 && current_menu <= 2999 && current_menu >= 300 && current_menu <= 369))
         vscrn();
 
-	// printf("Current menu=%d, game mode=%d, last menu =%d\n", current_menu, ps[myconnectindex].gm, last_menu);
+	//dprintf("Current menu=%d, game mode=%d, last menu =%d\n", current_menu, ps[myconnectindex].gm, last_menu);
 
     switch(current_menu)
     {
