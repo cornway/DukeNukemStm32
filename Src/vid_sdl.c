@@ -11,7 +11,6 @@
 #define VIDEO_IN_IRAM 1
 
 viddef_t    vid;                // global video state
-unsigned short  d_8to16table[256];
 
 // The original defaults
 //#define    BASEWIDTH    320

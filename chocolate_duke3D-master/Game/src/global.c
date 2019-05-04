@@ -34,8 +34,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <dev_io.h>
 
 char  *mymembuf;
+#ifdef ORIGCODE
 uint8_t  MusicPtr[72000];
-
+#endif
 
 crc32_t crc32lookup[] = {
 		// good:

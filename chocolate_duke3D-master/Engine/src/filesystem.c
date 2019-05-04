@@ -56,7 +56,7 @@ int32_t initgroupfile(const char  *filename)
 	uint8_t         buf[16]                 ;
 	int32_t         i, j, k                 ;
     grpArchive_t*   archive                 ;
-    
+    uint32_t        archivesize = 0;
     
     
 	dprintf("Loading %s ...\n", filename);
@@ -73,7 +73,7 @@ int32_t initgroupfile(const char  *filename)
     
 	//groupfil_memory[numgroupfiles] = NULL; // addresses of raw GRP files in memory
 	//groupefil_crc32[numgroupfiles] = 0;
-    d_open((char *)filename, &archive->fileDescriptor, "r");
+    archivesize = d_open((char *)filename, &archive->fileDescriptor, "r");
     
     if (archive->fileDescriptor < 0){
         printf("Error: Unable to open file %s.\n",filename);
@@ -143,6 +143,29 @@ int32_t initgroupfile(const char  *filename)
 	while((j=d_read(archive->fileDescriptor, crcBuffer, sizeof(crcBuffer)))){
 		archive->crc32 = crc32_update(crcBuffer,j,archive->crc32);
 	}
+#else
+    {
+        uint8_t         *crcBuffer;
+        uint32_t        crcBufSize = (1 << 18);
+        int i, rem, done;
+        rem = archivesize & (crcBufSize - 1);
+        archivesize = archivesize - rem;
+        crcBuffer = Sys_Malloc(crcBufSize);
+        for (i = 0; i < archivesize; i += crcBufSize) {
+            done = d_read(archive->fileDescriptor, crcBuffer, crcBufSize);
+            assert(done == crcBufSize);
+            archive->crc32 = crc32_update(crcBuffer,done,archive->crc32);
+            i += done;
+        }
+        if (rem) {
+            crcBufSize = rem;
+            done = d_read(archive->fileDescriptor, crcBuffer, crcBufSize);
+            assert(done == crcBufSize);
+            archive->crc32 = crc32_update(crcBuffer,done,archive->crc32);
+        }
+        Sys_Free(crcBuffer);
+        d_seek(archive->fileDescriptor, 0);
+    }
 #endif
     // The game layer seems to absolutely need to access an array int[4] groupefil_crc32
     // so we need to store the crc32 in there too.
@@ -328,8 +351,7 @@ int32_t kread(int32_t handle, PACKED void *buffer, int32_t leng){
     openFile = &openFiles[handle];
     
     if (!openFile->used){
-        printf("Invalide handle. Unrecoverable error.\n");
-        getchar();
+        dprintf("Invalide handle. Unrecoverable error.\n");
         fatal_error("exit : 0");
     }
     

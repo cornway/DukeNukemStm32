@@ -150,123 +150,85 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>39</LineNumber>
+          <LineNumber>1559</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134219170</Address>
+          <Address>134540126</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\common\misc\arch\Arm\m7\src\asm_utils.s</Filename>
+          <Filename>..\chocolate_duke3D-master\Game\src\gamedef.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Project\../common/misc/arch/Arm/m7/src/asm_utils.s\39</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>161</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134253626</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\chocolate_duke3D-master\Game\src\animlib.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\Project\../chocolate_duke3D-master/Game/src/animlib.c\161</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>99</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134310116</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Src\sys_sdl.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\Project\../Src/sys_sdl.c\99</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>519</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134258960</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\chocolate_duke3D-master\Game\src\global.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\Project\../chocolate_duke3D-master/Game/src/global.c\519</Expression>
+          <Expression>\\Project\../chocolate_duke3D-master/Game/src/gamedef.c\1559</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>g_dsl_chunk</ItemText>
+          <ItemText>tiles[tilenum]</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>keypads</ItemText>
+          <ItemText>animFlagsP</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>file_handles</ItemText>
+          <ItemText>fire</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>__file_handles</ItemText>
+          <ItemText>fire2</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>savegame</ItemText>
+          <ItemText>artfilename</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>ud</ItemText>
+          <ItemText>tiles</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>current_menu</ItemText>
+          <ItemText>groupefil_crc32</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>tempbuf</ItemText>
+          <ItemText>clipsectorlist</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>heap_size_total</ItemText>
+          <ItemText>sector</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>anim</ItemText>
+          <ItemText>sprite</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>1</WinNumber>
-          <ItemText>myconnectindex</ItemText>
+          <ItemText>textptr</ItemText>
+        </Ww>
+        <Ww>
+          <count>11</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>script</ItemText>
+        </Ww>
+        <Ww>
+          <count>12</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>hittype</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -274,6 +236,11 @@
           <count>0</count>
           <WinNumber>2</WinNumber>
           <ItemText>I_VideoBuffer[s_i]</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>fire2</ItemText>
         </Ww>
       </WatchWindow2>
       <MemoryWindow1>

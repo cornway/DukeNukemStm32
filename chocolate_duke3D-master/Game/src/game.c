@@ -8240,7 +8240,7 @@ int duke_main(int argc,char  **argv)
 
 		dprintf(	"\nYou should try to get one of these GRP only as a base GRP\n"
 				"Do you want to continue anyway? (Y/N): ");
-#ifdef ORIGFILE
+#ifdef ORIGCODE
 		do
 			kbdKey = getch() | ' ';
 		while(kbdKey != 'y' && kbdKey != 'n');

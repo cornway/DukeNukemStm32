@@ -19,6 +19,7 @@
 #include "platform.h"
 #include "unix_compat.h"
 #include "dev_io.h"
+#include "names.h"
 
 #if !PLATFORM_MACOSX
 #include <misc_utils.h>
@@ -4385,6 +4386,9 @@ int clipinsidebox(int32_t x, int32_t y, short wallnum, int32_t walldist)
     int32_t x1, y1, x2, y2, r;
 
     r = (walldist<<1);
+    if (wallnum >= MAXWALLS) {
+        assert(0);
+    }
     wal = &wall[wallnum];
     x1 = wal->x+walldist-x;
     y1 = wal->y+walldist-y;
@@ -7246,7 +7250,9 @@ int pushmove(PACKED int32_t *x, PACKED int32_t *y, PACKED int32_t *z, PACKED sho
     short startwall, endwall, clipsectcnt;
     uint8_t  bad2;
 
-    if ((*sectnum) < 0) return(-1);
+    if ((*sectnum) < 0 || (*sectnum) >= MAXSECTORS) {
+        return(-1);
+    }
 
     dawalclipmask = (cliptype&65535);
 //    dasprclipmask = (cliptype>>16);

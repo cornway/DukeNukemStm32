@@ -370,7 +370,9 @@ extern short numanimwalls,probey,lastprobey;
 extern char  *mymembuf;
 extern uint8_t  typebuflen;
 extern char typebuf[41];
+#ifdef ORIGCODE
 extern uint8_t  MusicPtr[72000];
+#endif
 extern int32_t msx[2048],msy[2048];
 extern short cyclers[MAXCYCLERS][6],numcyclers;
 extern char  myname[2048];
