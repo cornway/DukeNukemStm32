@@ -38,6 +38,10 @@
 #include <inttypes.h>
 #define __int64 int64_t
 
+#ifdef __STM32__
+#define FX_SOUND_DEVICE stm32769idisco
+#endif
+
 #define O_BINARY 0
 
 #define UDP_NETWORKING 1

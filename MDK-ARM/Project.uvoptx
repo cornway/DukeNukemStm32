@@ -168,7 +168,7 @@
           <Type>0</Type>
           <LineNumber>161</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134253630</Address>
+          <Address>134253626</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -178,6 +178,38 @@
           <Filename>..\chocolate_duke3D-master\Game\src\animlib.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\Project\../chocolate_duke3D-master/Game/src/animlib.c\161</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>99</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134310116</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Src\sys_sdl.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Project\../Src/sys_sdl.c\99</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>519</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134258960</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\chocolate_duke3D-master\Game\src\global.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Project\../chocolate_duke3D-master/Game/src/global.c\519</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -1241,7 +1273,7 @@
 
   <Group>
     <GroupName>common</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1465,7 +1497,7 @@
 
   <Group>
     <GroupName>duke32</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

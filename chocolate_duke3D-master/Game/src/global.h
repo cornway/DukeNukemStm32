@@ -13,13 +13,13 @@ void FixFilePath(char  *filename);
 int FindDistance3D(int ix, int iy, int iz);
 void Shutdown(void);
 
-#ifndef __STM32__
-#define __STM32__
-#include <stdint.h>
+#ifdef __LITTLE_ENDIAN__
+#define LITTLE_ENDIAN 1234
+#define BYTE_ORDER LITTLE_ENDIAN
 #endif
 
 #ifndef LITTLE_ENDIAN
-    #if defined(__APPLE__) || defined(__STM32__)
+    #if defined(__APPLE__)
         #define LITTLE_ENDIAN 1234
         #define BYTE_ORDER LITTLE_ENDIAN
     #else

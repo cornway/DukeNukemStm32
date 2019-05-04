@@ -219,7 +219,7 @@ void CONFIG_SetDefaults( void )
    OpponentSoundToggle = 1;
    FXVolume = 220;
    MusicVolume = 200;
-   FXDevice = stm32769idisco;
+   FXDevice = FX_SOUND_DEVICE;
    MusicDevice = -1;
    ReverseStereo = 0;
    
@@ -562,9 +562,9 @@ void readsavenames(void)
 			sprintf(fullpathsavefilename, "%s", fn);
 		}
 
-        fil = TCkopen4load(fullpathsavefilename,0);
+        d_open(fullpathsavefilename, &fil, "r");
         if (fil == -1) continue;
-        kdfread(&dummy,sizeof(dummy),1,fil);
+        dfread(&dummy,sizeof(dummy),1,fil);
 
 		//	FIX_00015: Backward compliance with older demos (down to demos v27, 28, 116 and 117 only)
         if(	dummy != BYTEVERSION	 && 
@@ -573,9 +573,9 @@ void readsavenames(void)
 			dummy != BYTEVERSION_116 &&
 			dummy != BYTEVERSION_117) continue;
         // FIX_00092: corrupted saved files making the following saved files invisible (Bryzian)
-        kdfread(&dummy,sizeof(dummy),1,fil);
-        kdfread(&ud.savegame[i][0],19,1,fil);
-        kclose(fil);
+        dfread(&dummy,sizeof(dummy),1,fil);
+        dfread(&ud.savegame[i][0],19,1,fil);
+        d_close(fil);
     }
 }
 

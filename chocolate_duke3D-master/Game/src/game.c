@@ -9527,62 +9527,60 @@ uint8_t  domovethings(void)
     uint32_t bits;
 
 
-    for(i=connecthead;i>=0;i=connectpoint2[i]) {
-        bits = syncbits_get(i);
-        if( bits&(1<<17) )
+    for(i=connecthead;i>=0;i=connectpoint2[i])
+        if( syncbits_get(i)&(1<<17) )
+    {
+        multiflag = 2;
+        multiwhat = (syncbits_get(i)>>18)&1;
+        multipos = (uint32_t) (syncbits_get(i)>>19)&15;
+        multiwho = i;
+
+        if( multiwhat )
         {
-            multiflag = 2;
-            multiwhat = (bits>>18)&1;
-            multipos = (uint32_t) (bits>>19)&15;
-            multiwho = i;
+			// FIX_00058: Save/load game crash in both single and multiplayer
+            screencapt = 1;
+            displayrooms(myconnectindex,65536);
+            savetemp("duke3d.tmp",tiles[MAXTILES-1].data,160*100);
+            screencapt = 0;
 
-            if( multiwhat )
+            saveplayer( multipos );
+            multiflag = 0;
+
+            if(multiwho != myconnectindex)
             {
-    			// FIX_00058: Save/load game crash in both single and multiplayer
-                screencapt = 1;
-                displayrooms(myconnectindex,65536);
-                savetemp("duke3d.tmp",tiles[MAXTILES-1].data,160*100);
-                screencapt = 0;
+                strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
+                strcat(fta_quotes[122]," SAVED A MULTIPLAYER GAME");
+                FTA(122,&ps[myconnectindex],1);
+            }
+            else
+            {
+                strcpy(fta_quotes[122],"MULTIPLAYER GAME SAVED");
+                FTA(122,&ps[myconnectindex],1);
+            }
+            break;
+        }
+        else
+        {
+//            waitforeverybody();
 
-                saveplayer( multipos );
-                multiflag = 0;
+            j = loadplayer( multipos );
 
+            multiflag = 0;
+
+            if(j == 0)
+            {
                 if(multiwho != myconnectindex)
                 {
                     strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
-                    strcat(fta_quotes[122]," SAVED A MULTIPLAYER GAME");
+                    strcat(fta_quotes[122]," LOADED A MULTIPLAYER GAME");
                     FTA(122,&ps[myconnectindex],1);
                 }
                 else
                 {
-                    strcpy(fta_quotes[122],"MULTIPLAYER GAME SAVED");
+                    strcpy(fta_quotes[122],"MULTIPLAYER GAME LOADED");
                     FTA(122,&ps[myconnectindex],1);
                 }
-                break;
-            }
-            else
-            {
-    //            waitforeverybody();
-
-                j = loadplayer( multipos );
-
-                multiflag = 0;
-
-                if(j == 0)
-                {
-                    if(multiwho != myconnectindex)
-                    {
-                        strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
-                        strcat(fta_quotes[122]," LOADED A MULTIPLAYER GAME");
-                        FTA(122,&ps[myconnectindex],1);
-                    }
-                    else
-                    {
-                        strcpy(fta_quotes[122],"MULTIPLAYER GAME LOADED");
-                        FTA(122,&ps[myconnectindex],1);
-                    }
-                    return 1;
-                }
+                return 1;
             }
         }
     }

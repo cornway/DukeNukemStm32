@@ -953,7 +953,7 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     output_driver_info();
 
     DSL_Init();
-    MV_Init(stm32769idisco, AUDIO_SAMPLE_RATE, 16,
+    MV_Init(FX_SOUND_DEVICE, AUDIO_SAMPLE_RATE, 16,
             AUDIO_OUT_CHANNELS, AUDIO_OUT_BITS);
     /*int soundcard,
    int MixRate,

@@ -64,10 +64,6 @@ void _dos_getdate(struct dosdate_t *date);
 #define strcmpi(x, y) strcasecmp(x, y)
 #endif
 
-#ifndef __STM32__
-#define __STM32__
-#endif
-
 #if defined(__STM32__)
 
 #define stderr (-1)

@@ -29,9 +29,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
-#include "global.h"
 #include "duke3d.h"
-#include "unix_compat.h"
+#include "global.h"
 #include <dev_io.h>
 
 char  *mymembuf;
@@ -252,7 +251,7 @@ void FixFilePath(char  *filename)
         if ((*ptr == PATH_SEP_CHAR) || (*ptr == '\0'))
         {
             uint8_t  pch = *ptr;
-            struct fobj_t *dent = NULL;
+            struct dirent *dent = NULL;
             DIR *dir;
 
             if ((pch == PATH_SEP_CHAR) && (*(ptr + 1) == '\0'))
@@ -345,8 +344,8 @@ int _dos_findnext(struct find_t *f)
 
     strncpy(f->name, f->data.name, sizeof (f->name) - 1);
     f->name[sizeof (f->name) - 1] = '\0';
-    return(0);
 #endif
+    return(0);
 }
 
 #elif defined(PLATFORM_UNIX) || defined(PLATFORM_MACOSX)
