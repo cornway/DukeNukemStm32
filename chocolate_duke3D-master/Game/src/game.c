@@ -3610,7 +3610,7 @@ uint8_t  wallswitchcheck(short i)
 }
 
 
-PACKED int32_t tempwallptr;
+int32_t tempwallptr;
 short spawn( short j, short pn )
 {
     short i, s, startwall, endwall, sect, clostest;

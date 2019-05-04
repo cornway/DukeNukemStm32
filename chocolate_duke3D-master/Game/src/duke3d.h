@@ -586,7 +586,7 @@ extern short connecthead, connectpoint2[MAXPLAYERS];   //Player linked list vari
 extern short screenpeek;
 
 extern int current_menu;
-extern PACKED int32_t tempwallptr,animatecnt;
+extern int32_t tempwallptr,animatecnt;
 extern int32_t lockclock;
 extern uint8_t  display_mirror,rtsplaying;
 

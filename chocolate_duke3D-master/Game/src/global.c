@@ -85,7 +85,8 @@ short moustat = 0;
 
 struct animwalltype animwall[MAXANIMWALLS];
 short numanimwalls;
-PACKED int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES], animatevel[MAXANIMATES], animatecnt;
+PACKED int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES], animatevel[MAXANIMATES];
+int32_t animatecnt;
 // int32_t oanimateval[MAXANIMATES];
 short animatesect[MAXANIMATES];
 int32_t msx[2048],msy[2048];
