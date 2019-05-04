@@ -27,6 +27,9 @@
 #include "keyboard.h"
 #include "sndcards.h"
 
+#include <audio_main.h>
+#include <multivoc.h>
+
 #if (!defined PLATFORM_SUPPORTS_SDL)
 #error This platform apparently does not use SDL. Do not compile this.
 #endif
@@ -611,28 +614,28 @@ void _joystick_init(void)
 
     if (joystick != NULL)
     {
-        sprintf("Joystick appears to be already initialized.\n");
-        sprintf("...deinitializing for stick redetection...\n");
+        printf("Joystick appears to be already initialized.\n");
+        printf("...deinitializing for stick redetection...\n");
         _joystick_deinit();
     } /* if */
 
     if ((envr != NULL) && (strcmp(envr, "none") == 0))
     {
-        sprintf("Skipping joystick detection/initialization at user request\n");
+        printf("Skipping joystick detection/initialization at user request\n");
         return;
     } /* if */
 
-    sprintf("Initializing SDL joystick subsystem...");
-    sprintf(" (export environment variable BUILD_SDLJOYSTICK=none to skip)\n");
+    printf("Initializing SDL joystick subsystem...");
+    printf(" (export environment variable BUILD_SDLJOYSTICK=none to skip)\n");
 
     if (SDL_Init(SDL_INIT_JOYSTICK|SDL_INIT_NOPARACHUTE) != 0)
     {
-        sprintf("SDL_Init(SDL_INIT_JOYSTICK) failed: [%s].\n", SDL_GetError());
+        printf("SDL_Init(SDL_INIT_JOYSTICK) failed: [%s].\n", SDL_GetError());
         return;
     } /* if */
 
     numsticks = SDL_NumJoysticks();
-    sprintf("SDL sees %d joystick%s.\n", numsticks, numsticks == 1 ? "" : "s");
+    printf("SDL sees %d joystick%s.\n", numsticks, numsticks == 1 ? "" : "s");
     if (numsticks == 0)
         return;
 
@@ -642,22 +645,24 @@ void _joystick_init(void)
         if ((envr != NULL) && (strcmp(envr, stickname) == 0))
             favored = i;
 
-        dprintf("Stick #%d: [%s]\n", i, stickname);
+        printf("Stick #%d: [%s]\n", i, stickname);
     } /* for */
 
-    dprintf("Using Stick #%d.", favored);
+    printf("Using Stick #%d.", favored);
     if ((envr == NULL) && (numsticks > 1))
-        dprintf("Set BUILD_SDLJOYSTICK to one of the above names to change.\n");
+        printf("Set BUILD_SDLJOYSTICK to one of the above names to change.\n");
 
     joystick = SDL_JoystickOpen(favored);
     if (joystick == NULL)
     {
-        dprintf("Joystick #%d failed to init: %s\n", favored, SDL_GetError());
+        printf("Joystick #%d failed to init: %s\n", favored, SDL_GetError());
         return;
     } /* if */
-    dprintf("Joystick initialized. %d axes, %d buttons, %d hats, %d balls.\n",
+
+    printf("Joystick initialized. %d axes, %d buttons, %d hats, %d balls.\n",
               SDL_JoystickNumAxes(joystick), SDL_JoystickNumButtons(joystick),
               SDL_JoystickNumHats(joystick), SDL_JoystickNumBalls(joystick));
+
     SDL_JoystickEventState(SDL_QUERY);
 #endif
 } /* _joystick_init */
@@ -668,11 +673,11 @@ void _joystick_deinit(void)
 #ifdef ORIGCODE
     if (joystick != NULL)
     {
-        dprintf("Closing joystick device...\n");
+        printf("Closing joystick device...\n");
         SDL_JoystickClose(joystick);
-        dprintf("Joystick device closed. Deinitializing SDL subsystem...\n");
+        printf("Joystick device closed. Deinitializing SDL subsystem...\n");
         SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-        dprintf("SDL joystick subsystem deinitialized.\n");
+        printf("SDL joystick subsystem deinitialized.\n");
         joystick = NULL;
     } /* if */
 #endif
@@ -745,11 +750,11 @@ static void output_sdl_versions(void)
 
     SDL_VERSION(&compiled_ver);
 
-    dprintf("SDL display driver for the BUILD engine initializing.\n");
-    dprintf("  sdl_driver.c by Ryan C. Gordon (icculus@clutteredmind.org).\n");
-    dprintf("Compiled %s against SDL version %d.%d.%d ...\n", __DATE__,
+    printf("SDL display driver for the BUILD engine initializing.\n");
+    printf("  sdl_driver.c by Ryan C. Gordon (icculus@clutteredmind.org).\n");
+    printf("Compiled %s against SDL version %d.%d.%d ...\n", __DATE__,
                 compiled_ver.major, compiled_ver.minor, compiled_ver.patch);
-    dprintf("Linked SDL version is %d.%d.%d ...\n",
+    printf("Linked SDL version is %d.%d.%d ...\n",
                 linked_ver->major, linked_ver->minor, linked_ver->patch);
 #endif
 } /* output_sdl_versions */
@@ -948,7 +953,8 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     output_driver_info();
 
     DSL_Init();
-    MV_Init(stm32769idisco, 11025, 16, 2, 16);
+    MV_Init(stm32769idisco, AUDIO_SAMPLE_RATE, 16,
+            AUDIO_OUT_CHANNELS, AUDIO_OUT_BITS);
     /*int soundcard,
    int MixRate,
    int Voices,
@@ -978,7 +984,7 @@ void setvmode(int mode)
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
         return;
     } else
-        dprintf("setvmode(0x%x) is unsupported in SDL driver.\n", mode);
+        printf("setvmode(0x%x) is unsupported in SDL driver.\n", mode);
 #endif
 } 
 
@@ -1135,10 +1141,10 @@ static __inline SDL_Rect **get_physical_resolutions(void)
     } /* if */
 
     if (modes == (SDL_Rect **) -1)
-        dprintf("Couldn't get any physical resolutions.\n");
+        printf("Couldn't get any physical resolutions.\n");
     else
     {
-        dprintf("Highest physical resolution is (%dx%d).\n",
+        printf("Highest physical resolution is (%dx%d).\n",
                   modes[0]->w, modes[0]->h);
     } /* else */
 #endif
@@ -1380,7 +1386,7 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
 
 
 void WriteLastPaletteToFile(){
-    //WritePaletteToFile(lastPalette,"lastPalette.tga",16,16);
+    WritePaletteToFile(lastPalette,"lastPalette.tga",16,16);
 }
 
 int VBE_setPalette(uint8_t  *palettebuffer)
@@ -1810,7 +1816,7 @@ void clear2dscreen(void)
             rect.h = 480;
 	} /* else if */
 
-    //SDL_FillRect(surface, &rect, 0);
+    SDL_FillRect(surface, &rect, 0);
 } /* clear2dscreen */
 
 

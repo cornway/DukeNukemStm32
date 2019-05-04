@@ -31,8 +31,6 @@
 #define O_BINARY 0
 #endif
 
-#include <misc_utils.h>
-#include <duke3d.h>
 struct find_t
 {
     int dir;

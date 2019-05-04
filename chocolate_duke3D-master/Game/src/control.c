@@ -27,7 +27,6 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "control.h"
 #include "mouse.h"
 #include "joystick.h"
-#include "dukeunix.h"
 
 //***************************************************************************
 //

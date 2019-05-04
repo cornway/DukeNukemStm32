@@ -33,7 +33,6 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "unix_compat.h"
 #include <dev_io.h>
-#include <dukeunix.h>
 
 char  *mymembuf;
 uint8_t  MusicPtr[72000];

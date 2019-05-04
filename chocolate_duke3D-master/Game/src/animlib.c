@@ -70,21 +70,19 @@ void CheckAnimStarted ( char  * funcname )
 //****************************************************************************
 
 uint16 findpage (uint16 framenumber)
-   {
-   uint16 i;
+{
+   uint16 i, nlps;;
 
    CheckAnimStarted ( "findpage" );
-   for(i=0; i<READ_LE_U16(anim->lpheader.nLps); i++)
-      {
-      if
-         (
-         READ_LE_U16(anim->LpArray[i].baseRecord) <= framenumber &&
-         READ_LE_U16(anim->LpArray[i].baseRecord) + READ_LE_U16(anim->LpArray[i].nRecords) > framenumber
-         )
+   nlps = (uint16_t)readShort(&anim->lpheader.nLps);
+   for(i=0; i<nlps; i++) {
+      uint16_t baserecord = (uint16_t)readShort(&anim->LpArray[i].baseRecord),
+               nrecords = (uint16_t)readShort(&anim->LpArray[i].nRecords);
+      if (baserecord <= framenumber && baserecord +  nrecords > framenumber)
          return(i);
-      }
-   return(i);
    }
+   return(i);
+}
 
 
 //****************************************************************************
@@ -101,16 +99,17 @@ void loadpage (uint16 pagenumber, uint16 *pagepointer)
    int cnt;
 
    CheckAnimStarted ( "loadpage" );
-   buffer = (byte *)READ_LE_I32(anim->buffer);
-   if (READ_LE_U16(anim->curlpnum) != pagenumber)
+   d_memcpy(&buffer, &anim->buffer, sizeof(buffer));
+
+   if ((uint16_t)readShort(&anim->curlpnum) != pagenumber)
       {
       writeShort(&anim->curlpnum, pagenumber);
       buffer += 0xb00 + (pagenumber*0x10000);
       size = sizeof(lp_descriptor);
       d_memcpy(&anim->curlp,buffer,size);
       buffer += size + sizeof(uint16);
-      cnt = READ_LE_U16(anim->curlp.nBytes);
-      cnt += READ_LE_U16(anim->curlp.nRecords)*2;
+      cnt = (uint16_t)readShort(&anim->curlp.nBytes);
+      cnt += (uint16_t)readShort(&anim->curlp.nRecords)*2;
       d_memcpy(pagepointer,buffer, cnt);
       }
    }
@@ -158,7 +157,7 @@ run:
 
    goto nextOp;
 longOp:
-   wordCnt = READ_LE_U16(srcP);
+   wordCnt = (uint16_t)readShort(srcP);
    srcP += sizeof(uint16);
    if ((int16)wordCnt <= 0)
       goto notLongSkip;       /* Do SIGNED test. */
@@ -211,14 +210,14 @@ void renderframe (uint16 framenumber, uint16 *pagepointer)
    byte *ppointer;
 
    CheckAnimStarted ( "renderframe" );
-   destframe = framenumber - READ_LE_U16(anim->curlp.baseRecord);
+   destframe = framenumber - (uint16_t)readShort(&anim->curlp.baseRecord);
 
    for(i = 0; i < destframe; i++)
       offset += pagepointer[i];
       
    ppointer = (byte *)pagepointer;
 
-   ppointer+=READ_LE_U16(anim->curlp.nRecords)*2+offset;
+   ppointer+=(uint16_t)readShort(&anim->curlp.nRecords)*2+offset;
    if(ppointer[1])
       ppointer += (4 + (((uint16 *)ppointer)[1] + (((uint16 *)ppointer)[1] & 1)));
    else
@@ -299,7 +298,7 @@ void ANIM_FreeAnim ( void )
 int32 ANIM_NumFrames ( void )
    {
    CheckAnimStarted ( "NumFrames" );
-   return READ_LE_I32(anim->lpheader.nRecords);
+   return readLong(&anim->lpheader.nRecords);
    }
 
 //****************************************************************************
@@ -311,7 +310,7 @@ int32 ANIM_NumFrames ( void )
 byte * ANIM_DrawFrame (int32 framenumber)
    {
    int32 cnt;
-   int32_t currentframe = READ_LE_I32(anim->currentframe);
+   int32_t currentframe = readLong(&anim->currentframe);
 
    CheckAnimStarted ( "DrawFrame" );
    if ((currentframe != -1) && (currentframe<=framenumber))

@@ -29,8 +29,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "arch.h"
 
+#include <platform.h>
 
 #ifdef _WIN32
 #include "../../Engine/src/windows/inttypes.h"
@@ -339,6 +339,9 @@ typedef struct
     short fvel, svel;
     uint32_t bits;
 } input;
+
+#define syncbits_get(i) readLong(&sync[(i)].bits)
+#define syncbits_set(i, bits) writeLong(&sync[i].bits, bits)
 
 #pragma pack(pop)
 

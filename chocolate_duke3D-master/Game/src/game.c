@@ -45,7 +45,6 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "audiolib/sndcards.h"
 
 #include "duke3d.h"
-#include "dukeunix.h"
 #include "unix_compat.h"
 
 #include "console.h"
@@ -481,10 +480,10 @@ void getpackets(void)
 
     while ((packbufleng = getpacket(&other,packbuf)) > 0)
     {
+        uint32_t bits_before, bits;
 #ifdef _DEBUG_NETWORKING_
 		dprintf("RECEIVED PACKET: type: %d : len %d\n", packbuf[0], packbufleng);
 #endif
-        input _loc;
         switch(packbuf[0])
         {
 			case 253:
@@ -530,22 +529,22 @@ void getpackets(void)
                     if (i == myconnectindex)
                         { j += ((l&1)<<1)+(l&2)+((l&4)>>2)+((l&8)>>3)+((l&16)>>4)+((l&32)>>5)+((l&64)>>6)+((l&128)>>7); continue; }
 
-                    d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
+                    bits_before = readLong(&nsyn[i].bits);
+                    bits = bits_before;
 
                     copybufbyte(&osyn[i],&nsyn[i],sizeof(input));
-                    if (l&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                    if (l&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                    if (l&4)   _loc.avel = (int8_t  )packbuf[j++];
-                    if (l&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
-                    if (l&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                    if (l&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                    if (l&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                    if (l&128) _loc.horz = (int8_t  )packbuf[j++];
+                    if (l&1)   writeShort(&nsyn[i].fvel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                    if (l&2)   writeShort(&nsyn[i].svel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                    if (l&4)   nsyn[i].avel = (int8_t  )packbuf[j++];
+                    if (l&8)   bits = ((bits_before&0xffffff00)|((int32_t)packbuf[j++]));
+                    if (l&16)  bits = ((bits_before&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                    if (l&32)  bits = ((bits_before&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                    if (l&64)  bits = ((bits_before&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                    if (l&128) nsyn[i].horz = (int8_t  )packbuf[j++];
 
-                    if (_loc.bits&(1<<26)) playerquitflag[i] = 0;
+                    if (bits&(1<<26)) playerquitflag[i] = 0;
                     movefifoend[i]++;
-
-                    d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
+                    if (bits != bits_before) writeLong(&nsyn[i].bits, bits);
                 }
 
                 while (j != packbufleng)
@@ -576,21 +575,20 @@ void getpackets(void)
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
 
-                d_memcpy(&_loc, &nsyn[other], sizeof(_loc));
+                bits_before = readLong(&nsyn[other].bits);
+                bits = bits_before;
 
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
-                if (k&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&4)   _loc.avel = (int8_t  )packbuf[j++];
-                if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
-                if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                if (k&128) _loc.horz = (int8_t  )packbuf[j++];
+                if (k&1)   writeShort(&nsyn[other].fvel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&2)   writeShort(&nsyn[other].svel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
+                if (k&8)   bits = ((bits_before&0xffffff00)|((int32_t)packbuf[j++]));
+                if (k&16)  bits = ((bits_before&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                if (k&32)  bits = ((bits_before&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                if (k&64)  bits = ((bits_before&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                if (k&128) nsyn[other].horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
-
-                d_memcpy(&nsyn[other], &_loc, sizeof(_loc));
-
+                if (bits != bits_before) writeLong(&nsyn[other].bits, bits);
                 while (j != packbufleng)
                 {
                     syncval[other][syncvalhead[other]&(MOVEFIFOSIZ-1)] = packbuf[j++];
@@ -720,19 +718,21 @@ void getpackets(void)
 
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
-                d_memcpy(&_loc, &nsyn[other], sizeof(_loc));
+                bits_before = readLong(&nsyn[other].bits);
+                bits = bits_before;
+
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
                 k = packbuf[j++];
-                if (k&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&4)   _loc.avel = (int8_t  )packbuf[j++];
-                if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
-                if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                if (k&128) _loc.horz = (int8_t  )packbuf[j++];
+                if (k&1)   writeShort(&nsyn[other].fvel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&2)   writeShort(&nsyn[other].svel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
+                if (k&8)   bits = ((bits_before&0xffffff00)|((int32_t)packbuf[j++]));
+                if (k&16)  bits = ((bits_before&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                if (k&32)  bits = ((bits_before&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                if (k&64)  bits = ((bits_before&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                if (k&128) nsyn[other].horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
-                d_memcpy(&nsyn[other], &_loc, sizeof(_loc));
+                if (bits != bits_before) writeLong(&nsyn[other].bits, bits);
                 for(i=1;i<movesperpacket;i++)
                 {
                     copybufbyte(&nsyn[other],&inputfifo[movefifoend[other]&(MOVEFIFOSIZ-1)][other],sizeof(input));
@@ -833,7 +833,7 @@ void faketimerhandler()
      avgsvel += loc.svel; // y
      avgavel += loc.avel;
      avghorz += loc.horz;
-     avgbits |= READ_LE_I32(loc.bits);
+     avgbits |= readLong(&loc.bits);
      if (movefifoend[myconnectindex]&(movesperpacket-1))
      {
           copybufbyte(&inputfifo[(movefifoend[myconnectindex]-1)&(MOVEFIFOSIZ-1)][myconnectindex],
@@ -847,7 +847,7 @@ void faketimerhandler()
      nsyn[0].svel = avgsvel/movesperpacket;
      nsyn[0].avel = avgavel/movesperpacket;
      nsyn[0].horz = avghorz/movesperpacket;
-     nsyn[0].bits = avgbits;
+     writeLong(&nsyn[0].bits, avgbits);
      avgfvel = avgsvel = avgavel = avghorz = avgbits = 0;
      movefifoend[myconnectindex]++;
 
@@ -7558,12 +7558,8 @@ void Logo(void)
         
         
 	    totalclock = 0;
-#ifdef ORIGCODE
 	    while( totalclock < (120*7) && !KB_KeyWaiting() )
 	        getpackets();
-#endif
-
-
 
 
 	    for(i=0;i<64;i+=7) 
@@ -9528,10 +9524,11 @@ uint8_t  domovethings(void)
 {
     short i, j;
     uint8_t  ch;
+    uint32_t bits;
 
 
     for(i=connecthead;i>=0;i=connectpoint2[i]) {
-        uint32_t bits = READ_LE_I32(sync[i].bits);
+        bits = syncbits_get(i);
         if( bits&(1<<17) )
         {
             multiflag = 2;
@@ -9628,7 +9625,9 @@ uint8_t  domovethings(void)
     j = -1;
     for(i=connecthead;i>=0;i=connectpoint2[i])
      {
-          uint32_t bits = READ_LE_I32(sync[i].bits);
+          uint32_t bits;
+
+          bits = syncbits_get(i);
           if ((bits&(1<<26)) == 0) { j = i; continue; }
 
           closedemowrite();

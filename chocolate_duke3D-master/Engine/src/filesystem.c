@@ -502,7 +502,7 @@ int32_t compress(uint8_t  *lzwinbuf, int32_t uncompleng, uint8_t  *lzwoutbuf)
 		writeShort(&lzwbuf3[addrcnt], -1);
         
 		longptr = (int32_t *)&lzwoutbuf[bitcnt>>3];
-		writeLong(&longptr[0], READ_LE_U32(longptr[0]) | (addr<<(bitcnt&7)));
+		writeLong(&longptr[0], (uint32_t)readLong(&longptr[0]) | (addr<<(bitcnt&7)));
 		bitcnt += numbits;
 		if ((addr&((oneupnumbits>>1)-1)) > ((addrcnt-1)&((oneupnumbits>>1)-1)))
 			bitcnt--;
@@ -512,7 +512,7 @@ int32_t compress(uint8_t  *lzwinbuf, int32_t uncompleng, uint8_t  *lzwoutbuf)
 	} while ((bytecnt1 < uncompleng) && (bitcnt < (uncompleng<<3)));
     
 	longptr = (int32_t *)&lzwoutbuf[bitcnt>>3];
-    writeLong(&longptr[0], READ_LE_U32(longptr[0]) | (addr<<(bitcnt&7)));
+    writeLong(&longptr[0], (uint32_t)readLong(&longptr[0]) | (addr<<(bitcnt&7)));
 	bitcnt += numbits;
 	if ((addr&((oneupnumbits>>1)-1)) > ((addrcnt-1)&((oneupnumbits>>1)-1)))
 		bitcnt--;
@@ -548,7 +548,7 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
 	do
 	{
 		longptr = (int32_t *)&lzwinbuf[bitcnt>>3];
-		dat = ((READ_LE_I32(longptr[0])>>(bitcnt&7)) & (oneupnumbits-1));
+		dat = ((readLong(&longptr[0])>>(bitcnt&7)) & (oneupnumbits-1));
 		bitcnt += numbits;
 		if ((dat&((oneupnumbits>>1)-1)) > ((currstr-1)&((oneupnumbits>>1)-1)))
         { dat &= ((oneupnumbits>>1)-1); bitcnt--; }

@@ -870,6 +870,11 @@
               <FileType>1</FileType>
               <FilePath>..\common\mpu.c</FilePath>
             </File>
+            <File>
+              <FileName>asm_utils.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\common\misc\arch\Arm\m7\src\asm_utils.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

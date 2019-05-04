@@ -1,9 +1,14 @@
 #ifndef _INCLUDE_PLATFORM_H_
 #define _INCLUDE_PLATFORM_H_
 
+
 #define __STM32__
+#define USER_DUMMY_NETWORK 1
+
+#define PLATFORM_UNIX 1
 
 #include <stdint.h>
+#include "arch.h"
 
 #if (defined PLATFORM_WIN32)
     #include "win32_compat.h"
@@ -23,36 +28,26 @@
     #define __EXPORT__
 #endif
 
+#ifdef __LITTLE_ENDIAN__
+#ifndef PLATFORM_LITTLEENDIAN
+#define PLATFORM_LITTLEENDIAN 1
+#endif
+#else
+#error ""
+#endif
+
 uint16_t _swap16(uint16_t D);
 unsigned int _swap32(unsigned int D);
 #if defined(PLATFORM_MACOSX) && defined(__ppc__)
 #define PLATFORM_BIGENDIAN 1
 #define BUILDSWAP_INTEL16(x) _swap16(x)
 #define BUILDSWAP_INTEL32(x) _swap32(x)
-#else
-#define PLATFORM_LITTLEENDIAN 1
+#elif PLATFORM_LITTLEENDIAN
 #define BUILDSWAP_INTEL16(x) (x)
 #define BUILDSWAP_INTEL32(x) (x)
+#else
+#error "unknown byteorder"
 #endif
-
-static inline void
-writeShort (void *_buf, short v)
-{
-    uint8_t *buf = (uint8_t *)_buf;
-    buf[0] = v & 0xff;
-    buf[1] = v >> 8;
-}
-
-static inline void
-writeLong (void *_buf, unsigned long v)
-{
-    uint8_t *buf = (uint8_t *)_buf;
-    buf[0] = v & 0xff;
-    buf[1] = v >> 8;
-    buf[2] = v >> 16;
-    buf[3] = v >> 24;
-}
-
 
 #endif  /* !defined _INCLUDE_PLATFORM_H_ */
 

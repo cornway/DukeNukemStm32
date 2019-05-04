@@ -591,7 +591,7 @@ playbackstatus MV_GetNextVOCBlock
          }
 
       blocktype = ( int )*ptr;
-      blocklength = READ_LE_I32_P(ptr + 1) & 0x00ffffff;
+      blocklength = readLong(ptr + 1) & 0x00ffffff;
       ptr += 4;
 
       switch( blocktype )
@@ -670,7 +670,7 @@ playbackstatus MV_GetNextVOCBlock
             // Repeat begin
             if ( voice->LoopEnd == NULL )
                {
-               voice->LoopCount = READ_LE_I16_P(ptr);
+               voice->LoopCount = (uint16_t)readShort(ptr);
                voice->LoopStart = ptr + blocklength;
                }
             ptr += blocklength;
@@ -703,7 +703,7 @@ playbackstatus MV_GetNextVOCBlock
          case 8 :
             // Extended block
             voice->bits  = 8;
-            tc = READ_LE_I16_P(ptr);
+            tc = (uint16_t)readShort(ptr);
             packtype = *( ptr + 2 );
             voicemode = *( ptr + 3 );
             ptr += blocklength;
@@ -712,10 +712,10 @@ playbackstatus MV_GetNextVOCBlock
          case 9 :
             // New sound data block
 
-            samplespeed = READ_LE_I32_P(ptr);
+            samplespeed = readLong(ptr);
             BitsPerSample = ( unsigned )*( ptr + 4 );
             Channels = ( unsigned )*( ptr + 5 );
-            Format = READ_LE_I32_P( ptr + 6 );
+            Format = readLong( ptr + 6 );
 
             if ( ( BitsPerSample == 8 ) && ( Channels == 1 ) &&
                ( Format == VOC_8BIT ) )
@@ -2570,7 +2570,7 @@ int MV_PlayLoopedVOC
    voice->wavetype    = VOC;
    voice->bits        = 8;
    voice->GetSound    = MV_GetNextVOCBlock;
-   voice->NextBlock   = ptr + READ_LE_I16_P(ptr + 0x14);
+   voice->NextBlock   = ptr + (uint16_t)readShort(ptr + 0x14);
    voice->DemandFeed  = NULL;
    voice->LoopStart   = NULL;
    voice->LoopCount   = 0;

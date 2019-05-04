@@ -196,6 +196,11 @@ void D_EndDirectRect (int x, int y, int width, int height)
 }
 
 
+DECLSPEC int SDLCALL SDL_FillRect (SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color)
+{
+    return 0;
+}
+
 /*
 ================
 Sys_SendKeyEvents

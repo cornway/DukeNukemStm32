@@ -2819,7 +2819,7 @@ uint8_t  parse(void)
             break;
         case 51:
             {
-                uint32_t bits = READ_LE_I32(sync[g_p].bits);
+                uint32_t bits = syncbits_get(g_p);
                 insptr++;
 
                 l = *insptr;
@@ -2902,7 +2902,7 @@ uint8_t  parse(void)
             parseifelse( (( hittype[g_i].floorz - hittype[g_i].ceilingz ) >> 8 ) < *insptr);
             break;
         case 63:
-            parseifelse( READ_LE_I32(sync[g_p].bits)&(1<<29));
+            parseifelse( syncbits_get(g_p)&(1<<29));
             break;
         case 64:
             parseifelse(sector[g_sp->sectnum].ceilingstat&1);

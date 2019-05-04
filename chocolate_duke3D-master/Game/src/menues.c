@@ -32,7 +32,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "filesystem.h"
 #include "premap.h"
 #include "display.h"
-#include "dukeunix.h"
+#include <dev_io.h>
 
 extern short inputloc;
 extern int recfilep;
@@ -1309,7 +1309,7 @@ int getfilenames(char  kind[6])
 	}
 	while (_dos_findnext(&fileinfo) == 0);
 
-#elif (defined PLATFORM_UNIX)
+#elif (defined PLATFORM_UNIX) && !(defined __STM32__)
 
     DIR *dir;
     struct dirent *dent;
@@ -2680,7 +2680,7 @@ else
 						ud.mouseflip = 1-ud.mouseflip;
 					}
                     break;
-#if 0
+#ifdef ORIGCODE
 				case 5:
 
 					if (SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON) 

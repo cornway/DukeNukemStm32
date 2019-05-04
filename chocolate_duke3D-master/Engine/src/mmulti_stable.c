@@ -9,12 +9,11 @@
 
 //#define _DEBUG_NETWORKING_
 
-#include "platform.h"
+#include "duke3d.h"
 #include "fixedPoint_math.h"
 #include "signal.h"
 #include "mmulti_stable.h"
 #include "filesystem.h"
-#include "dukeunix.h"
 #include "unix_compat.h"
 
 #define MAXPLAYERS 16

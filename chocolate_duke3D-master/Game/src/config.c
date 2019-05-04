@@ -38,6 +38,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "scriplib.h"
 #include "build.h"
 #include "unix_compat.h"
+#include <debug.h>
 
 // we load this in to get default button and key assignments
 // as well as setting up function mappings

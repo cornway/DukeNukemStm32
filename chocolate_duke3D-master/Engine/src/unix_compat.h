@@ -42,8 +42,6 @@
 
 #define UDP_NETWORKING 1
 
-#define PLATFORM_UNIX 1
-
 /*
 #define SOL_IP SOL_SOCKET
 #define IP_RECVERR  SO_BROADCAST
@@ -55,7 +53,5 @@
 #define S_IREAD S_IRUSR
 #include <misc_utils.h>
 #include <string.h>
-
-#define USER_DUMMY_NETWORK 1
 
 #endif

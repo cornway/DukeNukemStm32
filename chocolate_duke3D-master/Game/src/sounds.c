@@ -409,7 +409,7 @@ int xyzsound(short num,short i,int32_t x,int32_t y,int32_t z)
 
         if(Sound[num].num > 0) return -1;
 
-        start = READ_LE_I16_P(Sound[num].ptr + 0x14);
+        start = (uint16_t)readShort(Sound[num].ptr + 0x14);
 
         if(*Sound[num].ptr == 'C')
             voice = FX_PlayLoopedVOC( Sound[num].ptr, start, start + soundsiz[num],
@@ -471,13 +471,13 @@ void sound(short num)
     {
         if(*Sound[num].ptr == 'C')
         {
-            start = READ_LE_I16_P(Sound[num].ptr + 0x14);
+            start = (uint16_t)readShort(Sound[num].ptr + 0x14);
             voice = FX_PlayLoopedVOC( Sound[num].ptr, start, start + soundsiz[num],
                     pitch,LOUDESTVOLUME,LOUDESTVOLUME,LOUDESTVOLUME,soundpr[num],num);
         }
         else
         {
-            start = READ_LE_I16_P(Sound[num].ptr + 0x14);
+            start = (uint16_t)readShort(Sound[num].ptr + 0x14);
             voice = FX_PlayLoopedWAV( Sound[num].ptr, start, start + soundsiz[num],
                     pitch,LOUDESTVOLUME,LOUDESTVOLUME,LOUDESTVOLUME,soundpr[num],num);
         }
