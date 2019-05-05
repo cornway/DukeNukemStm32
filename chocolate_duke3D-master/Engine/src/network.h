@@ -11,10 +11,6 @@
 
 #include "platform.h"
 
-#ifndef USER_DUMMY_NETWORK
-#define USER_DUMMY_NETWORK
-#endif
-
 void Setup_UnstableNetworking();
 void Setup_StableNetworking();
 

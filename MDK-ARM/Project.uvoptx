@@ -150,18 +150,34 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>81</LineNumber>
+          <LineNumber>521</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134281700</Address>
+          <Address>134257672</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Src/stm32f7xx_it.c</Filename>
+          <Filename>..\chocolate_duke3D-master\Game\src\global.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Project\../Src/stm32f7xx_it.c\81</Expression>
+          <Expression>\\Project\../chocolate_duke3D-master/Game/src/global.c\521</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>39</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134219170</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\common\misc\arch\Arm\m7\src\asm_utils.s</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\Project\../common/misc/arch/Arm/m7/src/asm_utils.s\39</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -169,6 +185,11 @@
           <count>0</count>
           <WinNumber>1</WinNumber>
           <ItemText>ud</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>heap_size_total</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -187,7 +208,7 @@
         <Mm>
           <WinNumber>1</WinNumber>
           <SubType>10</SubType>
-          <ItemText>0xc02a6141</ItemText>
+          <ItemText>0xC079A247</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>

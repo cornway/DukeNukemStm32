@@ -11,7 +11,7 @@
 
 #include "stdio.h"
 #include "platform.h"
-#include "arch.h"
+
 
 
 #define MAXGROUPFILES 4     /* Warning: Fix groupfil if this is changed */

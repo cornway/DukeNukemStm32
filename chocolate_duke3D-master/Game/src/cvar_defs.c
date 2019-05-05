@@ -83,6 +83,7 @@ void CVARDEFS_Init()
 // I any of the Cvars need to render.. to it here.
 void CVARDEFS_Render()
 {
+#ifndef STM32_SDK
     if(g_CV_DebugJoystick)
     {
         int i;
@@ -116,7 +117,7 @@ void CVARDEFS_Render()
 
 
     }
-
+#endif /*STM32_SDK*/
 	if(g_CV_DebugSound)
 	{
         char  buf[128];

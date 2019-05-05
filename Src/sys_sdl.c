@@ -162,7 +162,7 @@ void Sys_FileClose (int handle)
 
 void Sys_FileSeek (int handle, int position)
 {
-    d_seek(handle, position);
+    d_seek(handle, position, DSEEK_SET);
 }
 
 int Sys_Feof (int handle)

@@ -38,7 +38,7 @@
 #include <inttypes.h>
 #define __int64 int64_t
 
-#ifdef __STM32__
+#ifdef STM32_SDK
 #define FX_SOUND_DEVICE stm32769idisco
 #endif
 
@@ -55,7 +55,21 @@
 #define strcmpi strcasecmp
 
 #define S_IREAD S_IRUSR
+#ifndef STM32_SDK
+#define USER_DUMMY_NETWORK 1
+#define PLATFORM_UNIX 1
+#include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <dirent.h>
+#else
 #include <misc_utils.h>
+#endif
 #include <string.h>
+
+
 
 #endif

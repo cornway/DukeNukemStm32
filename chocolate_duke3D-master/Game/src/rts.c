@@ -86,7 +86,7 @@ void RTS_AddFile (char  *filename)
    fileinfo = Sys_Malloc(length);
    if (!fileinfo)
       Error (EXIT_FAILURE, "RTS file could not allocate header info on stack");
-   d_seek (handle, header.infotableofs);
+   d_seek (handle, header.infotableofs, DSEEK_SET);
    SafeRead (handle, fileinfo, length);
    numlumps += header.numlumps;
 
@@ -204,7 +204,7 @@ void RTS_ReadLump (int32 lump, void *dest)
    if (lump < 0)
       Error (EXIT_FAILURE, "RTS_ReadLump: %i < 0",lump);
    l = lumpinfo+lump;
-   d_seek (l->handle, l->position);
+   d_seek (l->handle, l->position, DSEEK_SET);
    SafeRead(l->handle,dest,l->size);
    }
 

@@ -22,4 +22,7 @@
 #define MAX_HANDLES                 (4)
 
 
+#define DEV_MAXXDIM                 (320)
+#define DEV_MAXYDIM                 (240)
+
 #endif /*__DEV_CONF_H__*/

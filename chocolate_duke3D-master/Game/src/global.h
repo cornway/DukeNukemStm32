@@ -70,4 +70,9 @@ int32_t IntelLong (int32_t l);
 
 void Error (int errorType, char  *error, ...);
 
+#ifdef STM32_SDK
+#define EXIT_SUCCESS (0)
+#define EXIT_FAILURE (-1)
+#endif
+
 #endif

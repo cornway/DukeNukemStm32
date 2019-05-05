@@ -19,22 +19,25 @@
 #include <assert.h>
 #include <string.h>
 #include "platform.h"
+
+#ifdef STM32_SDK
+#include <dev_conf.h>
 #include "SDL_Video.h"
 #include "SDL_Keysym.h"
-#include "unix_compat.h"
+#include <SDL_stdinc.h>
 #include <gfx.h>
 #include <input_main.h>
 #include "keyboard.h"
 #include "sndcards.h"
-
-#include <audio_main.h>
-#include <multivoc.h>
+#include <dsl.h>
+#else
+#include "SDL.h"
+#endif
 
 #if (!defined PLATFORM_SUPPORTS_SDL)
 #error This platform apparently does not use SDL. Do not compile this.
 #endif
 
-extern int DSL_Init( void );
 
 #define BUILD_NOMOUSEGRAB    "BUILD_NOMOUSEGRAB"
 #define BUILD_WINDOWED       "BUILD_WINDOWED"
@@ -82,7 +85,6 @@ void TIMER_GetPlatformTicks(int64_t* t);
 
 #include "draw.h"
 #include "cache.h"
-#include "SDL_Keysym.h"
 
 
 /*
@@ -91,10 +93,12 @@ void TIMER_GetPlatformTicks(int64_t* t);
  */
 
 
-#define DEFAULT_MAXRESWIDTH  320
-#define DEFAULT_MAXRESHEIGHT 200
+#define DEFAULT_MAXRESWIDTH  DEV_MAXXDIM
+#define DEFAULT_MAXRESHEIGHT DEV_MAXYDIM
 
-#define UNLOCK_SURFACE_AND_RETURN  /*if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface); */return;
+
+#define UNLOCK_SURFACE_AND_RETURN  if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface); return;
+
 
     /* !!! move these elsewhere? */
 int32_t xres, yres, bytesperline, imageSize, maxpages;
@@ -102,7 +106,7 @@ uint8_t* frameplace;
 
 //The frambuffer address
 uint8_t* frameoffset;
-uint8_t  *screen_raw, vesachecked;
+uint8_t  *screen, vesachecked;
 int32_t buffermode, origbuffermode, linearmode;
 uint8_t  permanentupdate = 0, vgacompatible;
 
@@ -128,8 +132,7 @@ static char *titleNameShort = NULL;
 void restore256_palette (void);
 void set16color_palette (void);
 
-int _argc;
-char  **_argv;
+
 
 static void __append_sdl_surface_flag(SDL_Surface *_surface, char  *str,
                                       size_t strsize, Uint32 flag,
@@ -186,9 +189,9 @@ static void output_surface_info(SDL_Surface *_surface)
 
         dprintf("New vidmode flags:%s.\n", f);
 
-        //info = SDL_GetVideoInfo();
-        //assert(info != NULL);
-/*
+        info = SDL_GetVideoInfo();
+        assert(info != NULL);
+
         print_tf_state("hardware surface available", info->hw_available);
         print_tf_state("window manager available", info->wm_available);
         print_tf_state("accelerated hardware->hardware blits", info->blit_hw);
@@ -199,15 +202,14 @@ static void output_surface_info(SDL_Surface *_surface)
         print_tf_state("accelerated software->hardware alpha blits", info->blit_sw_A);
         print_tf_state("accelerated color fills", info->blit_fill);
 
-        printf("video memory: (%d),\n", info->video_mem);
- */
+        dprintf("video memory: (%d),\n", info->video_mem);
+
     }
 }
 
 
 static void output_driver_info(void)
 {
-#ifdef ORIGCODE
     char  buffer[256];
 
     if (SDL_VideoDriverName(buffer, sizeof (buffer)) == NULL){
@@ -217,7 +219,6 @@ static void output_driver_info(void)
     {
         dprintf("Using SDL video driver \"%s\".", buffer);
     } /* else */
-#endif
 } /* output_driver_info */
 
 
@@ -243,7 +244,7 @@ static void init_new_res_vars(int32_t davidoption)
 
     setupmouse();
 
-    //SDL_WM_SetCaption(titleNameLong, titleNameShort);
+    SDL_WM_SetCaption(titleNameLong, titleNameShort);
 
     xdim = xres = surface->w;
     ydim = yres = surface->h;
@@ -334,9 +335,10 @@ static void go_to_new_vid_mode(int davidoption, int w, int h)
     init_new_res_vars(davidoption); // dont be confused between vidoption (global) and davidoption
 }
 
-static __inline int sdl_mouse_button_filter(void const *event)
+#ifndef STM32_SDK
+
+static __inline int sdl_mouse_button_filter(SDL_MouseButtonEvent const *event)
 {
-#ifdef ORIGCODE
         /*
          * What bits BUILD expects:
          *  0 left button pressed if 1
@@ -367,15 +369,13 @@ static __inline int sdl_mouse_button_filter(void const *event)
     if (bmask & SDL_BUTTON_RMASK) mouse_buttons |= 2;
     if (bmask & SDL_BUTTON_MMASK) mouse_buttons |= 4;
 #endif
-#endif
+
     return(0);
 } /* sdl_mouse_up_filter */
 
 
-static int sdl_mouse_motion_filter(i_event_t const *event)
+static int sdl_mouse_motion_filter(SDL_Event const *event)
 {
-#ifdef ORIGCODE
-
     if (surface == NULL)
 		return(0);
 
@@ -402,11 +402,11 @@ static int sdl_mouse_motion_filter(i_event_t const *event)
 			else
 				mouse_relative_x = mouse_relative_y = 0;
 	}
-#endif
+
     return(0);
 } /* sdl_mouse_motion_filter */
 
-
+#endif /*STM32_SDK*/
     /*
      * The windib driver can't alert us to the keypad enter key, which
      *  Ken's code depends on heavily. It sends it as the same key as the
@@ -423,7 +423,7 @@ static __inline int handle_keypad_enter_hack(const i_event_t *event)
     {
         if (event->state == keydown)
         {
-#if 0 /*FIXME :*/
+#ifndef STM32_SDK /*FIXME :*/
             if (event->key.keysym.mod & KMOD_SHIFT)
             {
                 kp_enter_hack = 1;
@@ -460,7 +460,7 @@ void fullscreen_toggle_and_change_driver(void)
 	y = surface->h;
 
 	BFullScreen =!BFullScreen;
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 #endif
 	_platform_init(0, NULL, "Duke Nukem 3D", "Duke3D");
@@ -482,19 +482,17 @@ static int sdl_key_filter(const i_event_t *event)
 
 		// FIX_00005: Mouse pointer can be toggled on/off (see mouse menu or use CTRL-M)
 		// This is usefull to move the duke window when playing in window mode.
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 
         if (SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON) 
 		{
             SDL_WM_GrabInput(SDL_GRAB_OFF);
-
 			SDL_ShowCursor(1);
 		}
 		else
 		{
             SDL_WM_GrabInput(SDL_GRAB_ON);
 			SDL_ShowCursor(0);
-
 		}
 #endif
         return(0);
@@ -513,7 +511,7 @@ static int sdl_key_filter(const i_event_t *event)
 		keyhandler();
 		lastkey=(scancodes[SDLK_LALT]&0xff)+0x80; // Simulating Key up (not extended)
 		keyhandler();
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 		SDL_SetModState(KMOD_NONE); // SDL doesnt see we are releasing the ALT-ENTER keys
 #endif
 		return(0);					
@@ -545,7 +543,9 @@ static int sdl_key_filter(const i_event_t *event)
 
 int root_sdl_event_filter(const i_event_t *event)
 {
-#ifdef ORIGCODE
+#ifdef STM32_SDK
+    return (sdl_key_filter(event));
+#else
     switch (event->type)
     {
         case SDL_KEYUP:
@@ -571,28 +571,27 @@ int root_sdl_event_filter(const i_event_t *event)
 			return(sdl_mouse_button_filter((const SDL_MouseButtonEvent*)event));
         case SDL_QUIT:
             /* !!! rcg TEMP */
-            Error(0, "Exit through SDL\n"); 
+            Error(EXIT_SUCCESS, "Exit through SDL\n"); 
 		default:
 			//printf("This event is not handled: %d\n",event->type);
 			break;
     } /* switch */
-#else
-        return(sdl_key_filter(event));
-#endif
+
     return(1);
+#endif /*STM32_SDK*/
 } /* root_sdl_event_filter */
 
-extern void Sys_SendKeyEvents(i_event_t *evts);
 
 static void handle_events(void)
 {
-#ifdef ORIGCODE
+#ifndef STM32_SDK
+    SDL_Event event;
+
 	while(SDL_PollEvent(&event))
-        root_sdl_event_filter(&kbdevent);
+        root_sdl_event_filter(&event);
 #else
         Sys_SendKeyEvents(NULL);
 #endif
-    /*TODO : */
 } /* handle_events */
 
 
@@ -602,11 +601,10 @@ void _handle_events(void)
     handle_events();
 } /* _handle_events */
 
-
-static void *joystick = NULL;
+#ifndef STM32_SDK
+static SDL_Joystick *joystick = NULL;
 void _joystick_init(void)
 {
-#ifdef ORIGCODE
     const char  *envr = getenv(BUILD_SDLJOYSTICK);
     int favored = 0;
     int numsticks;
@@ -664,13 +662,11 @@ void _joystick_init(void)
               SDL_JoystickNumHats(joystick), SDL_JoystickNumBalls(joystick));
 
     SDL_JoystickEventState(SDL_QUERY);
-#endif
 } /* _joystick_init */
 
 
 void _joystick_deinit(void)
 {
-#ifdef ORIGCODE
     if (joystick != NULL)
     {
         printf("Closing joystick device...\n");
@@ -680,56 +676,47 @@ void _joystick_deinit(void)
         printf("SDL joystick subsystem deinitialized.\n");
         joystick = NULL;
     } /* if */
-#endif
 } /* _joystick_deinit */
 
 
 int _joystick_update(void)
 {
-#ifdef ORIGCODE
     if (joystick == NULL)
         return(0);
 
     SDL_JoystickUpdate();
     return(1);
-#endif
 } /* _joystick_update */
 
 
 int _joystick_axis(int axis)
 {
-#ifdef ORIGCODE
     if (joystick == NULL)
     {   
         return(0);
     }
 
     return(SDL_JoystickGetAxis(joystick, axis));
-#endif
 } /* _joystick_axis */
 
 int _joystick_hat(int hat)
 {
-#ifdef ORIGCODE
     if (joystick == NULL)
     {   
         return(-1);
     }
 
     return(SDL_JoystickGetHat(joystick, hat));
-#endif
 } /* _joystick_axis */
 
 int _joystick_button(int button)
 {
-#ifdef ORIGCODE
     if (joystick == NULL)
         return(0);
 
     return(SDL_JoystickGetButton(joystick, button) != 0);
-#endif
 } /* _joystick_button */
-
+#endif /*STM32_SDK*/
 
 uint8_t  _readlastkeyhit(void)
 {
@@ -744,7 +731,7 @@ uint8_t  _readlastkeyhit(void)
 
 static void output_sdl_versions(void)
 {
-#ifdef ORIGCODE
+#ifndef STM32_SDK
     const SDL_version *linked_ver = SDL_Linked_Version();
     SDL_version compiled_ver;
 
@@ -756,7 +743,7 @@ static void output_sdl_versions(void)
                 compiled_ver.major, compiled_ver.minor, compiled_ver.patch);
     printf("Linked SDL version is %d.%d.%d ...\n",
                 linked_ver->major, linked_ver->minor, linked_ver->patch);
-#endif
+#endif /*STM32_SDK*/
 } /* output_sdl_versions */
 
 
@@ -809,11 +796,11 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     SDL_putenv("SDL_VIDEODRIVER=Quartz");
 #endif
   	
-#ifdef ORIGCODE
+
     if (SDL_Init(SDL_INIT_VIDEO) == -1){
         Error(EXIT_FAILURE, "BUILDSDL: SDL_Init() failed!\nBUILDSDL: SDL_GetError() says \"%s\".\n", SDL_GetError());
     } 
-#endif
+    
 
 	// Set up the correct renderer
 	// Becarfull setenv can't reach dll in VC++
@@ -825,9 +812,9 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
 
     // This requires to recompile the whole sdl and sdl mixer with the lib
     // switch instead of the default dll switch.
-#ifdef ORIGCODE
-	putenv("SDL_VIDEO_CENTERED=1");
-#endif
+
+	SDL_putenv("SDL_VIDEO_CENTERED=1");
+
     if (title == NULL)
         title = "BUILD";
 
@@ -951,17 +938,12 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
 
     output_sdl_versions();
     output_driver_info();
+    
 
+    dprintf("Video Driver: '%s'.\n", SDL_VideoDriverName(dummyString, 20));
+#ifdef STM32_SDK
     DSL_Init();
-    MV_Init(FX_SOUND_DEVICE, AUDIO_SAMPLE_RATE, 16,
-            AUDIO_OUT_CHANNELS, AUDIO_OUT_BITS);
-    /*int soundcard,
-   int MixRate,
-   int Voices,
-   int numchannels,
-   int samplebits*/
-	//dprintf("Video Driver: '%s'.\n", SDL_VideoDriverName(dummyString, 20));
-
+#endif
 }
 
 // Capture BMP of the current frame
@@ -971,14 +953,14 @@ int screencapture(char  *filename, uint8_t  inverseit)
 //  Use ./screenshots folder. Screenshot code rerwritten. Faster and
 //  makes smaller files. Doesn't freeze or lag the game anymore.
   
-	//SDL_SaveBMP(surface, filename);  
+	SDL_SaveBMP(surface, filename);  
 	return 0;
 } /* screencapture */
 
 
 void setvmode(int mode)
 {
-#ifdef ORIGCODE
+#ifndef STM32_SDK
     if (mode == 0x3)  /* text mode. */
     {
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -996,11 +978,13 @@ int _setgamemode(uint8_t  davidoption, int32_t daxdim, int32_t daydim)
 
     // don't override higher-res app icon on OS X
 #ifndef PLATFORM_MACOSX
+#ifndef STM32_SDK
 	// Install icon
-	//image = SDL_LoadBMP_RW(SDL_RWFromMem(iconBMP, sizeof(iconBMP)), 1);
-	//colorkey = 0; // index in this image to be transparent
-    //SDL_SetColorKey(image, SDL_SRCCOLORKEY, colorkey);
-	//SDL_WM_SetIcon(image,NULL);
+	image = SDL_LoadBMP_RW(SDL_RWFromMem(iconBMP, sizeof(iconBMP)), 1);
+	colorkey = 0; // index in this image to be transparent
+    SDL_SetColorKey(image, SDL_SRCCOLORKEY, colorkey);
+	SDL_WM_SetIcon(image,NULL);
+#endif
 #endif
     
     if (daxdim > MAXXDIM || daydim > MAXYDIM)
@@ -1119,17 +1103,9 @@ static __inline void add_user_defined_resolution(void)
         dprintf("User defined resolution [%s] is bogus!\n", envr);
 } /* add_user_defined_resolution */
 
-static SDL_Rect sdl320x200 = {0, 0, 320, 200};
-
-static SDL_Rect *phys_modes[] =
-{
-   &sdl320x200,
-   NULL,
-};
 
 static __inline SDL_Rect **get_physical_resolutions(void)
 {
-#ifdef ORIGCODE
     const SDL_VideoInfo *vidInfo = SDL_GetVideoInfo();
     SDL_Rect **modes = SDL_ListModes(vidInfo->vfmt, sdl_flags | SDL_FULLSCREEN);
     if (modes == NULL)
@@ -1141,14 +1117,14 @@ static __inline SDL_Rect **get_physical_resolutions(void)
     } /* if */
 
     if (modes == (SDL_Rect **) -1)
-        printf("Couldn't get any physical resolutions.\n");
+        dprintf("Couldn't get any physical resolutions.\n");
     else
     {
-        printf("Highest physical resolution is (%dx%d).\n",
+        dprintf("Highest physical resolution is (%dx%d).\n",
                   modes[0]->w, modes[0]->h);
-    } /* else */
-#endif
-    return(phys_modes);
+    }
+
+    return(modes);
 } /* get_physical_resolutions */
 
 
@@ -1269,8 +1245,8 @@ void getvalidvesamodes(void)
     int i;
     SDL_Rect **modes = NULL;
     int stdres[][2] = {
-                        {320, 200}/*, {640, 350}, {640, 480},
-                        {800, 600}, {1024, 768}*/
+                        {320, 200}, {640, 350}, {640, 480},
+                        {800, 600}, {1024, 768}
                       };
 
     if (already_checked)
@@ -1404,9 +1380,9 @@ int VBE_setPalette(uint8_t  *palettebuffer)
  *  so we do a conversion.
  */
 {
-    pal_t fmt_swap[256];
-    pix_t r, g, b;
-    pal_t *sdlp = fmt_swap;
+    SDL_Color fmt_swap[256];
+    uint8_t r, g, b;
+    SDL_Color *sdlp = fmt_swap;
     uint8_t  *p = palettebuffer;
     int i;
     //static updated=0;
@@ -1423,16 +1399,14 @@ int VBE_setPalette(uint8_t  *palettebuffer)
     memcpy(lastPalette, palettebuffer, 768);
     
     for (i = 0; i < 256; i++){
-        
         b = (Uint8) ((((float) *p++) / 63.0) * 255.0);
         g = (Uint8) ((((float) *p++) / 63.0) * 255.0);
         r = (Uint8) ((((float) *p++) / 63.0) * 255.0);
-        *sdlp = GFX_RGB(r,g,b, 0xff);
         p++;
-        sdlp++;
+        writeLong(sdlp++, GFX_RGB(r,g,b, 0xff));
     }
-    screen_set_clut(fmt_swap, 256);
-    return 0;
+
+    return(SDL_SetColors(surface, fmt_swap, 0, 256));
 }
 
 
@@ -1457,7 +1431,7 @@ int VBE_getPalette(int32_t start, int32_t num, uint8_t  *palettebuffer)
 
 void _uninitengine(void)
 {
-#ifdef ORIGCODE
+#ifndef STM32_SDK
    SDL_QuitSubSystem(SDL_INIT_VIDEO);
 #endif
 } /* _uninitengine */
@@ -1467,7 +1441,7 @@ void _uninitengine(void)
 
 int setupmouse(void)
 {
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 	SDL_Event event;
 
     if (surface == NULL)
@@ -1533,7 +1507,7 @@ void _nextpage(void)
     _handle_events();
 
     
-    SDL_UpdateRect(surface, 0, 0, surface->w, surface->h);
+    SDL_UpdateRect(surface, 0, 0, 0, 0);
     
     //sprintf(bmpName,"%d.bmp",counter++);
     //SDL_SaveBMP(surface,bmpName);
@@ -1581,8 +1555,8 @@ void fillscreen16(int32_t offset, int32_t color, int32_t blocksize)
     Uint8 *wanted_end;
     Uint8 *pixels;
 
-	//if (SDL_MUSTLOCK(surface))
-        //SDL_LockSurface(surface);
+	if (SDL_MUSTLOCK(surface))
+        SDL_LockSurface(surface);
 
     pixels = get_framebuffer();
 
@@ -1603,8 +1577,8 @@ void fillscreen16(int32_t offset, int32_t color, int32_t blocksize)
 
     memset(pixels + offset, (int) color, blocksize);
 
-    //if (SDL_MUSTLOCK(surface))
-        //SDL_UnlockSurface(surface);
+    if (SDL_MUSTLOCK(surface))
+        SDL_UnlockSurface(surface);
 
     _nextpage();
 } /* fillscreen16 */
@@ -1647,8 +1621,8 @@ void drawline16(int32_t XStart, int32_t YStart, int32_t XEnd, int32_t YEnd, uint
     uint8_t  *ScreenPtr;
     int32_t dx, dy;
 
-    //if (SDL_MUSTLOCK(surface))
-        //SDL_LockSurface(surface);
+    if (SDL_MUSTLOCK(surface))
+        SDL_LockSurface(surface);
 
 	dx = XEnd-XStart;
     dy = YEnd-YStart;
@@ -1824,7 +1798,7 @@ void _idle(void)
 {
     if (surface != NULL)
         _handle_events();
-    HAL_Delay(1);
+    SDL_Delay(1);
 } /* _idle */
 
 void *_getVideoBase(void)
@@ -2001,7 +1975,7 @@ int TIMER_GetPlatformTicksInOneSecond(int64_t* t)
     
 void TIMER_GetPlatformTicks(int64_t* t)
 {
-    *t = HAL_GetTick();
+    *t = SDL_GetTicks();
 }
 #endif
 /* end of sdl_driver.c ... */

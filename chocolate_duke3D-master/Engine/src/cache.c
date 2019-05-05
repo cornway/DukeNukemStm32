@@ -9,6 +9,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef STM32_SDK
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
+
 #include "platform.h"
 #include "display.h"
 
@@ -49,7 +55,6 @@
  *           After calling uninitcache, it is still ok to call allocache
  *           without first calling initcache.
  */
-#include "misc_utils.h"
 
 #define MAXCACHEOBJECTS 9216
 

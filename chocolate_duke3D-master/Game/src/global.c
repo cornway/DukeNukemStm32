@@ -692,7 +692,7 @@ void *SafeMalloc (int32_t size)
 {
 	void *ptr;
 
-    ptr = malloc(size);
+    ptr = Sys_Malloc(size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeMalloc failure for %lu bytes",size);
@@ -704,7 +704,7 @@ void SafeRealloc (void **x, int32 size)
 {
 	void *ptr;
 
-    ptr = realloc(*x, size);
+    ptr = Sys_Realloc(*x, size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeRealloc failure for %lu bytes",size);
@@ -716,7 +716,7 @@ void *SafeLevelMalloc (int32_t size)
 {
 	void *ptr;
 
-    ptr = malloc(size);
+    ptr = Sys_Malloc(size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeLevelMalloc failure for %lu bytes",size);
@@ -729,7 +729,7 @@ void SafeFree (void * ptr)
    if ( ptr == NULL )
       Error (EXIT_FAILURE, "SafeFree : Tried to free a freed pointer\n");
 
-    free(ptr);
+    Sys_Free(ptr);
 
 }
 

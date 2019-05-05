@@ -2,13 +2,13 @@
 #define _INCLUDE_PLATFORM_H_
 
 
-#define __STM32__
+#ifdef STM32_SDK
 #define USER_DUMMY_NETWORK 1
-
 #define PLATFORM_UNIX 1
 
 #include <stdint.h>
 #include "arch.h"
+#endif
 
 #if (defined PLATFORM_WIN32)
     #include "win32_compat.h"
@@ -18,7 +18,7 @@
     #include "doscmpat.h"
 #elif (defined __APPLE__)
     #include "macos_compat.h"
-#elif (defined __STM32__)
+#elif (defined STM32_SDK)
     #define PLATFORM_SUPPORTS_SDL
 #else
 #error Define your platform!

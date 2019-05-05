@@ -166,13 +166,13 @@ extern DECLSPEC void * SDLCALL SDL_malloc(size_t size);
 #endif
 
 #ifdef HAVE_CALLOC
-#define SDL_calloc	calloc
+#define SDL_calloc Sys_Calloc
 #else
 extern DECLSPEC void * SDLCALL SDL_calloc(size_t nmemb, size_t size);
 #endif
 
 #ifdef HAVE_REALLOC
-#define SDL_realloc	realloc
+#define SDL_realloc Sys_Realloc
 #else
 extern DECLSPEC void * SDLCALL SDL_realloc(void *mem, size_t size);
 #endif

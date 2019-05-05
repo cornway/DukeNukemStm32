@@ -9,8 +9,6 @@
 #define __PRAGMAS_H__
 
 #include "platform.h"
-#include <stdint.h>
-#include <arch.h>
 
 static __inline void swapchar(uint8_t  *p1, uint8_t  *p2)
 { uint8_t  tmp = *p1; *p1 = *p2; *p2 = tmp; }

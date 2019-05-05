@@ -536,7 +536,7 @@ void CONTROL_GetInput( ControlInfo *info )
 			break;
 	}
 
-
+#ifndef STM32_SDK
     // TODO: releasing the mouse button does not honor if a keyboard key with
     // the same function is still pressed. how should it?
     for(i=0; i<MAXMOUSEBUTTONS;++i)
@@ -607,7 +607,6 @@ void CONTROL_GetInput( ControlInfo *info )
 			lastjoyHats[i] = joyHats[i];
 		}
 		
-
         for(i=0; i<MAXJOYAXES;i++)
         {
             switch(JoyAxisMapping[i])
@@ -679,6 +678,7 @@ void CONTROL_GetInput( ControlInfo *info )
         }
 
     }
+#endif /*STM32_SDK*/
 }
 
 void CONTROL_ClearAction( int32 whichbutton )
@@ -751,10 +751,10 @@ void CONTROL_Startup
    )
 {
 	int i;
-
+#ifndef STM32_SDK
 	// Init the joystick
     _joystick_init();
-
+#endif
 	for(i=0; i < MAXJOYHATS; i++)
     {
 		joyHats[i] = 0;
@@ -773,7 +773,9 @@ void CONTROL_Startup
 
 void CONTROL_Shutdown( void )
 {
+#ifndef STM32_SDK
     _joystick_deinit();
+#endif
 }
 
 
@@ -847,13 +849,17 @@ int32 CONTROL_FilterDeadzone
 
 int32 CONTROL_GetFilteredAxisValue(int32 axis)
 {
-return (int32)((float)CONTROL_FilterDeadzone
+#ifndef STM32_SDK
+    return (int32)((float)CONTROL_FilterDeadzone
                                     (
                                         _joystick_axis(axis), 
                                         JoyAnalogDeadzone[axis]
                                     )
                                         * JoyAnalogScale[axis]
                                     );
+#else
+    return 0;
+#endif
 }
 
 
@@ -921,6 +927,7 @@ void    MOUSE_GetDelta( int32*x, int32*y )
 
 void JOYSTICK_UpdateHats()
 {
+#ifndef STM32_SDK
 	int i;
 
 	for(i=0; i<MAXJOYHATS; i++)
@@ -930,4 +937,5 @@ void JOYSTICK_UpdateHats()
 			joyHats[i] = _joystick_hat(i);
 		//}
 	}
+#endif
 }

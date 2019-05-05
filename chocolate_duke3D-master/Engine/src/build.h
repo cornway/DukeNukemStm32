@@ -13,10 +13,12 @@
    #include <inttypes.h>
 #endif
 
-#ifdef ORIGCODE
-#pragma pack(1)
-#else
+#ifdef STM32_SDK
 #include <arch.h>
+#include <dev_conf.h>
+#else
+#define V_PREPACK
+#define V_POSTPACK
 #endif
 
 #define MAXSECTORS 1024
@@ -26,8 +28,8 @@
 
 #define MAXSTATUS 1024
 #define MAXPLAYERS 16
-#define MAXXDIM 320
-#define MAXYDIM 240
+#define MAXXDIM DEV_MAXXDIM
+#define MAXYDIM DEV_MAXYDIM
 #define MAXPALOOKUPS 256
 #define MAXPSKYTILES 256
 #define MAXSPRITESONSCREEN 1024
@@ -47,6 +49,9 @@
 	#define EXTERN extern
 #endif
 
+#ifndef STM32_SDK
+#pragma pack(1)
+#endif
 /*
  * ceilingstat/floorstat:
  *   bit 0: 1 = parallaxing, 0 = not                                 "P"

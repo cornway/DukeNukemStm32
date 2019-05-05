@@ -72,6 +72,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #define TIMERUPDATESIZ 32
 
+int _argc = 0;
+char **_argv = NULL;
+
 int32_t cameradist = 0, cameraclock = 0;
 uint8_t  eightytwofifty = 0;
 uint8_t  playerswhenstarted;
@@ -7718,19 +7721,21 @@ void ShutDown( void )
 =
 ===================
 */
-
+uint32_t mymemsize = 0x48000;
 void compilecons(void)
 {
 	char  userconfilename[512];
 
-   mymembuf = (char  *)hittype;
+   mymembuf = (char  *)Sys_Malloc(mymemsize);
+   assert(mymembuf);
+    //mymemsize = sizeof(hittype);
    labelcode = (int32_t *)&sector[0];
    label = (char  *)sprite;
 
 	sprintf(userconfilename, "%s", confilename);
 
    loadefs(userconfilename,mymembuf, 0);  
-
+   Sys_Free(mymembuf);
 }
 
 
@@ -8351,10 +8356,8 @@ int duke_main(int argc,char  **argv)
    if (CONTROL_JoystickEnabled)
        CONTROL_CenterJoystick(CenterCenter,UpperLeft,LowerRight,CenterThrottle,CenterRudder);
         
-   //puts("Loading palette/lookups.");
-#ifdef ORIGCODE
+   dprintf("Loading palette/lookups.");
    if( setgamemode(ScreenMode,ScreenWidth,ScreenHeight) < 0 )
-#endif
     {
         dprintf("\nVESA driver for ( %i * %i ) not found/supported!\n",xdim,ydim);
         ScreenMode = 2;
@@ -8810,7 +8813,7 @@ void closedemowrite(void)
         {
             dfwrite(recsync,sizeof(input)*ud.multimode,ud.reccnt/ud.multimode,frecfilep);
 
-            d_seek(frecfilep,0L);
+            d_seek(frecfilep,0L, DSEEK_SET);
             d_write(frecfilep, &totalreccnt, sizeof(int32_t));
             ud.recstat = ud.m_recstat = 0;
         }

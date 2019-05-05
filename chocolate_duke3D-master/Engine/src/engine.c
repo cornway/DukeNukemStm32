@@ -4840,7 +4840,8 @@ static void drawsprite (int32_t snum)
     int32_t npoints, npoints2, zz, t, zsgn, zzsgn;
     short tilenum, spritenum;
     uint8_t  swapped, daclip;
-
+    void *tilep = NULL;
+    static int32_t *animFlagsP[4] = {NULL};
     tspr = tspriteptr[snum];
 
     xb = spritesx[snum];

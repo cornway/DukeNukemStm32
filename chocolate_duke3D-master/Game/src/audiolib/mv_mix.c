@@ -72,7 +72,7 @@ static int MV_cubic16(const short *src, int position, int rate)
 
 	while (hpos > *MV_GLast)
 	{
-		gval0 = READ_LE_I16(src[temp++]);
+		gval0 = readShort(&src[temp++]);
 		*MV_GPos = (*MV_GPos + 1) & 3;
 		(*MV_GLast)++;
 	}

@@ -3050,12 +3050,6 @@ int MV_Init
          MV_SetErrorCode( MV_UnsupportedCard );
          break;
       }
-#else
-   status = DSL_Init();
-   if ( status != DSL_Ok )
-      {
-      MV_SetErrorCode( MV_BlasterError );
-      }
 #endif
 
    if ( MV_ErrorCode != MV_Ok )

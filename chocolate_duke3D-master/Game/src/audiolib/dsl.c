@@ -3,9 +3,12 @@
 
 #include "dsl.h"
 #include "util.h"
+#include <platform.h>
 #include <SDL_audio.h>
 #include <audio_main.h>
 #include <misc_utils.h>
+#include <multivoc.h>
+#include <sndcards.h>
 
 extern volatile int MV_MixPage;
 
@@ -69,12 +72,15 @@ static void DSL_SetErrorCode(int ErrorCode)
 int DSL_Init( void )
 {
 	DSL_SetErrorCode(DSL_Ok);
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO|SDL_INIT_NOPARACHUTE) < 0) {
 		DSL_SetErrorCode(DSL_SDLInitFailure);
 		
 		return DSL_Error;
 	}
+#else
+    MV_Init(FX_SOUND_DEVICE, AUDIO_SAMPLE_RATE, 16,
+            AUDIO_OUT_CHANNELS, AUDIO_OUT_BITS);
 #endif
 	return DSL_Ok;
 }

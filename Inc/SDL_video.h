@@ -30,7 +30,9 @@
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
 #include "SDL_rwops.h"
-
+#ifdef STM32_SDK
+#include <input_main.h>
+#endif
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -600,9 +602,12 @@ extern DECLSPEC int SDLCALL SDL_SaveBMP_RW
 		(SDL_Surface *surface, SDL_RWops *dst, int freedst);
 
 /** Convenience macro -- save a surface to a file */
+#if defined(STM32_SDK) && !defined(BMP_SUPPORTED)
+#define SDL_SaveBMP(surface, file)
+#else
 #define SDL_SaveBMP(surface, file) \
 		SDL_SaveBMP_RW(surface, SDL_RWFromFile(file, "wb"), 1)
-
+#endif
 /**
  * Sets the color key (transparent pixel) in a blittable surface.
  * If 'flag' is SDL_SRCCOLORKEY (optionally OR'd with SDL_RLEACCEL), 
@@ -946,6 +951,18 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface *src, SDL_Rect *srcrect,
 #ifdef __cplusplus
 }
 #endif
+
+#ifdef STM32_SDK
+
+#ifndef SDL_INIT_VIDEO
+#define SDL_INIT_VIDEO 0
+#endif
+
+void Sys_SendKeyEvents(i_event_t *evts);
+
+extern DECLSPEC int SDLCALL SDL_Init (uint32_t what);
+#endif
+
 #include "close_code.h"
 
 #endif /* _SDL_video_h */

@@ -13,10 +13,10 @@
 
 #include <stdlib.h>
 
-#define kmalloc(x) Sys_Malloc(x)
-#define kkmalloc(x) Sys_Malloc(x)
-#define kfree(x) Sys_Free(x)
-#define kkfree(x) Sys_Free(x)
+#define kmalloc(x) malloc(x)
+#define kkmalloc(x) malloc(x)
+#define kfree(x) free(x)
+#define kkfree(x) free(x)
 
 #ifdef FP_OFF
 #undef FP_OFF

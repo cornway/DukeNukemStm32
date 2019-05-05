@@ -55,8 +55,8 @@ void VID_PreConfig (void)
 {
     screen_t screen;
     screen.buf = NULL;
-    screen.width = 320;
-    screen.height = 200;
+    screen.width = DEV_MAXXDIM;
+    screen.height = DEV_MAXYDIM;
     screen_win_cfg(&screen);
 }
 

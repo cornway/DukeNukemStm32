@@ -10,7 +10,6 @@
 #include "engine.h"
 #include "draw.h"
 #include "filesystem.h"
-#include "unix_compat.h"
 
 char  artfilename[20];
 
@@ -266,7 +265,7 @@ int loadpics(char  *filename, char * gamedir)
     clearbuf(gotpic,(MAXTILES+31)>>5,0L);
     
     /* try dpmi_DETERMINEMAXREALALLOC! */
-#ifdef ORIGCODE
+#ifndef STM32_SDK
     cachesize = max(artsize,1048576);
     while ((pic = (uint8_t  *)kkmalloc(cachesize)) == NULL)
     {

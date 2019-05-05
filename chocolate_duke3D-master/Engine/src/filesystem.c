@@ -12,12 +12,16 @@
 #include "cache.h"
 #include "fixedPoint_math.h"
 #include "../../Game/src/global.h"
+#ifdef STM32_SDK
 #include <string.h>
 #include <misc_utils.h>
 #include <dev_io.h>
 
 extern char game_dir[512];
-
+#else
+#include <strings.h>
+char game_dir[512];
+#endif /*STM32_SDK*/
 //The multiplayer module in game.dll needs direct access to the crc32 (sic).
 int32_t groupefil_crc32[MAXGROUPFILES];
 
@@ -48,7 +52,7 @@ typedef struct grpSet_s{
 // but also that the content will be set to 0.
 static grpSet_t grpSet;
 
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 uint8_t         crcBuffer[ 1 << 20]     ;
 #endif
 int32_t initgroupfile(const char  *filename)
@@ -133,13 +137,13 @@ int32_t initgroupfile(const char  *filename)
     
 	// Compute CRC32 of the whole grp and implicitely caches the GRP in memory through windows caching service.
     // Rewind the fileDescriptor
-	d_seek(archive->fileDescriptor, 0);
+	d_seek(archive->fileDescriptor, 0, DSEEK_SET);
     
 	//i = 1000000;
 	//groupfil_memory[numgroupfiles] = malloc(i);
     
     //Load the full GRP in RAM.
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 	while((j=d_read(archive->fileDescriptor, crcBuffer, sizeof(crcBuffer)))){
 		archive->crc32 = crc32_update(crcBuffer,j,archive->crc32);
 	}
@@ -164,9 +168,9 @@ int32_t initgroupfile(const char  *filename)
             archive->crc32 = crc32_update(crcBuffer,done,archive->crc32);
         }
         Sys_Free(crcBuffer);
-        d_seek(archive->fileDescriptor, 0);
+        d_seek(archive->fileDescriptor, 0, DSEEK_SET);
     }
-#endif
+#endif /*STM32_SDK*/
     // The game layer seems to absolutely need to access an array int[4] groupefil_crc32
     // so we need to store the crc32 in there too.
     groupefil_crc32[grpSet.num] = archive->crc32;
@@ -304,7 +308,7 @@ int32_t kopen4load(const char  *filename, int openOnlyFromGRP){
 	
 
     if (newhandle < 0)
-        Error(0, "Too Many files open!\n");
+        Error(EXIT_FAILURE, "Too Many files open!\n");
     
 
     //Try to look in the filesystem first. In this case fd = filedescriptor.
@@ -364,7 +368,7 @@ int32_t kread(int32_t handle, PACKED void *buffer, int32_t leng){
     archive = & grpSet.archives[openFile->grpID];
         
     d_seek(archive->fileDescriptor,
-          archive->fileOffsets[openFile->fd] + openFile->cursor);
+          archive->fileOffsets[openFile->fd] + openFile->cursor, DSEEK_SET);
     
     //Adjust leng so we cannot read more than filesystem-cursor location.
     leng = min(leng,archive->filesizes[openFile->fd]-openFile->cursor);
@@ -412,8 +416,7 @@ int32_t klseek(int32_t handle, int32_t offset, int whence){
     
     // FILESYSTEM ? OS will take care of it.
     if (openFiles[handle].type == SYSTEM_FILE){
-        d_seek(openFiles[handle].fd,offset);
-        return offset;
+        return d_seek(openFiles[handle].fd,offset, whence);
     }
     
     
@@ -508,15 +511,15 @@ int32_t compress(uint8_t  *lzwinbuf, int32_t uncompleng, uint8_t  *lzwoutbuf)
 		{
 			bytecnt1++;
 			if (bytecnt1 == uncompleng) break;
-			if (READ_LE_I16(lzwbuf2[addr]) < 0) {writeShort(&lzwbuf2[addr], (short) addrcnt); break;}
-			newaddr = READ_LE_I16(lzwbuf2[addr]);
+			if (readShort(&lzwbuf2[addr]) < 0) {writeShort(&lzwbuf2[addr], (short) addrcnt); break;}
+			newaddr = readShort(&lzwbuf2[addr]);
 			while (lzwbuf1[newaddr] != lzwinbuf[bytecnt1])
 			{
-				zx = READ_LE_I16(lzwbuf3[newaddr]);
+				zx = readShort(&lzwbuf3[newaddr]);
 				if (zx < 0) {writeShort(&lzwbuf3[newaddr], (short) addrcnt); break;}
 				newaddr = zx;
 			}
-			if (READ_LE_I16(lzwbuf3[newaddr]) == addrcnt) break;
+			if (readShort(&lzwbuf3[newaddr]) == addrcnt) break;
 			addr = newaddr;
 		} while (addr >= 0);
 		writeShort(&lzwbuf1[addrcnt], lzwinbuf[bytecnt1]);
@@ -558,11 +561,11 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
 	short *shortptr;
     
 	shortptr = (short *)lzwinbuf;
-	strtot = READ_LE_I16(shortptr[1]);
+	strtot = readShort(&shortptr[1]);
 	if (strtot == 0)
 	{
 		copybuf((void *)((lzwinbuf)+4),(void *)((lzwoutbuf)),((compleng-4)+3)>>2);
-		return(READ_LE_I16(shortptr[0])); /* uncompleng */
+		return(readShort(&shortptr[0])); /* uncompleng */
 	}
 	for(i=255;i>=0;i--) { writeShort(&lzwbuf2[i], (short) i); writeShort(&lzwbuf3[i], (short) i); }
 	currstr = 256; bitcnt = (4<<3); outbytecnt = 0;
@@ -577,8 +580,8 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
         
 		writeShort(&lzwbuf3[currstr], (short) dat);
         
-		for(leng=0;dat>=256;leng++,dat= READ_LE_I16(lzwbuf3[dat]))
-			lzwbuf1[leng] = (uint8_t ) READ_LE_I16(lzwbuf2[dat]);
+		for(leng=0;dat>=256;leng++,dat= readShort(&lzwbuf3[dat]))
+			lzwbuf1[leng] = (uint8_t ) readShort(&lzwbuf2[dat]);
         
 		lzwoutbuf[outbytecnt++] = (uint8_t ) dat;
 		for(i=leng-1;i>=0;i--) lzwoutbuf[outbytecnt++] = lzwbuf1[i];
@@ -587,7 +590,7 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
 		currstr++;
 		if (currstr > oneupnumbits) { numbits++; oneupnumbits <<= 1; }
 	} while (currstr < strtot);
-	return((int32_t )READ_LE_I16(shortptr[0])); /* uncompleng */
+	return((int32_t )readShort(&shortptr[0])); /* uncompleng */
 }
 
 
