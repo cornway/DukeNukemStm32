@@ -59,11 +59,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "pitch.h"
 #include "multivoc.h"
-#include <audio_main.h>
 #include "_multivc.h"
 #include "debugio.h"
 #include "../sounddebugdefs.h"
-#include <arch.h>
+#ifdef STM32_SDK
+#include <audio_main.h>
+#else
+// for the Mutex
+#include <SDL.h>
+#endif
 #define RoundFixed( fixedval, bits )            \
         (                                       \
           (                                     \
@@ -117,7 +121,7 @@ static int MV_FooMemory;
 
 static int   MV_BufferDescriptor;
 static int   MV_BufferEmpty[ NumberOfBuffers ];
-char *MV_MixBuffer[ NumberOfBuffers + 1 ];
+static char *MV_MixBuffer[ NumberOfBuffers + 1 ];
 double *MV_FooBuffer = NULL;
 
 static VoiceNode *MV_Voices = NULL;
@@ -128,7 +132,7 @@ static volatile VoiceNode VoicePool;
 /*static*/ int MV_MixPage      = 0;
 static int MV_VoiceHandle  = MV_MinVoiceHandle;
 
-static void ( *MV_CallBackFunc )( unsigned long ) = NULL;
+static void ( *MV_CallBackFunc )( int32_t ) = NULL;
 static void ( *MV_RecordFunc )( char *ptr, int length ) = NULL;
 static void ( *MV_MixFunction )( VoiceNode *voice);
 
@@ -496,12 +500,12 @@ void MV_ServiceVoc
             }
 		}
 	}
-	
+#ifndef STM32_SDK
 	if ( MV_ReverbLevel > 0)
 	{
 		if (MV_ReverbTable != -1) MV_FPReverb(MV_ReverbTable);
 	}
-
+#endif
 	{
 		char *dest;
 		int   count;
@@ -1262,7 +1266,7 @@ void MV_SetVoicePitch
 
    {
    voice->SamplingRate = rate;
-#ifdef ORIGCODE
+#ifndef STM32_SDK
    voice->PitchScale   = PITCH_GetScale( pitchoffset );
 #else
     voice->PitchScale = 1;
@@ -1634,9 +1638,11 @@ void MV_SetReverb
    )
 
    {
+#ifndef STM32_SDK
    MV_ReverbLevel = MIX_VOLUME( reverb );
    MV_ReverbTable = ( MV_ReverbLevel * MV_TotalVolume ) / MV_MaxTotalVolume;// &MV_VolumeTable[ MV_ReverbLevel ];
    if (!reverb) MV_FPReverbFree();
+#endif
    }
 
 
@@ -2587,8 +2593,8 @@ int MV_PlayLoopedVOC
    voice->GVal[2]     = 0;
    voice->GVal[3]     = 0;
    voice->callbackval = callbackval;
-   voice->LoopStart   = ( char * )loopstart;
-   voice->LoopEnd     = ( char * )loopend;
+   voice->LoopStart   = ( uint8_t * )loopstart;
+   voice->LoopEnd     = ( uint8_t * )loopend;
    voice->LoopSize    = loopend - loopstart + 1;
 
    if ( loopstart < 0 )
@@ -3043,9 +3049,7 @@ int MV_Init
             }
          break;
       #endif
-      case stm32769idisco:
-            status = DSL_Ok;
-      break;
+
       default :
          MV_SetErrorCode( MV_UnsupportedCard );
          break;
@@ -3083,7 +3087,7 @@ int MV_Init
    MV_SetMixMode( numchannels, samplebits );
    MV_ReverbDelay = 14320; // MV_BufferSize * 3;
    //InitializeCriticalSection(&reverbCS);
-#ifdef ORIGCODE
+#ifndef STM32_SDK
    reverbMutex = SDL_CreateMutex();
 #endif
 #ifdef PLAT_DOS
@@ -3193,10 +3197,10 @@ int MV_Shutdown
    // Stop the sound playback engine
    MV_StopPlayback();
 
+#ifndef STM32_SDK
    // Free reverb buffer, if allocated
    MV_FPReverbFree();
    //DeleteCriticalSection(&reverbCS);
-#ifdef ORIGCODE
    SDL_DestroyMutex(reverbMutex);
 #endif
    // Shutdown the sound card

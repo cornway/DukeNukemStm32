@@ -32,9 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdlib.h>
 #include "sndcards.h"
 #include "multivoc.h"
+#ifdef STM32_SDK
 #include <audio_main.h>
 #include <platform.h>
-
+#endif
 
 #include "dsl.h"
 
@@ -64,7 +65,48 @@ int FX_Installed = FALSE;
 char *FX_ErrorString(int ErrorNumber)
 
    {
-   return( "FX_Ok" );
+   char *ErrorString;
+
+   switch( ErrorNumber )
+      {
+      case FX_Warning :
+      case FX_Error :
+         ErrorString = FX_ErrorString( FX_ErrorCode );
+         break;
+
+      case FX_Ok :
+         ErrorString = "Fx ok\n";
+         break;
+
+      case FX_ASSVersion :
+         ErrorString = "Apogee Sound System Version " ASS_VERSION_STRING "  "
+            "Programmed by Jim Dose\n"
+            "(c) Copyright 1995 James R. Dose.  All Rights Reserved.\n";
+         break;
+
+
+      case FX_SoundCardError :
+         ErrorString = DSL_ErrorString( DSL_Error );
+         break;
+
+      case FX_InvalidCard :
+         ErrorString = "Invalid Sound Fx device.\n";
+         break;
+
+      case FX_MultiVocError :
+         ErrorString = MV_ErrorString( MV_Error );
+         break;
+
+      case FX_DPMI_Error :
+         ErrorString = "DPMI Error in FX_MAN.\n";
+         break;
+
+      default :
+         ErrorString = "Unknown Fx error code.\n";
+         break;
+      }
+
+   return( ErrorString );
    }
 
 
@@ -81,7 +123,36 @@ int FX_SetupCard
    )
 
    {
-   return( FX_Ok );
+   int status;
+   int DeviceStatus;
+
+   if ( USER_CheckParameter( "ASSVER" ) )
+      {
+      FX_SetErrorCode( FX_ASSVersion );
+      return( FX_Error );
+      }
+
+   FX_SoundDevice = SoundCard;
+
+   status = FX_Ok;
+   FX_SetErrorCode( FX_Ok );
+
+
+      DeviceStatus = DSL_Init();
+      if ( DeviceStatus != DSL_Ok )
+         {
+         FX_SetErrorCode( FX_SoundCardError );
+         status = FX_Error;
+         }
+         else
+         {
+         device->MaxVoices     = 32;
+         device->MaxSampleBits = 0;
+         device->MaxChannels   = 0;
+         }
+
+
+   return( status );
    }
 
 
@@ -137,10 +208,69 @@ int FX_Init
    int samplebits,
    unsigned mixrate
    )
-{
-    FX_SoundDevice = FX_SOUND_DEVICE;
-    return( 0 );
-}
+
+   {
+   int status;
+   int devicestatus;
+
+   if ( FX_Installed )
+      {
+      FX_Shutdown();
+      }
+
+   if ( USER_CheckParameter( "ASSVER" ) )
+      {
+      FX_SetErrorCode( FX_ASSVersion );
+      return( FX_Error );
+      }
+
+   status = LL_LockMemory();
+   if ( status != LL_Ok )
+      {
+      FX_SetErrorCode( FX_DPMI_Error );
+      return( FX_Error );
+      }
+
+   FX_MixRate = mixrate;
+
+   status = FX_Ok;
+   FX_SoundDevice = SoundCard;
+   switch( SoundCard )
+      {
+      case SoundBlaster :
+      case Awe32 :
+      case ProAudioSpectrum :
+      case SoundMan16 :
+      case SoundScape :
+      case SoundSource :
+      case TandySoundSource :
+      case UltraSound :
+      case stm32769idisco:
+         devicestatus = MV_Init( SoundCard, FX_MixRate, numvoices,
+            numchannels, samplebits );
+         if ( devicestatus != MV_Ok )
+            {
+            FX_SetErrorCode( FX_MultiVocError );
+            status = FX_Error;
+            }
+         break;
+
+      default :
+         FX_SetErrorCode( FX_InvalidCard );
+         status = FX_Error;
+      }
+
+   if ( status != FX_Ok )
+      {
+      LL_UnlockMemory();
+      }
+   else
+      {
+      FX_Installed = TRUE;
+      }
+
+   return( status );
+   }
 
 
 /*---------------------------------------------------------------------
@@ -155,7 +285,42 @@ int FX_Shutdown
    )
 
    {
-   return( 0 );
+   int status;
+
+   if ( !FX_Installed )
+      {
+      return( FX_Ok );
+      }
+
+   status = FX_Ok;
+   switch( FX_SoundDevice )
+      {
+      case SoundBlaster :
+      case Awe32 :
+      case ProAudioSpectrum :
+      case SoundMan16 :
+      case SoundScape :
+      case SoundSource :
+      case TandySoundSource :
+      case UltraSound :
+      case stm32769idisco:
+         status = MV_Shutdown();
+         if ( status != MV_Ok )
+            {
+            FX_SetErrorCode( FX_MultiVocError );
+            status = FX_Error;
+            }
+         break;
+
+      default :
+         FX_SetErrorCode( FX_InvalidCard );
+         status = FX_Error;
+      }
+
+   FX_Installed = FALSE;
+   LL_UnlockMemory();
+
+   return( status );
    }
 
 
@@ -265,6 +430,9 @@ void FX_SetReverb
    )
 
    {
+#ifndef STM32_SDK
+   MV_SetReverb( reverb );
+#endif
    }
 
 
@@ -280,6 +448,9 @@ void FX_SetFastReverb
    )
 
    {
+#ifndef STM32_SDK
+   MV_SetFastReverb( reverb );
+#endif
    }
 
 
@@ -295,7 +466,11 @@ int FX_GetMaxReverbDelay
    )
 
    {
+#ifndef STM32_SDK
+   return MV_GetMaxReverbDelay();
+#else
    return 0;
+#endif
    }
 
 
@@ -311,7 +486,11 @@ int FX_GetReverbDelay
    )
 
    {
+#ifndef STM32_SDK
+   return MV_GetReverbDelay();
+#else
    return 0;
+#endif
    }
 
 
@@ -327,6 +506,9 @@ void FX_SetReverbDelay
    )
 
    {
+#ifndef STM32_SDK
+   MV_SetReverbDelay( delay );
+#endif
    }
 
 

@@ -1056,14 +1056,14 @@
               <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\mv_mix.c</FilePath>
             </File>
             <File>
-              <FileName>mvreverb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\mvreverb.c</FilePath>
-            </File>
-            <File>
               <FileName>ll_man.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\ll_man.c</FilePath>
+            </File>
+            <File>
+              <FileName>user.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\chocolate_duke3D-master\Game\src\audiolib\user.c</FilePath>
             </File>
           </Files>
         </Group>

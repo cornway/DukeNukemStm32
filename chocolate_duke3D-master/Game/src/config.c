@@ -37,9 +37,10 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "scriplib.h"
 #include "build.h"
-#include "unix_compat.h"
-#include <debug.h>
 
+#ifdef STM32_SDK
+#include <audio_main.h>
+#endif
 // we load this in to get default button and key assignments
 // as well as setting up function mappings
 
@@ -124,7 +125,10 @@ void CONFIG_GetSetupFilename( void )
    }
 
    dprintf("Using Setup file: '%s'\n",setupfilename);
-   i=0;
+   i=SDL_GetTicks()+(3*CLOCKS_PER_SEC/4);
+   while (SDL_GetTicks()<i){
+      ;
+   }
 }
 
 /*
@@ -635,7 +639,7 @@ void CONFIG_ReadSetup( void )
 			strcpy(boardfilename,_argv[dummy+1]);
 			if( strchr(boardfilename,'.') == 0)
 				strcat(boardfilename,".map");
-			sprintf("Using level: '%s'.\n",boardfilename);
+			dprintf("Using level: '%s'.\n",boardfilename);
 		}
 		else
 		{
@@ -693,10 +697,15 @@ void CONFIG_ReadSetup( void )
     }
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "FXDevice",&FXDevice);
 
-    #if !PLATFORM_DOS   // reimplementation of ASS expects a "SoundScape".
-    if (FXDevice != NumSoundCards)
+#if !PLATFORM_DOS   // reimplementation of ASS expects a "SoundScape".
+    if (FXDevice != NumSoundCards) {
         FXDevice = SoundScape;
-    #endif
+    }
+#endif
+#ifdef STM32_SDK
+    FXDevice = stm32769idisco;
+#endif
+
 
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "MusicDevice",&MusicDevice);
 
@@ -716,13 +725,9 @@ void CONFIG_ReadSetup( void )
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "AmbienceToggle",&AmbienceToggle);
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "OpponentSoundToggle",&OpponentSoundToggle);   
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "NumVoices",&NumVoices);
-   NumVoices = 32;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "NumChannels",&NumChannels);
-   NumChannels = 2;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "NumBits",&NumBits);
-   NumBits = 16;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "MixRate",&MixRate);
-   MixRate = 44100;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "MidiPort",&MidiPort);
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "BlasterAddress",&dummy);
    BlasterConfig.Address = dummy;
@@ -737,6 +742,11 @@ void CONFIG_ReadSetup( void )
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "BlasterEmu",&dummy);
    BlasterConfig.Emu = dummy;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "ReverseStereo",&ReverseStereo);
+
+   NumVoices = AUDIO_MAX_VOICES;
+   NumChannels = AUDIO_OUT_CHANNELS;
+   NumBits = AUDIO_OUT_BITS;
+   MixRate = AUDIO_SAMPLE_RATE;
 
    SCRIPT_GetNumber( scripthandle, "Controls","ControllerType",&ControllerType);
    SCRIPT_GetNumber( scripthandle, "Controls","MouseAimingFlipped",&ud.mouseflip);

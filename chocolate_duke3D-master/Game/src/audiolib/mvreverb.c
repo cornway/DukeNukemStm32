@@ -72,7 +72,7 @@ static void check_buffer()
 		IN_COEF_L = -2.;
 		IN_COEF_R = -2.;
 		if (reverbBuffer) reverbBuffer = (double*) realloc(reverbBuffer, new_delay * sizeof(double));
-		else reverbBuffer = (double*) Sys_Malloc(new_delay * sizeof(double));
+		else reverbBuffer = (double*) malloc(new_delay * sizeof(double));
 		memset(reverbBuffer, 0, new_delay * sizeof(double));
 		delay = new_delay;
 		CurrAddr = 0;
@@ -85,7 +85,7 @@ double g_buffer(int iOff, double *ptr)                          // get_buffer co
 	int correctDelay = delay;
 	if(!correctDelay)
 	{
-		dprintf("Error! Reverb race on g_buffer\n");
+		printf("Error! Reverb race on g_buffer\n");
 		correctDelay = cnv_offset(14320);
 	}
 
@@ -106,7 +106,7 @@ void s_buffer(int iOff,double iVal, double *ptr)                // set_buffer co
 	int correctDelay = delay;
 	if(!correctDelay)
 	{
-		dprintf("Error! Reverb race on s_buffer\n");
+		printf("Error! Reverb race on s_buffer\n");
 		correctDelay = cnv_offset(14320);
 	}
 
@@ -127,7 +127,7 @@ void s_buffer1(int iOff,double iVal, double *ptr)                // set_buffer (
 	int correctDelay = delay;
 	if(!correctDelay)
 	{
-		dprintf("Error! Reverb race on s_buffer1\n");
+		printf("Error! Reverb race on s_buffer1\n");
 		correctDelay = cnv_offset(14320);
 	}
 
@@ -198,7 +198,6 @@ double MixREVERBRight(void)
 
 void MV_FPReverb(int volume)
 {
-#ifdef ORIGCODE
 	int i, count = MV_BufferSize / MV_SampleSize * MV_Channels;
 
 //	sprintf(err, "count: %d, old_delay: %d", count, delay);
@@ -211,7 +210,7 @@ void MV_FPReverb(int volume)
 	if(delay == 0)
 	{
 		//get out now!!!
-		dprintf("Error! MV_FPReverb() delay==0\n");
+		printf("Error! MV_FPReverb() delay==0\n");
 		return;
 	}
 
@@ -242,12 +241,10 @@ void MV_FPReverb(int volume)
 
 	//LeaveCriticalSection(&reverbCS);
 	SDL_mutexV(reverbMutex);
-#endif
 }
 
 void MV_FPReverbFree(void)
 {
-#ifdef ORIGCODE
 	SDL_mutexP(reverbMutex);
 	//EnterCriticalSection(&reverbCS);
 	delay = 0;
@@ -258,35 +255,6 @@ void MV_FPReverbFree(void)
 	}
 	//LeaveCriticalSection(&reverbCS);
 	SDL_mutexV(reverbMutex);
-#endif
-}
-
-void MV_16BitDownmix(char *dest, int count)
-{
-	int i;
-
-	short *pdest = (short *)dest;
-
-	for (i = 0; i < count; i++)
-	{
-		int out = (int)((MV_FooBuffer[i] * (double)0x8000));
-		if (out < -32768) pdest[i] = -32768;
-		else if (out > 32767) pdest[i] = 32767;
-		else pdest[i] = out;
-	}
-}
-
-void MV_8BitDownmix(char *dest, int count)
-{
-	int i;
-
-	for (i = 0; i < count; i++)
-	{
-		int out = ((int)((MV_FooBuffer[i] * (double)0x80)));
-		if (out < -128) dest[i] = 0;
-		else if (out > 127) dest[i] = 255;
-		else dest[i] = out + 0x80;
-	}
 }
 
 void MV_16BitReverbFast( const char *src, char *dest, int count, int shift )

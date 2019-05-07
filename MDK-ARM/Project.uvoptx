@@ -123,7 +123,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGTARM</Key>
-          <Name>(1010=-1,-1,-1,-1,0)(6017=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(6016=1154,277,1494,1080,0)(1012=745,152,1377,539,0)</Name>
+          <Name>(1010=802,183,1398,868,0)(6017=-1,-1,-1,-1,0)(1008=-1,-1,-1,-1,0)(6016=1154,277,1494,1080,0)(1012=745,152,1377,539,0)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -150,9 +150,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>521</LineNumber>
+          <LineNumber>519</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134257672</Address>
+          <Address>134257816</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -161,23 +161,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\chocolate_duke3D-master\Game\src\global.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Project\../chocolate_duke3D-master/Game/src/global.c\521</Expression>
+          <Expression>\\Project\../chocolate_duke3D-master/Game/src/global.c\519</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>39</LineNumber>
+          <LineNumber>433</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134219170</Address>
+          <Address>134306572</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\common\misc\arch\Arm\m7\src\asm_utils.s</Filename>
+          <Filename>..\common\sd_diskio.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\Project\../common/misc/arch/Arm/m7/src/asm_utils.s\39</Expression>
+          <Expression>\\Project\../common/sd_diskio.c\433</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -190,6 +190,11 @@
           <count>1</count>
           <WinNumber>1</WinNumber>
           <ItemText>heap_size_total</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>groupfilefullpath</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>
@@ -893,7 +898,7 @@
 
   <Group>
     <GroupName>Drivers/BSP/Components</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1201,7 +1206,7 @@
 
   <Group>
     <GroupName>common</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1425,7 +1430,7 @@
 
   <Group>
     <GroupName>duke32</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1852,8 +1857,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\chocolate_duke3D-master\Game\src\audiolib\mvreverb.c</PathWithFileName>
-      <FilenameWithoutPath>mvreverb.c</FilenameWithoutPath>
+      <PathWithFileName>..\chocolate_duke3D-master\Game\src\audiolib\ll_man.c</PathWithFileName>
+      <FilenameWithoutPath>ll_man.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -1864,8 +1869,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\chocolate_duke3D-master\Game\src\audiolib\ll_man.c</PathWithFileName>
-      <FilenameWithoutPath>ll_man.c</FilenameWithoutPath>
+      <PathWithFileName>..\chocolate_duke3D-master\Game\src\audiolib\user.c</PathWithFileName>
+      <FilenameWithoutPath>user.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
