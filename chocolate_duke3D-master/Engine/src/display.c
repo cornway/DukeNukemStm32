@@ -31,6 +31,7 @@
 #include "sndcards.h"
 #include <dsl.h>
 #include <dev_io.h>
+#include <debug.h>
 #else
 #include "SDL.h"
 #endif

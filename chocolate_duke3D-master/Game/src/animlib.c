@@ -255,7 +255,7 @@ void ANIM_LoadAnim (byte * buffer)
 
    if (!Anim_Started) Anim_Started = true;
    /*CHECKME : */
-   writeLong(&anim->buffer, (unsigned long)buffer);
+   writePtr(&anim->buffer, buffer);
    writeShort(&anim->curlpnum, 0xffff);
    writeLong(&anim->currentframe, (unsigned long)-1);
    size = sizeof(lpfileheader);

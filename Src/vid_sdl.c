@@ -33,10 +33,6 @@ extern SDL_Surface *surface;
 extern int32_t xdim, ydim;
 static SDL_Surface *sdlsurface = NULL;
 
-static boolean mouse_avail;
-static float   mouse_x, mouse_y;
-static int mouse_oldbuttonstate = 0;
-
 // No support for option menus
 void (*vid_menudrawfn)(void) = NULL;
 void (*vid_menukeyfn)(int key) = NULL;
@@ -53,9 +49,6 @@ void    VID_ShiftPalette (unsigned char *palette)
 
 static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
 {
-    int chunk;
-    uint8_t *cache;
-    int cachesize;
     screen_t lcd_screen;
 
     // Set up display mode (width and height)
@@ -226,11 +219,11 @@ const kbdmap_t gamepad_to_kbd_map[JOY_STD_MAX] =
 i_event_t *input_post_key (i_event_t  *evts, i_event_t event)
 {
     root_sdl_event_filter(&event);
+    return NULL;
 }
 
 void Sys_SendKeyEvents(i_event_t *evts)
 {
-    joypad_tickle();
     input_proc_keys(NULL);
 }
 
@@ -244,7 +237,7 @@ void IN_Init (void)
 
 void IN_Shutdown (void)
 {
-    mouse_avail = 0;
+
 }
 
 void IN_Commands (void)

@@ -20,8 +20,6 @@
 
 void Sys_Error (char *error, ...);
 
-boolean        isDedicated;
-
 int noconinput = 0;
 
 char *basedir = ".";

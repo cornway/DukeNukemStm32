@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 
 //#include "buildqueue.h"
 
@@ -188,13 +191,13 @@ int parse_ip(const char *str, int *ip);
 int parse_interface(char *str, int *ip, short *udpport);
 int parse_udp_config(const char *cfgfile, gcomtype *gcom);
 
-int connect_to_everyone();
+int connect_to_everyone(void);
 void HandleEvent(void *pEvent);
 unsigned int GetPeerIndex(void* peer);
 unsigned int GetOtherIndex(void* peer);
-void ServiceNetwork();
-void Send_Peer_Gretting();
-void Wait_For_Ready();
+void ServiceNetwork(void);
+void Send_Peer_Gretting(void);
+void Wait_For_Ready(void);
 
 void cleanup(void);
 

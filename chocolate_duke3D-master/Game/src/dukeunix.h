@@ -66,8 +66,6 @@ void _dos_getdate(struct dosdate_t *date);
 
 #if defined(STM32_SDK)
 
-#define stderr (-1)
-#define stdout (-1)
 #define Z_AvailHeap() Sys_AllocBytesLeft()
 
 #elif defined(DC)

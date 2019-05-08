@@ -555,19 +555,23 @@ setup:
     }
 }
 
-
+#ifndef STM32_SDK
 static int32_t mspal_eax;
 static int32_t msmach_eax;
 static int32_t msmach2_eax;
 static int32_t msmach5_eax;
 static int32_t msmach_ecx;
+#endif
+
 void msetupspritevline(int32_t i1, int32_t i2, int32_t i3, int32_t i4, int32_t i5, int32_t i6)
 {
+#ifndef STM32_SDK
     mspal_eax = i1;
     msmach_eax = (i5<<16);
     msmach2_eax = (i5>>16)+i2;
     msmach5_eax = smach2_eax + i4;
     msmach_ecx = i3;
+#endif
 } 
 
 

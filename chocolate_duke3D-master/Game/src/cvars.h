@@ -27,3 +27,5 @@ cvar_binding*   CVAR_GetCvarBinding(unsigned int nBinding);
 void            CVAR_Render(void);
 
 #endif
+
+

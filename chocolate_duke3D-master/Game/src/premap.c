@@ -28,6 +28,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "filesystem.h"
 #include "game.h"
 
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 
 extern uint8_t  everyothertime;
 short which_palookup = 9;

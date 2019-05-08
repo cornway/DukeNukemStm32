@@ -40,6 +40,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #ifdef STM32_SDK
 #include <audio_main.h>
+#include <debug.h>
 #endif
 // we load this in to get default button and key assignments
 // as well as setting up function mappings

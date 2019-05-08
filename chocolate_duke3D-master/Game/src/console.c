@@ -24,8 +24,8 @@ typedef struct console_element
 
 // Private member functions
 void CONSOLE_InsertUsedCommand(const char * szUsedCommand);
-void CONSOLE_ClearUsedCommandList();
-void CONSOLE_RecalculateDirtyBuffer();
+void CONSOLE_ClearUsedCommandList(void);
+void CONSOLE_RecalculateDirtyBuffer(void);
 
 // console argument tracker
 int argc;

@@ -10,6 +10,9 @@
 #include "engine.h"
 #include "draw.h"
 #include "filesystem.h"
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 
 char  artfilename[20];
 

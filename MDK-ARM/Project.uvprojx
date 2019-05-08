@@ -616,21 +616,6 @@
               <FilePath>..\common\mach_stub.c</FilePath>
             </File>
             <File>
-              <FileName>snd_mem.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\snd_mem.c</FilePath>
-            </File>
-            <File>
-              <FileName>snd_mix.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\snd_mix.c</FilePath>
-            </File>
-            <File>
-              <FileName>snd_sdl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\snd_sdl.c</FilePath>
-            </File>
-            <File>
               <FileName>sys_sdl.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Src\sys_sdl.c</FilePath>

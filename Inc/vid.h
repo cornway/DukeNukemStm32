@@ -79,6 +79,6 @@ int VID_SetMode (int modenum, unsigned char *palette);
 // sets the mode; only used by the Quake engine for resetting to mode 0 (the
 // base mode) on memory allocation failures
 
-void VID_HandlePause (boolean pause);
+void VID_HandlePause (d_bool pause);
 // called only on Win32, when pause happens, so the mouse can be released
 

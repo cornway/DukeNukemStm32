@@ -33,6 +33,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "global.h"
 #ifdef STM32_SDK
 #include <dev_io.h>
+#include <debug.h>
 #else
 uint8_t  MusicPtr[72000];
 #endif
@@ -828,7 +829,7 @@ uint8_t  *strupr(uint8_t  *s)
 	return s;
 }
 	
-uint8_t  *itoa(int value, uint8_t  *string, int radix)
+char *itoa(int value, char *string, int radix)
 {
 	switch (radix) {
 		case 10:
@@ -845,7 +846,7 @@ uint8_t  *itoa(int value, uint8_t  *string, int radix)
 	return string;
 }
 
-uint8_t  *ltoa(int32_t value, uint8_t  *string, int radix)
+char  *ltoa(int32_t value, char  *string, int radix)
 {
 	switch (radix) {
 		case 10:
@@ -862,7 +863,7 @@ uint8_t  *ltoa(int32_t value, uint8_t  *string, int radix)
 	return string;
 }
 
-uint8_t  *ultoa(uint32_t value, uint8_t  *string, int radix)
+char  *ultoa(uint32_t value, char  *string, int radix)
 {
 	switch (radix) {
 		case 10:

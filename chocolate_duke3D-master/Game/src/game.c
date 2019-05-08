@@ -52,6 +52,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "global.h"
 #ifdef STM32_SDK
 #include <dev_io.h>
+#include <debug.h>
 #endif
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2

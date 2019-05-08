@@ -6,6 +6,7 @@
 #include <lcd_main.h>
 #include "fx_man.h"
 #include <duke3d.h>
+#include <debug.h>
 #include <begin_code.h>
 
 extern const char *mus_dir_path;

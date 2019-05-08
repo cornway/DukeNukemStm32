@@ -103,7 +103,6 @@ static void SCRIPT_writenode (scriptnode_t *node, int fp)
 	switch (node->type)
 	{
 		case SCRIPTFLAG_UNKNOWN:
-			return;
 			break;
 		case SCRIPTFLAG_CATEGORY:
 			d_printf (fp, "\n[%s]\n", node->key);

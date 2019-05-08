@@ -16,6 +16,7 @@
 #include <string.h>
 #include <misc_utils.h>
 #include <dev_io.h>
+#include <debug.h>
 
 extern char game_dir[512];
 #else

@@ -64,6 +64,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "../sounddebugdefs.h"
 #ifdef STM32_SDK
 #include <audio_main.h>
+#include <debug.h>
 #else
 // for the Mutex
 #include <SDL.h>
