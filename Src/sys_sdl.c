@@ -270,18 +270,11 @@ void moncontrol(int x)
 
 int SDL_main (int argc, const char *argv[])
 {
-
-    double  time, oldtime, newtime;
-    extern int vcrFile;
-    extern int recording;
-    static int frame;
-
     moncontrol(0);
 
     Sys_Init();
 
-
-    oldtime = Sys_FloatTime () - 0.1;
+    return 0;
 }
 
 

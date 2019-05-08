@@ -2912,7 +2912,7 @@ void checksectors(short snum)
     int32_t i = -1,oldz;
     struct player_struct *p;
     short j,hitscanwall;
-    uint32_t bits;
+    long bits;
 
     p = &ps[snum];
 

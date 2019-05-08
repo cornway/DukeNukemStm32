@@ -81,7 +81,7 @@ void MUSIC_Pause (void)
 
 int MUSIC_Init (int SoundCard, int Address)
 {
-    cd_init();
+    /*done in audio_init()*/
     return 0;
 }
 
@@ -92,7 +92,7 @@ int MUSIC_Shutdown (void)
 
 DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface *surface)
 {
-
+    return 0;
 }
 
 DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface)
@@ -127,6 +127,7 @@ DECLSPEC const SDL_VideoInfo * SDLCALL SDL_GetVideoInfo(void)
     info.vfmt = NULL;
     info.current_w = DEV_MAXXDIM;
     info.current_h = DEV_MAXYDIM;
+    return &info;
 }
 
 DECLSPEC SDL_Rect ** SDLCALL SDL_ListModes(SDL_PixelFormat *format, Uint32 flags)
@@ -140,6 +141,7 @@ DECLSPEC SDL_Rect ** SDLCALL SDL_ListModes(SDL_PixelFormat *format, Uint32 flags
 DECLSPEC char * SDLCALL SDL_VideoDriverName(char *namebuf, int maxlen)
 {
     snprintf(namebuf, maxlen, "%s\n", SDL_VIDEO_DRV_NAME);
+    return namebuf;
 }
 
 DECLSPEC void SDLCALL SDL_WM_SetCaption(const char *title, const char *icon)
@@ -149,7 +151,7 @@ DECLSPEC void SDLCALL SDL_WM_SetCaption(const char *title, const char *icon)
 
 DECLSPEC int SDLCALL SDL_Init (uint32_t what)
 {
-
+    return 0;
 }
 
 A_COMPILE_TIME_ASSERT(pallette_chk, sizeof(pal_t) == sizeof(SDL_Color));
@@ -158,11 +160,13 @@ DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface *surface,
                                         SDL_Color *colors, int firstcolor, int ncolors)
 {
     screen_set_clut((pal_t *)(colors + firstcolor), ncolors);
+    return 0;
 }
 
 DECLSPEC int SDLCALL SDL_putenv(const char *variable)
 {
     dprintf("%s() : var= \'%s\'\n", __func__, variable);
+    return 0;
 }
 
 void SDL_Delay (uint32_t ms)

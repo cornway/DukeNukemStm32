@@ -49,7 +49,7 @@ void FixFilePath(char  *filename);
 void lotsofmail(spritetype *s, short n);
 void lotsofpaper(spritetype *s, short n);
 
-char  *keyw[NUMKEYWORDS] =
+static const char  *keyw[NUMKEYWORDS] =
 {
     "definelevelname",  // 0
     "actor",            // 1    [#]
@@ -1303,7 +1303,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 13)
                 {
-                    //puts(sounds[k]);
+                    dprintf(sounds[k]);
                     dprintf("  * ERROR!(L%hd) Sound filename exceeded limit of 13 characters.\n",line_number);
                     error++;
                     while( *textptr != ' ' ) textptr++;
@@ -1490,8 +1490,8 @@ void passone(int readfromGRP)
 
     while( parsecommand(readfromGRP) == 0 );
 
-    //if( (error+warning) > 12)
-        //puts(  "  * ERROR! Too many warnings or errors.");
+    if( (error+warning) > 12)
+        dprintf(  "  * ERROR! Too many warnings or errors.");
 
 }
 

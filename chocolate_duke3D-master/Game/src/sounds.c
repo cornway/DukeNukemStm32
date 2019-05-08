@@ -30,9 +30,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #include <stdio.h>
 #include <string.h>
+#include "duke3d.h"
 #include "../../Game/src/types.h"
 #include "util_lib.h"
-#include "duke3d.h"
 #include "global.h"
 #include "filesystem.h"
 #include "sounds.h"
@@ -83,6 +83,9 @@ void SoundStartup( void )
       {
       if ( eightytwofifty && numplayers > 1)
          {
+#ifdef STM32_SDK
+         fatal_error("Not yet");
+#endif
          status = FX_Init( FXDevice, min( NumVoices,4 ), 1, 8, 8000 );
          }
       else

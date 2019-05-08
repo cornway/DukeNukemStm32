@@ -350,7 +350,7 @@ extern void weaponnum999(uint8_t  ind,int32_t x,int32_t y,int32_t num1,int32_t n
 //#line "game.c" 1088
 extern void weapon_amounts(struct player_struct *p,int32_t x,int32_t y,int32_t u);
 //#line "game.c" 1197
-extern void digitalnumber(int32_t x,int32_t y,int32_t n,uint8_t  s,uint8_t  cs);
+extern void digitalnumber(int32_t x,int32_t y,int32_t n,int8_t  s,uint8_t  cs);
 //#line "game.c" 1223
 extern void scratchmarks(int32_t x,int32_t y,int32_t n,uint8_t  s,uint8_t  p);
 //#line "game.c" 1238

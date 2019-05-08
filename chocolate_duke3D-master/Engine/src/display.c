@@ -30,6 +30,7 @@
 #include "keyboard.h"
 #include "sndcards.h"
 #include <dsl.h>
+#include <dev_io.h>
 #else
 #include "SDL.h"
 #endif
@@ -59,8 +60,9 @@
 #include "mmulti_unstable.h"
 #include "mmulti_stable.h"
 #include "network.h"
+#ifndef STM32_SDK
 #include "icon.h"
-
+#endif
 // NATIVE TIMER FUNCTION DECLARATION
 /*
  FCS: The timer section sadly uses Native high precision calls to implement timer functions.
@@ -884,7 +886,7 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     scancodes[SDLK_PERIOD]          = sc_Period;
     scancodes[SDLK_SLASH]           = sc_Slash;
     scancodes[SDLK_RSHIFT]          = sc_RightShift;
-    scancodes[SDLK_KP_MULTIPLY]     = -1;
+    scancodes[SDLK_KP_MULTIPLY]     = (uint32_t)-1;
     scancodes[SDLK_LALT]            = sc_LeftAlt;
     scancodes[SDLK_SPACE]           = sc_Space;
     scancodes[SDLK_CAPSLOCK]        = sc_CapsLock;
@@ -900,19 +902,19 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     scancodes[SDLK_F10]             = sc_F10;
     scancodes[SDLK_NUMLOCK]         = sc_NumLock;
     scancodes[SDLK_SCROLLOCK]       = sc_ScrollLock;
-    scancodes[SDLK_KP7]             = -1;
-    scancodes[SDLK_KP8]             = -1;
-    scancodes[SDLK_KP9]             = -1;
+    scancodes[SDLK_KP7]             = (uint32_t)-1;
+    scancodes[SDLK_KP8]             = (uint32_t)-1;
+    scancodes[SDLK_KP9]             = (uint32_t)-1;
     scancodes[SDLK_KP_MINUS]        = sc_Minus;
-    scancodes[SDLK_KP4]             = -1;
-    scancodes[SDLK_KP5]             = -1;
-    scancodes[SDLK_KP6]             = -1;
+    scancodes[SDLK_KP4]             = (uint32_t)-1;
+    scancodes[SDLK_KP5]             = (uint32_t)-1;
+    scancodes[SDLK_KP6]             = (uint32_t)-1;
     scancodes[SDLK_KP_PLUS]         = sc_Plus;
-    scancodes[SDLK_KP1]             = -1;
-    scancodes[SDLK_KP2]             = -1;
-    scancodes[SDLK_KP3]             = -1;
-    scancodes[SDLK_KP0]             = -1;
-    scancodes[SDLK_KP_PERIOD]       = -1;
+    scancodes[SDLK_KP1]             = (uint32_t)-1;
+    scancodes[SDLK_KP2]             = (uint32_t)-1;
+    scancodes[SDLK_KP3]             = (uint32_t)-1;
+    scancodes[SDLK_KP0]             = (uint32_t)-1;
+    scancodes[SDLK_KP_PERIOD]       = (uint32_t)-1;
     scancodes[SDLK_F11]             = sc_F11;
     scancodes[SDLK_F12]             = sc_F12;
     scancodes[SDLK_PAUSE]           = sc_Pause; /* SBF - technically incorrect */
@@ -933,17 +935,11 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
     scancodes[SDLK_PAGEDOWN]        = 0xE051;
     scancodes[SDLK_INSERT]          = 0xE052;
     scancodes[SDLK_DELETE]          = 0xE053;
-    
-    
 
     output_sdl_versions();
     output_driver_info();
-    
 
     dprintf("Video Driver: '%s'.\n", SDL_VideoDriverName(dummyString, 20));
-#ifdef STM32_SDK
-    DSL_Init();
-#endif
 }
 
 // Capture BMP of the current frame
@@ -973,18 +969,17 @@ void setvmode(int mode)
 int _setgamemode(uint8_t  davidoption, int32_t daxdim, int32_t daydim)
 {
 	int validated, i;
+#if !defined(PLATFORM_MACOSX) && !defined(STM32_SDK)
 	SDL_Surface     *image;
 	Uint32          colorkey;
 
     // don't override higher-res app icon on OS X
-#ifndef PLATFORM_MACOSX
-#ifndef STM32_SDK
+
 	// Install icon
 	image = SDL_LoadBMP_RW(SDL_RWFromMem(iconBMP, sizeof(iconBMP)), 1);
 	colorkey = 0; // index in this image to be transparent
     SDL_SetColorKey(image, SDL_SRCCOLORKEY, colorkey);
 	SDL_WM_SetIcon(image,NULL);
-#endif
 #endif
     
     if (daxdim > MAXXDIM || daydim > MAXYDIM)
@@ -1399,11 +1394,11 @@ int VBE_setPalette(uint8_t  *palettebuffer)
     memcpy(lastPalette, palettebuffer, 768);
     
     for (i = 0; i < 256; i++){
-        b = (Uint8) ((((float) *p++) / 63.0) * 255.0);
-        g = (Uint8) ((((float) *p++) / 63.0) * 255.0);
-        r = (Uint8) ((((float) *p++) / 63.0) * 255.0);
+        b = (Uint8) ((((float) *p++) / 63.0f) * 255.0f);
+        g = (Uint8) ((((float) *p++) / 63.0f) * 255.0f);
+        r = (Uint8) ((((float) *p++) / 63.0f) * 255.0f);
         p++;
-        writeLong(sdlp++, GFX_RGB(r,g,b, 0xff));
+        writeLong(sdlp++, (long)GFX_RGB(r,g,b, 0xff));
     }
 
     return(SDL_SetColors(surface, fmt_swap, 0, 256));
@@ -1418,9 +1413,9 @@ int VBE_getPalette(int32_t start, int32_t num, uint8_t  *palettebuffer)
 
     for (i = 0; i < num; i++)
     {
-        *p++ = (Uint8) ((((float) sdlp->b) / 255.0) * 63.0);
-        *p++ = (Uint8) ((((float) sdlp->g) / 255.0) * 63.0);
-        *p++ = (Uint8) ((((float) sdlp->r) / 255.0) * 63.0);
+        *p++ = (Uint8) ((((float) sdlp->b) / 255.0f) * 63.0f);
+        *p++ = (Uint8) ((((float) sdlp->g) / 255.0f) * 63.0f);
+        *p++ = (Uint8) ((((float) sdlp->r) / 255.0f) * 63.0f);
         *p++ = sdlp->unused;   /* This byte is unused in both SDL and BUILD. */
         sdlp++;
     } 

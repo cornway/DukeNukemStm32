@@ -30,6 +30,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
   #include "SDL.h"
 #endif
 
+#include "duke3d.h"
 #include "types.h"
 
 #include "develop.h"
@@ -44,19 +45,14 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "config.h"
 #include "audiolib/sndcards.h"
 
-#include "duke3d.h"
-#include "unix_compat.h"
-
 #include "console.h"
 #include "cvars.h"
 #include "cvar_defs.h"
 
 #include "global.h"
+#ifdef STM32_SDK
 #include <dev_io.h>
-#include <misc_utils.h>
-#include <debug.h>
-#include <arch.h>
-
+#endif
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2
 #define MINITEXT_YELLOW	23
@@ -1679,7 +1675,7 @@ void weapon_amounts(struct player_struct *p,int32_t x,int32_t y,int32_t u)
      }
 }
 
-void digitalnumber(int32_t x,int32_t y,int32_t n,uint8_t  s,uint8_t  cs)
+void digitalnumber(int32_t x,int32_t y,int32_t n, int8_t  s,uint8_t  cs)
 {
     short i, j, k, p, c;
     char  b[10];
@@ -6136,7 +6132,7 @@ void animatesprites(int32_t x,int32_t y,short a,int32_t smoothratio)
 
 
 #define NUMCHEATCODES 26
-uint8_t  cheatquotes[NUMCHEATCODES][14] = {
+const uint8_t  cheatquotes[NUMCHEATCODES][14] = {
     {"cornholio"},	// 0
     {"stuff"},		// 1
     {"scotty###"},	// 2
@@ -8836,7 +8832,7 @@ uint8_t  in_menu = 0;
 // extern int32_t syncs[];
 int32_t playback(void)
 {
-    int32_t i,j,k,l,t;
+    int32_t i,j,l,t;
     uint8_t  foundemo;
 
     if( ready2send ) 
@@ -8911,8 +8907,6 @@ int32_t playback(void)
     i = 0;
 
     KB_FlushKeyboardQueue();
-
-    k = 0;
 
     while (ud.reccnt > 0 || foundemo == 0)
     {
@@ -9527,7 +9521,6 @@ uint8_t  domovethings(void)
 {
     short i, j;
     uint8_t  ch;
-    uint32_t bits;
 
 
     for(i=connecthead;i>=0;i=connectpoint2[i])

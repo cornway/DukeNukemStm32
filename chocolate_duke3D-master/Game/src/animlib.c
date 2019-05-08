@@ -27,15 +27,15 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dev_io.h>
-
+#include <platform.h>
 #include "types.h"
 #include "develop.h"
 #include "util_lib.h"
 //#include "_animlib.h"
 #include "animlib.h"
-#include <platform.h>
-#include <misc_utils.h>
+#ifdef STM32_SDK
+#include <dev_io.h>
+#endif
 
 //****************************************************************************
 //
@@ -99,7 +99,7 @@ void loadpage (uint16 pagenumber, uint16 *pagepointer)
    int cnt;
 
    CheckAnimStarted ( "loadpage" );
-   d_memcpy(&buffer, &anim->buffer, sizeof(buffer));
+   buffer = (void *)readLong(&anim->buffer);
 
    if ((uint16_t)readShort(&anim->curlpnum) != pagenumber)
       {
@@ -254,10 +254,10 @@ void ANIM_LoadAnim (byte * buffer)
    int32 size;
 
    if (!Anim_Started) Anim_Started = true;
-
+   /*CHECKME : */
    writeLong(&anim->buffer, (unsigned long)buffer);
    writeShort(&anim->curlpnum, 0xffff);
-   writeLong(&anim->currentframe, -1);
+   writeLong(&anim->currentframe, (unsigned long)-1);
    size = sizeof(lpfileheader);
    memcpy(&anim->lpheader, buffer, size );
    buffer += size+128;

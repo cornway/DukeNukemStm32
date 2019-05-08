@@ -810,7 +810,7 @@ void guts(spritetype *s,short gtype, short n, short p)
 void gutsdir(spritetype *s,short gtype, short n, short p)
 {
     int32_t gutz,floorz;
-    short i,a,j;
+    short a,j;
     uint8_t  sx,sy;
 
     if(badguy(s) && s->xrepeat < 16)
@@ -829,7 +829,7 @@ void gutsdir(spritetype *s,short gtype, short n, short p)
     for(j=0;j<n;j++)
     {
         a = TRAND&2047;
-        i = EGS(s->sectnum,s->x,s->y,gutz,gtype,-32,sx,sy,a,256+(TRAND&127),-512-(TRAND&2047),ps[p].i,5);
+        EGS(s->sectnum,s->x,s->y,gutz,gtype,-32,sx,sy,a,256+(TRAND&127),-512-(TRAND&2047),ps[p].i,5);
     }
 }
 

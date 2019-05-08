@@ -31,12 +31,13 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <errno.h>
 #include "duke3d.h"
 #include "global.h"
+#ifdef STM32_SDK
 #include <dev_io.h>
-
-char  *mymembuf;
-#ifdef ORIGCODE
+#else
 uint8_t  MusicPtr[72000];
 #endif
+
+char  *mymembuf;
 
 crc32_t crc32lookup[] = {
 		// good:
@@ -232,8 +233,10 @@ PACKED int32_t *curipos[MAXINTERPOLATIONS];
 void FixFilePath(char  *filename)
 {
 #if PLATFORM_UNIX
+#ifndef STM32_SDK
     uint8_t  *ptr;
-    uint8_t  *lastsep = filename;
+    char *lastsep = filename;
+#endif
     int f;
 
     if ((!filename) || (*filename == '\0'))
@@ -244,7 +247,7 @@ void FixFilePath(char  *filename)
         d_close(f);
         return;
     }
-#ifdef ORIGCODE
+#ifndef STM32_SDK
     for (ptr = filename; 1; ptr++)
     {
         if (*ptr == '\\')
@@ -313,10 +316,11 @@ void FixFilePath(char  *filename)
 #if PLATFORM_DOS
  /* no-op. */
 
+#elif defined(STM32_SDK)
+ /* no-op. */
 #elif PLATFORM_WIN32
 int _dos_findfirst(uint8_t  *filename, int x, struct find_t *f)
 {
-#ifdef ORIGCODE
     int32_t rc = _findfirst(filename, &f->data);
     f->handle = rc;
     if (rc != -1)
@@ -325,13 +329,11 @@ int _dos_findfirst(uint8_t  *filename, int x, struct find_t *f)
         f->name[sizeof (f->name) - 1] = '\0';
         return(0);
     }
-#endif
     return(1);
 }
 
 int _dos_findnext(struct find_t *f)
 {
-#ifdef ORIGCODE
     int rc = 0;
     if (f->handle == -1)
         return(1);   /* invalid handle. */
@@ -346,14 +348,12 @@ int _dos_findnext(struct find_t *f)
 
     strncpy(f->name, f->data.name, sizeof (f->name) - 1);
     f->name[sizeof (f->name) - 1] = '\0';
-#endif
     return(0);
 }
 
 #elif defined(PLATFORM_UNIX) || defined(PLATFORM_MACOSX)
 int _dos_findfirst(char  *filename, int x, struct find_t *f)
 {
-#ifdef ORIGCODE
     char  *ptr;
 
     if (strlen(filename) >= sizeof (f->pattern))
@@ -376,8 +376,6 @@ int _dos_findfirst(char  *filename, int x, struct find_t *f)
     }
 
     return(_dos_findnext(f));
-#endif
-    return 1;
 }
 
 
@@ -420,7 +418,6 @@ static int check_pattern_nocase(const char  *x, const char  *y)
 
 int _dos_findnext(struct find_t *f)
 {
-#ifdef ORIGCODE
     struct dirent *dent;
 
     if (f->dir == NULL)
@@ -440,18 +437,17 @@ int _dos_findnext(struct find_t *f)
 
     closedir(f->dir);
     f->dir = NULL;
-#endif
     return(1);  /* no match in whole directory. */
 }
 #else
 #error please define for your platform.
 #endif
 
+#ifdef STM32_SDK
 
-#if !PLATFORM_DOS
+#elif !PLATFORM_DOS
 void _dos_getdate(struct dosdate_t *date)
 {
-#ifdef ORIGCODE
 	time_t curtime = time(NULL);
 	struct tm *tm;
 	
@@ -467,7 +463,6 @@ void _dos_getdate(struct dosdate_t *date)
 		date->year = tm->tm_year + 1900;
 		date->dayofweek = tm->tm_wday + 1;
 	}
-#endif
 }
 #endif
 
@@ -517,6 +512,9 @@ int FindDistance3D(int ix, int iy, int iz)
 
    return (ix - (ix>>4) + (t>>2) + (t>>3));
 }
+#ifndef STM32_SDK
+#include "SDL.h"
+#endif
 void Error (int errorType, char  *error, ...)
 {
    va_list argptr;
