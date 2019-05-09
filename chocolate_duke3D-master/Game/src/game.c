@@ -5899,6 +5899,7 @@ void animatesprites(int32_t x,int32_t y,short a,int32_t smoothratio)
 
         if( actorscrptr[s->picnum] )
         {
+#ifndef STM32_SDK
             if(t4>10000)
 				// FIX_00093: fixed crashbugs in multiplayer (mine/blimp)
 				// This is the mine issue (confusion bug in hittype[i].temp_data[4] usage)
@@ -5912,6 +5913,12 @@ void animatesprites(int32_t x,int32_t y,short a,int32_t smoothratio)
 				// at the bottom of the chain. Crashes when it's about to respawn.
 				// Lame fix. ok for w32. Doesn't work for other plateform.
 				// How to make a differene between a timer and an address??
+#else
+            /*Cortex M7 cpu jumps over this 'if' block, even if t4 is bigger than 10000, @#$%#!*/
+            /*Only ways i have to fix this - is to re-write this piece in assembly or use non-inlined function*/
+            /*Since, due to memory & cpu speed restrictions i will not use multiplayer ability here...*/
+            if (t4)
+#endif
             {
                 l = *(int32_t *)(t4+8);
 
