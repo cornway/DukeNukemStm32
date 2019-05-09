@@ -524,7 +524,12 @@ int FX_VoiceAvailable
    )
 
    {
-   return MV_VoiceAvailable( priority );
+   int ret;
+   irqmask_t irq;
+   audio_irq_save(&irq);
+   ret = MV_VoiceAvailable( priority );
+   audio_irq_restore(irq);
+   return ret;
    }
 
 /*---------------------------------------------------------------------
@@ -541,14 +546,15 @@ int FX_EndLooping
 
    {
    int status;
-
+   irqmask_t irq;
+   audio_irq_save(&irq);
    status = MV_EndLooping( handle );
    if ( status == MV_Error )
       {
       FX_SetErrorCode( FX_MultiVocError );
       status = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( status );
    }
 
@@ -569,14 +575,15 @@ int FX_SetPan
 
    {
    int status;
-
+   irqmask_t irq;
+   audio_irq_save(&irq);
    status = MV_SetPan( handle, vol, left, right );
    if ( status == MV_Error )
       {
       FX_SetErrorCode( FX_MultiVocError );
       status = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( status );
    }
 
@@ -595,14 +602,15 @@ int FX_SetPitch
 
    {
    int status;
-
+   irqmask_t irq;
+   audio_irq_save(&irq);
    status = MV_SetPitch( handle, pitchoffset );
    if ( status == MV_Error )
       {
       FX_SetErrorCode( FX_MultiVocError );
       status = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( status );
    }
 
@@ -621,14 +629,15 @@ int FX_SetFrequency
 
    {
    int status;
-
+   irqmask_t irq;
+   audio_irq_save(&irq);
    status = MV_SetFrequency( handle, frequency );
    if ( status == MV_Error )
       {
       FX_SetErrorCode( FX_MultiVocError );
       status = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( status );
    }
 
@@ -652,7 +661,8 @@ int FX_PlayVOC
 
 {
     int handle;
-
+    irqmask_t irq;
+    audio_irq_save(&irq);
     handle = MV_PlayVOC( ptr, pitchoffset, vol, left, right,
     priority, callbackval );
     if ( handle < MV_Ok )
@@ -660,7 +670,7 @@ int FX_PlayVOC
         FX_SetErrorCode( FX_MultiVocError );
         handle = FX_Warning;
     }
-
+    audio_irq_restore(irq);
     return( handle );
 }
 
@@ -685,7 +695,9 @@ int FX_PlayLoopedVOC
    )
 
 {
-   int handle;
+    int handle;
+    irqmask_t irq;
+    audio_irq_save(&irq);
 
     handle = MV_PlayLoopedVOC( ptr, loopstart, loopend, pitchoffset,
     vol, left, right, priority, callbackval );
@@ -693,7 +705,7 @@ int FX_PlayLoopedVOC
         FX_SetErrorCode( FX_MultiVocError );
         handle = FX_Warning;
     }
-
+    audio_irq_restore(irq);
     return( handle );
 }
 
@@ -717,6 +729,8 @@ int FX_PlayWAV
 
 {
    int handle;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    handle = MV_PlayWAV( ptr, pitchoffset, vol, left, right,
                         priority, callbackval );
@@ -725,7 +739,7 @@ int FX_PlayWAV
       FX_SetErrorCode( FX_MultiVocError );
       handle = FX_Warning;
       }
-
+    audio_irq_restore(irq);
     return( handle );
 }
 
@@ -751,6 +765,8 @@ int FX_PlayLoopedWAV
 
    {
    int handle;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
     handle = MV_PlayLoopedWAV( ptr, loopstart, loopend, pitchoffset,
     vol, left, right, priority, callbackval );
@@ -759,7 +775,7 @@ int FX_PlayLoopedWAV
         FX_SetErrorCode( FX_MultiVocError );
         handle = FX_Warning;
     }
-
+    audio_irq_restore(irq);
         return( handle );
    }
 
@@ -783,6 +799,8 @@ int FX_PlayVOC3D
 
 {
     int handle;
+    irqmask_t irq;
+    audio_irq_save(&irq);
 
     handle = MV_PlayVOC3D( ptr, pitchoffset, angle, distance,
     priority, callbackval );
@@ -791,8 +809,8 @@ int FX_PlayVOC3D
         FX_SetErrorCode( FX_MultiVocError );
         handle = FX_Warning;
     }
-
-        return( handle );
+    audio_irq_restore(irq);
+    return( handle );
 }
 
 
@@ -815,6 +833,8 @@ int FX_PlayWAV3D
 
    {
    int handle;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    handle = MV_PlayWAV3D( ptr, pitchoffset, angle, distance,
                         priority, callbackval );
@@ -823,6 +843,7 @@ int FX_PlayWAV3D
       FX_SetErrorCode( FX_MultiVocError );
       handle = FX_Warning;
       }
+   audio_irq_restore(irq);
    return( handle );
    }
 
@@ -848,6 +869,8 @@ int FX_PlayRaw
 
    {
    int handle;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    handle = MV_PlayRaw( ptr, length, rate, pitchoffset,
       vol, left, right, priority, callbackval );
@@ -856,7 +879,7 @@ int FX_PlayRaw
       FX_SetErrorCode( FX_MultiVocError );
       handle = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( handle );
    }
 
@@ -884,6 +907,8 @@ int FX_PlayLoopedRaw
 
    {
    int handle;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    handle = MV_PlayLoopedRaw( ptr, length, loopstart, loopend,
       rate, pitchoffset, vol, left, right, priority, callbackval );
@@ -892,7 +917,7 @@ int FX_PlayLoopedRaw
       FX_SetErrorCode( FX_MultiVocError );
       handle = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( handle );
    }
 
@@ -913,6 +938,8 @@ int FX_Pan3D
 
    {
    int status;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    status = MV_Pan3D( handle, angle, distance );
    if ( status != MV_Ok )
@@ -920,7 +947,7 @@ int FX_Pan3D
       FX_SetErrorCode( FX_MultiVocError );
       status = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( status );
    }
 
@@ -937,7 +964,12 @@ int FX_SoundActive
    )
 
    {
-   return( MV_VoicePlaying( handle ) );
+   irqmask_t irq;
+   int ret;
+   audio_irq_save(&irq);
+   ret = ( MV_VoicePlaying( handle ) );
+   audio_irq_restore(irq);
+   return ret;
    }
 
 
@@ -953,7 +985,12 @@ int FX_SoundsPlaying
    )
 
    {
-   return( MV_VoicesPlaying() );
+   int ret;
+   irqmask_t irq;
+   audio_irq_save(&irq);
+   ret = ( MV_VoicesPlaying() );
+   audio_irq_restore(irq);
+   return ret;
    }
 
 
@@ -970,14 +1007,15 @@ int FX_StopSound
 
    {
    int status;
-
+   irqmask_t irq;
+   audio_irq_save(&irq);
    status = MV_Kill( handle );
    if ( status != MV_Ok )
       {
       FX_SetErrorCode( FX_MultiVocError );
       return( FX_Warning );
       }
-
+   audio_irq_restore(irq);
    return( FX_Ok );
    }
 
@@ -995,6 +1033,8 @@ int FX_StopAllSounds
 
    {
    int status;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    status = MV_KillAllVoices();
    if ( status != MV_Ok )
@@ -1002,7 +1042,7 @@ int FX_StopAllSounds
       FX_SetErrorCode( FX_MultiVocError );
       return( FX_Warning );
       }
-
+   audio_irq_restore(irq);
    return( FX_Ok );
    }
 
@@ -1027,6 +1067,8 @@ int FX_StartDemandFeedPlayback
 
    {
    int handle;
+   irqmask_t irq;
+   audio_irq_save(&irq);
 
    handle = MV_StartDemandFeedPlayback( function, rate,
       pitchoffset, vol, left, right, priority, callbackval );
@@ -1035,7 +1077,7 @@ int FX_StartDemandFeedPlayback
       FX_SetErrorCode( FX_MultiVocError );
       handle = FX_Warning;
       }
-
+   audio_irq_restore(irq);
    return( handle );
    }
 
