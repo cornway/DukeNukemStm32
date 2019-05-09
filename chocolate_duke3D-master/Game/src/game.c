@@ -16,7 +16,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-aint32_t with this program; if not, write to the Free Software
+along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Original Source: 1996 - Todd Replogle
@@ -30,6 +30,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
   #include "SDL.h"
 #endif
 
+#include "duke3d.h"
 #include "types.h"
 
 #include "develop.h"
@@ -40,24 +41,20 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "util_lib.h"
 #include "function.h"
 #include "control.h"
+#include "fx_man.h"
 #include "sounds.h"
 #include "config.h"
-#include "audiolib/sndcards.h"
-
-#include "duke3d.h"
-#include "dukeunix.h"
-#include "unix_compat.h"
+#include "sndcards.h"
 
 #include "console.h"
 #include "cvars.h"
 #include "cvar_defs.h"
 
 #include "global.h"
+#ifdef STM32_SDK
 #include <dev_io.h>
-#include <misc_utils.h>
 #include <debug.h>
-#include <arch.h>
-
+#endif
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2
 #define MINITEXT_YELLOW	23
@@ -72,6 +69,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #define IDFILENAME "DUKE3D.IDF"
 
 #define TIMERUPDATESIZ 32
+
+int _argc = 0;
+char **_argv = NULL;
 
 int32_t cameradist = 0, cameraclock = 0;
 uint8_t  eightytwofifty = 0;
@@ -481,10 +481,10 @@ void getpackets(void)
 
     while ((packbufleng = getpacket(&other,packbuf)) > 0)
     {
+        uint32_t bits_before, bits;
 #ifdef _DEBUG_NETWORKING_
 		dprintf("RECEIVED PACKET: type: %d : len %d\n", packbuf[0], packbufleng);
 #endif
-        input _loc;
         switch(packbuf[0])
         {
 			case 253:
@@ -530,22 +530,22 @@ void getpackets(void)
                     if (i == myconnectindex)
                         { j += ((l&1)<<1)+(l&2)+((l&4)>>2)+((l&8)>>3)+((l&16)>>4)+((l&32)>>5)+((l&64)>>6)+((l&128)>>7); continue; }
 
-                    d_memcpy(&_loc, &nsyn[i], sizeof(_loc));
+                    bits_before = readLong(&nsyn[i].bits);
+                    bits = bits_before;
 
                     copybufbyte(&osyn[i],&nsyn[i],sizeof(input));
-                    if (l&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                    if (l&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                    if (l&4)   _loc.avel = (int8_t  )packbuf[j++];
-                    if (l&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
-                    if (l&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                    if (l&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                    if (l&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                    if (l&128) _loc.horz = (int8_t  )packbuf[j++];
+                    if (l&1)   writeShort(&nsyn[i].fvel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                    if (l&2)   writeShort(&nsyn[i].svel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                    if (l&4)   nsyn[i].avel = (int8_t  )packbuf[j++];
+                    if (l&8)   bits = ((bits_before&0xffffff00)|((int32_t)packbuf[j++]));
+                    if (l&16)  bits = ((bits_before&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                    if (l&32)  bits = ((bits_before&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                    if (l&64)  bits = ((bits_before&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                    if (l&128) nsyn[i].horz = (int8_t  )packbuf[j++];
 
-                    if (_loc.bits&(1<<26)) playerquitflag[i] = 0;
+                    if (bits&(1<<26)) playerquitflag[i] = 0;
                     movefifoend[i]++;
-
-                    d_memcpy(&nsyn[i], &_loc, sizeof(_loc));
+                    if (bits != bits_before) writeLong(&nsyn[i].bits, bits);
                 }
 
                 while (j != packbufleng)
@@ -576,21 +576,20 @@ void getpackets(void)
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
 
-                d_memcpy(&_loc, &nsyn[other], sizeof(_loc));
+                bits_before = readLong(&nsyn[other].bits);
+                bits = bits_before;
 
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
-                if (k&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&4)   _loc.avel = (int8_t  )packbuf[j++];
-                if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
-                if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                if (k&128) _loc.horz = (int8_t  )packbuf[j++];
+                if (k&1)   writeShort(&nsyn[other].fvel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&2)   writeShort(&nsyn[other].svel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
+                if (k&8)   bits = ((bits_before&0xffffff00)|((int32_t)packbuf[j++]));
+                if (k&16)  bits = ((bits_before&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                if (k&32)  bits = ((bits_before&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                if (k&64)  bits = ((bits_before&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                if (k&128) nsyn[other].horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
-
-                d_memcpy(&nsyn[other], &_loc, sizeof(_loc));
-
+                if (bits != bits_before) writeLong(&nsyn[other].bits, bits);
                 while (j != packbufleng)
                 {
                     syncval[other][syncvalhead[other]&(MOVEFIFOSIZ-1)] = packbuf[j++];
@@ -720,19 +719,21 @@ void getpackets(void)
 
                 osyn = (input *)&inputfifo[(movefifoend[other]-1)&(MOVEFIFOSIZ-1)][0];
                 nsyn = (input *)&inputfifo[(movefifoend[other])&(MOVEFIFOSIZ-1)][0];
-                d_memcpy(&_loc, &nsyn[other], sizeof(_loc));
+                bits_before = readLong(&nsyn[other].bits);
+                bits = bits_before;
+
                 copybufbyte(&osyn[other],&nsyn[other],sizeof(input));
                 k = packbuf[j++];
-                if (k&1)   _loc.fvel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&2)   _loc.svel = packbuf[j]+((short)packbuf[j+1]<<8), j += 2;
-                if (k&4)   _loc.avel = (int8_t  )packbuf[j++];
-                if (k&8)   _loc.bits = ((_loc.bits&0xffffff00)|((int32_t)packbuf[j++]));
-                if (k&16)  _loc.bits = ((_loc.bits&0xffff00ff)|((int32_t)packbuf[j++])<<8);
-                if (k&32)  _loc.bits = ((_loc.bits&0xff00ffff)|((int32_t)packbuf[j++])<<16);
-                if (k&64)  _loc.bits = ((_loc.bits&0x00ffffff)|((int32_t)packbuf[j++])<<24);
-                if (k&128) _loc.horz = (int8_t  )packbuf[j++];
+                if (k&1)   writeShort(&nsyn[other].fvel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&2)   writeShort(&nsyn[other].svel, packbuf[j]+((short)packbuf[j+1]<<8)); j += 2;
+                if (k&4)   nsyn[other].avel = (int8_t  )packbuf[j++];
+                if (k&8)   bits = ((bits_before&0xffffff00)|((int32_t)packbuf[j++]));
+                if (k&16)  bits = ((bits_before&0xffff00ff)|((int32_t)packbuf[j++])<<8);
+                if (k&32)  bits = ((bits_before&0xff00ffff)|((int32_t)packbuf[j++])<<16);
+                if (k&64)  bits = ((bits_before&0x00ffffff)|((int32_t)packbuf[j++])<<24);
+                if (k&128) nsyn[other].horz = (int8_t  )packbuf[j++];
                 movefifoend[other]++;
-                d_memcpy(&nsyn[other], &_loc, sizeof(_loc));
+                if (bits != bits_before) writeLong(&nsyn[other].bits, bits);
                 for(i=1;i<movesperpacket;i++)
                 {
                     copybufbyte(&nsyn[other],&inputfifo[movefifoend[other]&(MOVEFIFOSIZ-1)][other],sizeof(input));
@@ -833,7 +834,7 @@ void faketimerhandler()
      avgsvel += loc.svel; // y
      avgavel += loc.avel;
      avghorz += loc.horz;
-     avgbits |= READ_LE_I32(loc.bits);
+     avgbits |= readLong(&loc.bits);
      if (movefifoend[myconnectindex]&(movesperpacket-1))
      {
           copybufbyte(&inputfifo[(movefifoend[myconnectindex]-1)&(MOVEFIFOSIZ-1)][myconnectindex],
@@ -847,7 +848,7 @@ void faketimerhandler()
      nsyn[0].svel = avgsvel/movesperpacket;
      nsyn[0].avel = avgavel/movesperpacket;
      nsyn[0].horz = avghorz/movesperpacket;
-     nsyn[0].bits = avgbits;
+     writeLong(&nsyn[0].bits, avgbits);
      avgfvel = avgsvel = avgavel = avghorz = avgbits = 0;
      movefifoend[myconnectindex]++;
 
@@ -1676,7 +1677,7 @@ void weapon_amounts(struct player_struct *p,int32_t x,int32_t y,int32_t u)
      }
 }
 
-void digitalnumber(int32_t x,int32_t y,int32_t n,uint8_t  s,uint8_t  cs)
+void digitalnumber(int32_t x,int32_t y,int32_t n, int8_t  s,uint8_t  cs)
 {
     short i, j, k, p, c;
     char  b[10];
@@ -3610,7 +3611,7 @@ uint8_t  wallswitchcheck(short i)
 }
 
 
-PACKED int32_t tempwallptr;
+int32_t tempwallptr;
 short spawn( short j, short pn )
 {
     short i, s, startwall, endwall, sect, clostest;
@@ -6133,7 +6134,7 @@ void animatesprites(int32_t x,int32_t y,short a,int32_t smoothratio)
 
 
 #define NUMCHEATCODES 26
-uint8_t  cheatquotes[NUMCHEATCODES][14] = {
+const uint8_t  cheatquotes[NUMCHEATCODES][14] = {
     {"cornholio"},	// 0
     {"stuff"},		// 1
     {"scotty###"},	// 2
@@ -7095,33 +7096,33 @@ void nonsharedkeys(void)
 }
 
 
-
+#define puts
 void comlinehelp(char  **argv)
 {
     dprintf("Command line help.  %s [/flags...]\n",argv[0]);
-    //puts(" ?, /?         This help message");
-    //puts(" /l##          Level (1-11)");
-    //puts(" /v#           Volume (1-4)");
-    //puts(" /s#           Skill (1-4)");
-    //puts(" /r            Record demo");
-    //puts(" /dFILE        Start to play demo FILE");
-    //puts(" /m            No monsters");
-    //puts(" /ns           No sound");
-    //puts(" /nm           No music");
-    //puts(" /t#           Respawn, 1 = Monsters, 2 = Items, 3 = Inventory, x = All");
-    //puts(" /c#           MP mode, 1 = DukeMatch(spawn), 2 = Coop, 3 = Dukematch(no spawn)");
-    //puts(" /q#           Fake multiplayer (2-8 players)");
-    //puts(" /a            Use player AI (fake multiplayer only)");
-    //puts(" /i#           Network mode (1/0) (multiplayer only) (default == 1)");
-    //puts(" /f#           Send fewer packets (1, 2, 4) (multiplayer only)");
-    //puts(" /gFILE, /g... Use multiple group files (must be last on command line)");
-    //puts(" /xFILE        Compile FILE (default GAME.CON)");
-    //puts(" /u#########   User's favorite weapon order (default: 3425689071)");
-    //puts(" /#            Load and run a game (slot 0-9)");
-    //puts(" /z            Skip memory check");
-    //puts(" -map FILE     Use a map FILE");
-    //puts(" -name NAME    Foward NAME");
-    //puts(" -net          Net mode game");
+    dprintf(" ?, /?         This help message");
+    dprintf(" /l##          Level (1-11)");
+    dprintf(" /v#           Volume (1-4)");
+    dprintf(" /s#           Skill (1-4)");
+    dprintf(" /r            Record demo");
+    dprintf(" /dFILE        Start to play demo FILE");
+    dprintf(" /m            No monsters");
+    dprintf(" /ns           No sound");
+    dprintf(" /nm           No music");
+    dprintf(" /t#           Respawn, 1 = Monsters, 2 = Items, 3 = Inventory, x = All");
+    dprintf(" /c#           MP mode, 1 = DukeMatch(spawn), 2 = Coop, 3 = Dukematch(no spawn)");
+    dprintf(" /q#           Fake multiplayer (2-8 players)");
+    dprintf(" /a            Use player AI (fake multiplayer only)");
+    dprintf(" /i#           Network mode (1/0) (multiplayer only) (default == 1)");
+    dprintf(" /f#           Send fewer packets (1, 2, 4) (multiplayer only)");
+    dprintf(" /gFILE, /g... Use multiple group files (must be last on command line)");
+    dprintf(" /xFILE        Compile FILE (default GAME.CON)");
+    dprintf(" /u#########   User's favorite weapon order (default: 3425689071)");
+    dprintf(" /#            Load and run a game (slot 0-9)");
+    dprintf(" /z            Skip memory check");
+    dprintf(" -map FILE     Use a map FILE");
+    dprintf(" -name NAME    Foward NAME");
+    dprintf(" -net          Net mode game");
     dprintf("\n");
 }
 
@@ -7289,19 +7290,19 @@ void checkcommandline(int argc,char  **argv)
                     case 'a':
                     case 'A':
                         ud.playerai = 1;
-                        puts("Other player AI.");
+                        dprintf("Other player AI.");
                         break;
                     case 'n':
                     case 'N':
                         c++;
                         if(*c == 's' || *c == 'S'){
                             CommandSoundToggleOff = 2;
-                            puts("Sound off.");
+                            dprintf("Sound off.");
                         }
                         else
                             if(*c == 'm' || *c == 'M'){
                             CommandMusicToggleOff = 1;
-                            puts("Music off.");
+                            dprintf("Music off.");
                             }
                             else{
                                 comlinehelp(argv);
@@ -7327,13 +7328,13 @@ void checkcommandline(int argc,char  **argv)
                         switch(ud.m_coop)
                         {
                             case 0:
-                                puts("Dukematch (spawn).");
+                                dprintf("Dukematch (spawn).");
                                 break;
                             case 1:
-                                puts("Cooperative play.");
+                                dprintf("Cooperative play.");
                                 break;
                             case 2:
-                                puts("Dukematch (no spawn).");
+                                dprintf("Dukematch (no spawn).");
                                 break;
                         }
 
@@ -7367,7 +7368,7 @@ void checkcommandline(int argc,char  **argv)
                             ud.m_respawn_items = 1;
                             ud.m_respawn_inventory = 1;
                         }
-                        puts("Respawn on.");
+                        dprintf("Respawn on.");
                         break;
                     case 'm':
                     case 'M':
@@ -7375,7 +7376,7 @@ void checkcommandline(int argc,char  **argv)
                         {
                             ud.m_monsters_off = 1;
                             ud.m_player_skill = ud.player_skill = 0;
-                            puts("Monsters off.");
+                            dprintf("Monsters off.");
                         }
                         break;
                     case 'w':
@@ -7384,7 +7385,7 @@ void checkcommandline(int argc,char  **argv)
                         break;
                     case 'q':
                     case 'Q':
-                        puts("Fake multiplayer mode.");
+                        dprintf("Fake multiplayer mode.");
                         if( *(++c) == 0) ud.multimode_bot = 1;
                         else ud.multimode_bot = atol(c)%17;
 						ud.multimode = ud.multimode_bot;
@@ -7398,7 +7399,7 @@ void checkcommandline(int argc,char  **argv)
                     case 'r':
                     case 'R':
                         ud.m_recstat = 1;
-                        puts("Demo record mode on.");
+                        dprintf("Demo record mode on.");
                         break;
                     case 'd':
                     case 'D':
@@ -7450,7 +7451,7 @@ void checkcommandline(int argc,char  **argv)
                         j = 0;
                         if(*c)
                         {
-                            puts("Using favorite weapon order(s).");
+                            dprintf("Using favorite weapon order(s).");
                             while(*c)
                             {
                                 ud.mywchoice[j] = *c-'0';
@@ -7469,7 +7470,7 @@ void checkcommandline(int argc,char  **argv)
                         }
                         else
                         {
-                            puts("Using default weapon orders.");                         
+                            dprintf("Using default weapon orders.");
                         }
 
                         break;
@@ -7558,12 +7559,8 @@ void Logo(void)
         
         
 	    totalclock = 0;
-#ifdef ORIGCODE
 	    while( totalclock < (120*7) && !KB_KeyWaiting() )
 	        getpackets();
-#endif
-
-
 
 
 	    for(i=0;i<64;i+=7) 
@@ -7773,7 +7770,7 @@ void Startup(void)
 // CTW END - MODIFICATION
    inittimer(TICRATE);
 
-   //puts("Loading art header.");
+  dprintf("Loading art header.");
 
   loadpics("tiles000.art", "\0");
    
@@ -7786,7 +7783,7 @@ void Startup(void)
    initmultiplayers(0,0,0);
 
    if(numplayers > 1)
-    //puts("Multiplayer initialized.");
+     dprintf("Multiplayer initialized.");
 
    ps[myconnectindex].palette = (uint8_t  *) &palette[0];
    SetupGameButtons();
@@ -7795,15 +7792,15 @@ void Startup(void)
        networkmode = 1;
 
 #ifdef PLATFORM_DOS
-   //puts("Checking music inits.");
+   dprintf("Checking music inits.");
    MusicStartup();
-   //puts("Checking sound inits.");
+   dprintf("Checking sound inits.");
    SoundStartup();
 #else
    /* SBF - wasn't sure if swapping them would harm anything. */
-   //puts("Checking sound inits.");
+   dprintf("Checking sound inits.");
    SoundStartup();
-   //puts("Checking music inits.");
+   //dprintf("Checking music inits.");
    MusicStartup();
 #endif
 
@@ -7811,7 +7808,7 @@ void Startup(void)
 	if(nHostForceDisableAutoaim)
 		ud.auto_aim = 0;
 
-   //puts("loadtmb()");
+   dprintf("loadtmb()");
    loadtmb();
 }
 
@@ -8244,7 +8241,7 @@ int duke_main(int argc,char  **argv)
 
 		dprintf(	"\nYou should try to get one of these GRP only as a base GRP\n"
 				"Do you want to continue anyway? (Y/N): ");
-#ifdef ORIGFILE
+#ifdef ORIGCODE
 		do
 			kbdKey = getch() | ' ';
 		while(kbdKey != 'y' && kbdKey != 'n');
@@ -8285,8 +8282,8 @@ int duke_main(int argc,char  **argv)
     {
         if(totalmemory < (3162000-350000))
         {
-            //puts("You don't have enough free memory to run Duke Nukem 3D.");
-            //puts("The DOS \"mem\" command should report 6,800K (or 6.8 megs)");
+            dprintf("You don't have enough free memory to run Duke Nukem 3D.");
+            dprintf("The DOS \"mem\" command should report 6,800K (or 6.8 megs)");
             dprintf("Duke Nukem 3D requires %d more bytes to run.\n",3162000-350000-totalmemory);
             Error(EXIT_SUCCESS, "");
         }
@@ -8301,13 +8298,13 @@ int duke_main(int argc,char  **argv)
 
     if( eightytwofifty && numplayers > 1 && (MusicDevice != NumSoundCards) )
     {
-        //puts("\n=========================================================================");
-        //puts("WARNING: 8250 UART detected.");
-        //puts("Music is being disabled and lower quality sound is being set.  We apologize");
-        //puts("for this, but it is necessary to maintain high frame rates while trying to");
-        //puts("play the game on an 8250.  We suggest upgrading to a 16550 or better UART");
-        //puts("for maximum performance.  Press any key to continue.");
-        //puts("=========================================================================\n");
+        dprintf("\n=========================================================================");
+        dprintf("WARNING: 8250 UART detected.");
+        dprintf("Music is being disabled and lower quality sound is being set.  We apologize");
+        dprintf("for this, but it is necessary to maintain high frame rates while trying to");
+        dprintf("play the game on an 8250.  We suggest upgrading to a 16550 or better UART");
+        dprintf("for maximum performance.  Press any key to continue.");
+        dprintf("=========================================================================\n");
 
         while( !KB_KeyWaiting() ) getpackets();
     }
@@ -8355,10 +8352,8 @@ int duke_main(int argc,char  **argv)
    if (CONTROL_JoystickEnabled)
        CONTROL_CenterJoystick(CenterCenter,UpperLeft,LowerRight,CenterThrottle,CenterRudder);
         
-   //puts("Loading palette/lookups.");
-#ifdef ORIGCODE
+   dprintf("Loading palette/lookups.");
    if( setgamemode(ScreenMode,ScreenWidth,ScreenHeight) < 0 )
-#endif
     {
         dprintf("\nVESA driver for ( %i * %i ) not found/supported!\n",xdim,ydim);
         ScreenMode = 2;
@@ -8814,7 +8809,7 @@ void closedemowrite(void)
         {
             dfwrite(recsync,sizeof(input)*ud.multimode,ud.reccnt/ud.multimode,frecfilep);
 
-            d_seek(frecfilep,0L);
+            d_seek(frecfilep,0L, DSEEK_SET);
             d_write(frecfilep, &totalreccnt, sizeof(int32_t));
             ud.recstat = ud.m_recstat = 0;
         }
@@ -8837,7 +8832,7 @@ uint8_t  in_menu = 0;
 // extern int32_t syncs[];
 int32_t playback(void)
 {
-    int32_t i,j,k,l,t;
+    int32_t i,j,l,t;
     uint8_t  foundemo;
 
     if( ready2send ) 
@@ -8912,8 +8907,6 @@ int32_t playback(void)
     i = 0;
 
     KB_FlushKeyboardQueue();
-
-    k = 0;
 
     while (ud.reccnt > 0 || foundemo == 0)
     {
@@ -9530,62 +9523,60 @@ uint8_t  domovethings(void)
     uint8_t  ch;
 
 
-    for(i=connecthead;i>=0;i=connectpoint2[i]) {
-        uint32_t bits = READ_LE_I32(sync[i].bits);
-        if( bits&(1<<17) )
+    for(i=connecthead;i>=0;i=connectpoint2[i])
+        if( syncbits_get(i)&(1<<17) )
+    {
+        multiflag = 2;
+        multiwhat = (syncbits_get(i)>>18)&1;
+        multipos = (uint32_t) (syncbits_get(i)>>19)&15;
+        multiwho = i;
+
+        if( multiwhat )
         {
-            multiflag = 2;
-            multiwhat = (bits>>18)&1;
-            multipos = (uint32_t) (bits>>19)&15;
-            multiwho = i;
+			// FIX_00058: Save/load game crash in both single and multiplayer
+            screencapt = 1;
+            displayrooms(myconnectindex,65536);
+            savetemp("duke3d.tmp",tiles[MAXTILES-1].data,160*100);
+            screencapt = 0;
 
-            if( multiwhat )
+            saveplayer( multipos );
+            multiflag = 0;
+
+            if(multiwho != myconnectindex)
             {
-    			// FIX_00058: Save/load game crash in both single and multiplayer
-                screencapt = 1;
-                displayrooms(myconnectindex,65536);
-                savetemp("duke3d.tmp",tiles[MAXTILES-1].data,160*100);
-                screencapt = 0;
+                strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
+                strcat(fta_quotes[122]," SAVED A MULTIPLAYER GAME");
+                FTA(122,&ps[myconnectindex],1);
+            }
+            else
+            {
+                strcpy(fta_quotes[122],"MULTIPLAYER GAME SAVED");
+                FTA(122,&ps[myconnectindex],1);
+            }
+            break;
+        }
+        else
+        {
+//            waitforeverybody();
 
-                saveplayer( multipos );
-                multiflag = 0;
+            j = loadplayer( multipos );
 
+            multiflag = 0;
+
+            if(j == 0)
+            {
                 if(multiwho != myconnectindex)
                 {
                     strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
-                    strcat(fta_quotes[122]," SAVED A MULTIPLAYER GAME");
+                    strcat(fta_quotes[122]," LOADED A MULTIPLAYER GAME");
                     FTA(122,&ps[myconnectindex],1);
                 }
                 else
                 {
-                    strcpy(fta_quotes[122],"MULTIPLAYER GAME SAVED");
+                    strcpy(fta_quotes[122],"MULTIPLAYER GAME LOADED");
                     FTA(122,&ps[myconnectindex],1);
                 }
-                break;
-            }
-            else
-            {
-    //            waitforeverybody();
-
-                j = loadplayer( multipos );
-
-                multiflag = 0;
-
-                if(j == 0)
-                {
-                    if(multiwho != myconnectindex)
-                    {
-                        strcpy(fta_quotes[122],&ud.user_name[multiwho][0]);
-                        strcat(fta_quotes[122]," LOADED A MULTIPLAYER GAME");
-                        FTA(122,&ps[myconnectindex],1);
-                    }
-                    else
-                    {
-                        strcpy(fta_quotes[122],"MULTIPLAYER GAME LOADED");
-                        FTA(122,&ps[myconnectindex],1);
-                    }
-                    return 1;
-                }
+                return 1;
             }
         }
     }
@@ -9628,7 +9619,9 @@ uint8_t  domovethings(void)
     j = -1;
     for(i=connecthead;i>=0;i=connectpoint2[i])
      {
-          uint32_t bits = READ_LE_I32(sync[i].bits);
+          uint32_t bits;
+
+          bits = syncbits_get(i);
           if ((bits&(1<<26)) == 0) { j = i; continue; }
 
           closedemowrite();

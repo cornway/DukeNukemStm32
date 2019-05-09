@@ -20,8 +20,6 @@
 
 void Sys_Error (char *error, ...);
 
-boolean        isDedicated;
-
 int noconinput = 0;
 
 char *basedir = ".";
@@ -162,7 +160,7 @@ void Sys_FileClose (int handle)
 
 void Sys_FileSeek (int handle, int position)
 {
-    d_seek(handle, position);
+    d_seek(handle, position, DSEEK_SET);
 }
 
 int Sys_Feof (int handle)
@@ -270,18 +268,11 @@ void moncontrol(int x)
 
 int SDL_main (int argc, const char *argv[])
 {
-
-    double  time, oldtime, newtime;
-    extern int vcrFile;
-    extern int recording;
-    static int frame;
-
     moncontrol(0);
 
     Sys_Init();
 
-
-    oldtime = Sys_FloatTime () - 0.1;
+    return 0;
 }
 
 

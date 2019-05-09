@@ -29,15 +29,16 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
-#include "global.h"
 #include "duke3d.h"
-#include "unix_compat.h"
+#include "global.h"
+#ifdef STM32_SDK
 #include <dev_io.h>
-#include <dukeunix.h>
+#include <debug.h>
+#else
+uint8_t  MusicPtr[72000];
+#endif
 
 char  *mymembuf;
-uint8_t  MusicPtr[72000];
-
 
 crc32_t crc32lookup[] = {
 		// good:
@@ -86,7 +87,8 @@ short moustat = 0;
 
 struct animwalltype animwall[MAXANIMWALLS];
 short numanimwalls;
-PACKED int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES], animatevel[MAXANIMATES], animatecnt;
+PACKED int32_t *animateptr[MAXANIMATES], animategoal[MAXANIMATES], animatevel[MAXANIMATES];
+int32_t animatecnt;
 // int32_t oanimateval[MAXANIMATES];
 short animatesect[MAXANIMATES];
 int32_t msx[2048],msy[2048];
@@ -232,8 +234,10 @@ PACKED int32_t *curipos[MAXINTERPOLATIONS];
 void FixFilePath(char  *filename)
 {
 #if PLATFORM_UNIX
+#ifndef STM32_SDK
     uint8_t  *ptr;
-    uint8_t  *lastsep = filename;
+    char *lastsep = filename;
+#endif
     int f;
 
     if ((!filename) || (*filename == '\0'))
@@ -244,7 +248,7 @@ void FixFilePath(char  *filename)
         d_close(f);
         return;
     }
-#ifdef ORIGCODE
+#ifndef STM32_SDK
     for (ptr = filename; 1; ptr++)
     {
         if (*ptr == '\\')
@@ -253,7 +257,7 @@ void FixFilePath(char  *filename)
         if ((*ptr == PATH_SEP_CHAR) || (*ptr == '\0'))
         {
             uint8_t  pch = *ptr;
-            struct fobj_t *dent = NULL;
+            struct dirent *dent = NULL;
             DIR *dir;
 
             if ((pch == PATH_SEP_CHAR) && (*(ptr + 1) == '\0'))
@@ -313,10 +317,11 @@ void FixFilePath(char  *filename)
 #if PLATFORM_DOS
  /* no-op. */
 
+#elif defined(STM32_SDK)
+ /* no-op. */
 #elif PLATFORM_WIN32
 int _dos_findfirst(uint8_t  *filename, int x, struct find_t *f)
 {
-#ifdef ORIGCODE
     int32_t rc = _findfirst(filename, &f->data);
     f->handle = rc;
     if (rc != -1)
@@ -325,13 +330,11 @@ int _dos_findfirst(uint8_t  *filename, int x, struct find_t *f)
         f->name[sizeof (f->name) - 1] = '\0';
         return(0);
     }
-#endif
     return(1);
 }
 
 int _dos_findnext(struct find_t *f)
 {
-#ifdef ORIGCODE
     int rc = 0;
     if (f->handle == -1)
         return(1);   /* invalid handle. */
@@ -347,13 +350,11 @@ int _dos_findnext(struct find_t *f)
     strncpy(f->name, f->data.name, sizeof (f->name) - 1);
     f->name[sizeof (f->name) - 1] = '\0';
     return(0);
-#endif
 }
 
 #elif defined(PLATFORM_UNIX) || defined(PLATFORM_MACOSX)
 int _dos_findfirst(char  *filename, int x, struct find_t *f)
 {
-#ifdef ORIGCODE
     char  *ptr;
 
     if (strlen(filename) >= sizeof (f->pattern))
@@ -376,8 +377,6 @@ int _dos_findfirst(char  *filename, int x, struct find_t *f)
     }
 
     return(_dos_findnext(f));
-#endif
-    return 1;
 }
 
 
@@ -420,7 +419,6 @@ static int check_pattern_nocase(const char  *x, const char  *y)
 
 int _dos_findnext(struct find_t *f)
 {
-#ifdef ORIGCODE
     struct dirent *dent;
 
     if (f->dir == NULL)
@@ -440,18 +438,17 @@ int _dos_findnext(struct find_t *f)
 
     closedir(f->dir);
     f->dir = NULL;
-#endif
     return(1);  /* no match in whole directory. */
 }
 #else
 #error please define for your platform.
 #endif
 
+#ifdef STM32_SDK
 
-#if !PLATFORM_DOS
+#elif !PLATFORM_DOS
 void _dos_getdate(struct dosdate_t *date)
 {
-#ifdef ORIGCODE
 	time_t curtime = time(NULL);
 	struct tm *tm;
 	
@@ -467,7 +464,6 @@ void _dos_getdate(struct dosdate_t *date)
 		date->year = tm->tm_year + 1900;
 		date->dayofweek = tm->tm_wday + 1;
 	}
-#endif
 }
 #endif
 
@@ -517,6 +513,9 @@ int FindDistance3D(int ix, int iy, int iz)
 
    return (ix - (ix>>4) + (t>>2) + (t>>3));
 }
+#ifndef STM32_SDK
+#include "SDL.h"
+#endif
 void Error (int errorType, char  *error, ...)
 {
    va_list argptr;
@@ -692,7 +691,7 @@ void *SafeMalloc (int32_t size)
 {
 	void *ptr;
 
-    ptr = malloc(size);
+    ptr = Sys_Malloc(size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeMalloc failure for %lu bytes",size);
@@ -704,7 +703,7 @@ void SafeRealloc (void **x, int32 size)
 {
 	void *ptr;
 
-    ptr = realloc(*x, size);
+    ptr = Sys_Realloc(*x, size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeRealloc failure for %lu bytes",size);
@@ -716,7 +715,7 @@ void *SafeLevelMalloc (int32_t size)
 {
 	void *ptr;
 
-    ptr = malloc(size);
+    ptr = Sys_Malloc(size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeLevelMalloc failure for %lu bytes",size);
@@ -729,7 +728,7 @@ void SafeFree (void * ptr)
    if ( ptr == NULL )
       Error (EXIT_FAILURE, "SafeFree : Tried to free a freed pointer\n");
 
-    free(ptr);
+    Sys_Free(ptr);
 
 }
 
@@ -830,7 +829,7 @@ uint8_t  *strupr(uint8_t  *s)
 	return s;
 }
 	
-uint8_t  *itoa(int value, uint8_t  *string, int radix)
+char *itoa(int value, char *string, int radix)
 {
 	switch (radix) {
 		case 10:
@@ -847,7 +846,7 @@ uint8_t  *itoa(int value, uint8_t  *string, int radix)
 	return string;
 }
 
-uint8_t  *ltoa(int32_t value, uint8_t  *string, int radix)
+char  *ltoa(int32_t value, char  *string, int radix)
 {
 	switch (radix) {
 		case 10:
@@ -864,7 +863,7 @@ uint8_t  *ltoa(int32_t value, uint8_t  *string, int radix)
 	return string;
 }
 
-uint8_t  *ultoa(uint32_t value, uint8_t  *string, int radix)
+char  *ultoa(uint32_t value, char  *string, int radix)
 {
 	switch (radix) {
 		case 10:

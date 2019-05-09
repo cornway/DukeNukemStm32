@@ -10,7 +10,9 @@
 #include "engine.h"
 #include "draw.h"
 #include "filesystem.h"
-#include "unix_compat.h"
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 
 char  artfilename[20];
 
@@ -266,13 +268,28 @@ int loadpics(char  *filename, char * gamedir)
     clearbuf(gotpic,(MAXTILES+31)>>5,0L);
     
     /* try dpmi_DETERMINEMAXREALALLOC! */
-    
+#ifndef STM32_SDK
     cachesize = max(artsize,1048576);
     while ((pic = (uint8_t  *)kkmalloc(cachesize)) == NULL)
     {
         cachesize -= 65536L;
         if (cachesize < 65536) return(-1);
     }
+#else
+    {
+        uint32_t size = Sys_AllocBytesLeft();
+
+        size = size & ~(0x00080000 - 1);
+        if (size <= 0x00080000) {
+            assert(0);
+        }
+        size = size - 0x00080000;
+        cachesize = max(artsize,1048576);
+        cachesize = min(cachesize, size);
+        pic = (uint8_t *)kkmalloc(cachesize);
+        assert(pic);
+    }
+#endif
     initcache(pic,cachesize);
     
     for(i=0; i<MAXTILES; i++)

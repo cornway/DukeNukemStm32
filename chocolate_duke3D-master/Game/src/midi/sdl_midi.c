@@ -102,7 +102,7 @@ int MUSIC_PlaySong(char  *songFilename, int loopflag)
     fd = kopen4load(songFilename,0);
     
 	if(fd == -1){ 
-        dprintf("The music '%s' cannot be found in the GRP or the filesystem.\n",songFilename);
+        printf("The music '%s' cannot be found in the GRP or the filesystem.\n",songFilename);
         return 0;
     }
     
@@ -111,7 +111,7 @@ int MUSIC_PlaySong(char  *songFilename, int loopflag)
     fileSize = kfilelength( fd );
     if(fileSize >= sizeof(musicDataBuffer))
     {
-        dprintf("The music '%s' was found but is too big (%dKB)to fit in the buffer (%luKB).\n",songFilename,fileSize/1024,sizeof(musicDataBuffer)/1024);
+        printf("The music '%s' was found but is too big (%dKB)to fit in the buffer (%luKB).\n",songFilename,fileSize/1024,sizeof(musicDataBuffer)/1024);
         kclose(fd);
         return 0;
     }

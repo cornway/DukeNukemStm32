@@ -29,7 +29,6 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dukeunix.h>
 #include "duke3d.h"
 #include "scriplib.h"
 
@@ -104,7 +103,6 @@ static void SCRIPT_writenode (scriptnode_t *node, int fp)
 	switch (node->type)
 	{
 		case SCRIPTFLAG_UNKNOWN:
-			return;
 			break;
 		case SCRIPTFLAG_CATEGORY:
 			d_printf (fp, "\n[%s]\n", node->key);

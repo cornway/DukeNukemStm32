@@ -1,6 +1,6 @@
 #include "multivoc.h"
-#include <arch.h>
 
+extern double *MV_FooBuffer;
 extern char  *MV_MixDestination;
 extern uint32_t MV_MixPosition;
 extern int *MV_GLast, *MV_GPos, *MV_GVal;
@@ -72,7 +72,7 @@ static int MV_cubic16(const short *src, int position, int rate)
 
 	while (hpos > *MV_GLast)
 	{
-		gval0 = READ_LE_I16(src[temp++]);
+		gval0 = readShort(&src[temp++]);
 		*MV_GPos = (*MV_GPos + 1) & 3;
 		(*MV_GLast)++;
 	}
@@ -477,3 +477,32 @@ void MV_MixFPStereo16( uint32_t position,
 	MV_MixDestination = (char *)dest;
 
 }
+
+void MV_16BitDownmix(char *dest, int count)
+{
+	int i;
+
+	short *pdest = (short *)dest;
+
+	for (i = 0; i < count; i++)
+	{
+		int out = (int)((MV_FooBuffer[i] * (double)0x8000));
+		if (out < -32768) pdest[i] = -32768;
+		else if (out > 32767) pdest[i] = 32767;
+		else pdest[i] = out;
+	}
+}
+
+void MV_8BitDownmix(char *dest, int count)
+{
+	int i;
+
+	for (i = 0; i < count; i++)
+	{
+		int out = ((int)((MV_FooBuffer[i] * (double)0x80)));
+		if (out < -128) dest[i] = 0;
+		else if (out > 127) dest[i] = 255;
+		else dest[i] = out + 0x80;
+	}
+}
+

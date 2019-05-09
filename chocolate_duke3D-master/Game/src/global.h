@@ -13,13 +13,15 @@ void FixFilePath(char  *filename);
 int FindDistance3D(int ix, int iy, int iz);
 void Shutdown(void);
 
-#ifndef __STM32__
-#define __STM32__
-#include <stdint.h>
+#ifdef STM32_SDK
+#ifdef __LITTLE_ENDIAN__
+#define LITTLE_ENDIAN 1234
+#define BYTE_ORDER LITTLE_ENDIAN
 #endif
+#endif /*STM32_SDK*/
 
 #ifndef LITTLE_ENDIAN
-    #if defined(__APPLE__) || defined(__STM32__)
+    #if defined(__APPLE__)
         #define LITTLE_ENDIAN 1234
         #define BYTE_ORDER LITTLE_ENDIAN
     #else
@@ -69,5 +71,14 @@ int32_t MotoLong (int32_t l);
 int32_t IntelLong (int32_t l);
 
 void Error (int errorType, char  *error, ...);
+
+#ifdef STM32_SDK
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS (0)
+#endif
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE (-1)
+#endif
+#endif
 
 #endif

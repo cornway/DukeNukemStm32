@@ -3,10 +3,17 @@
 
 #include "dsl.h"
 #include "util.h"
+#ifdef STM32_SDK
+#include <platform.h>
 #include <SDL_audio.h>
 #include <audio_main.h>
 #include <misc_utils.h>
-
+#include <multivoc.h>
+#include <sndcards.h>
+#else
+#include "SDL.h"
+#include "SDL_mixer.h"
+#endif
 extern volatile int MV_MixPage;
 
 static int DSL_ErrorCode = DSL_Ok;
@@ -69,7 +76,7 @@ static void DSL_SetErrorCode(int ErrorCode)
 int DSL_Init( void )
 {
 	DSL_SetErrorCode(DSL_Ok);
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO|SDL_INIT_NOPARACHUTE) < 0) {
 		DSL_SetErrorCode(DSL_SDLInitFailure);
 		
@@ -128,12 +135,6 @@ static void mixer_callback(int chan, void *stream, int len, void *udata)
 	_remainder = len;
 }
 
-int Mix_OpenAudio(unsigned SampleRate, uint16_t format, int channels, int chunksize)
-{
-
-    return 0;
-}
-
 int   DSL_BeginBufferedPlayback( char *BufferStart,
       int BufferSize, int NumDivisions, unsigned SampleRate,
       int MixMode, void ( *CallBackFunc )( void ) )
@@ -171,6 +172,7 @@ int   DSL_BeginBufferedPlayback( char *BufferStart,
 	if (MixMode & STEREO) blah >>= 1;
 
 	if (chunksize % blah) chunksize += blah - (chunksize % blah);
+#ifndef STM32_SDK
 	if (Mix_OpenAudio(SampleRate, format, channels, chunksize) < 0) {
 		DSL_SetErrorCode(DSL_MixerInitFailure);
 		
@@ -180,24 +182,25 @@ int   DSL_BeginBufferedPlayback( char *BufferStart,
 	Mix_SetPostMix(mixer_callback, NULL);
 */
 	/* have to use a channel because postmix will overwrite the music... */
-#ifdef ORIGCODE
-	Mix_RegisterEffect(0, mixer_callback, NULL, NULL);
 
+	Mix_RegisterEffect(0, mixer_callback, NULL, NULL);
+	
 	/* create a dummy sample just to allocate that channel */
-	blank_buf = (Uint8 *)Sys_Malloc(4096);
+	blank_buf = (Uint8 *)malloc(4096);
 	memset(blank_buf, 0, 4096);
 	
 	blank = Mix_QuickLoad_RAW(blank_buf, 4096);
+		
 	Mix_PlayChannel(0, blank, -1);
 #else
     audio_mixer_ext(mixer_callback);
-#endif
+#endif /*STM32_SDK*/
 	mixer_initialized = 1;
 	
 	return DSL_Ok;
 }
 
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 
 void DSL_StopPlayback( void )
 {
@@ -213,7 +216,7 @@ void DSL_StopPlayback( void )
 	blank = NULL;
 	
 	if (blank_buf  != NULL) {
-		Sys_Free(blank_buf);
+		free(blank_buf);
 	}
 	
 	blank_buf = NULL;
@@ -237,7 +240,7 @@ void DSL_StopPlayback( void )
 }
 
 
-#endif /*origcode*/
+#endif /*STM32_SDK*/
 
 unsigned DSL_GetPlaybackRate( void )
 {

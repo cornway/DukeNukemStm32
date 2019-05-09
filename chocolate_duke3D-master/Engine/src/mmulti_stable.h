@@ -17,3 +17,4 @@ void stable_flushpackets(void);
 void stable_genericmultifunction(long other, char *bufptr, long messleng, long command);
 
 #endif
+

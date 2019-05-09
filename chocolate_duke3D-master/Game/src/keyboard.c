@@ -26,8 +26,6 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #include "duke3d.h"
 #include "keyboard.h"
-#include "dukeunix.h"
-#include "unix_compat.h"
 
 /*
 =============================================================================
@@ -40,7 +38,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 byte  KB_KeyDown[ MAXKEYBOARDSCAN ];   // Keyboard state array
 kb_scancode KB_LastScan;
 
-static volatile boolean keyIsWaiting = 0;
+static volatile boolean keyIsWaiting = false;
 
 static uint8_t  scancodeToASCII[ MAXKEYBOARDSCAN ];
 static uint8_t  shiftedScancodeToASCII[ MAXKEYBOARDSCAN ];

@@ -26,7 +26,10 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #include "duke3d.h"
 #include "global.h"
+#ifdef STM32_SDK
 #include <misc_utils.h>
+#include <debug.h>
+#endif
 //=============
 // STATICS
 //=============
@@ -86,7 +89,7 @@ void RTS_AddFile (char  *filename)
    fileinfo = Sys_Malloc(length);
    if (!fileinfo)
       Error (EXIT_FAILURE, "RTS file could not allocate header info on stack");
-   d_seek (handle, header.infotableofs);
+   d_seek (handle, header.infotableofs, DSEEK_SET);
    SafeRead (handle, fileinfo, length);
    numlumps += header.numlumps;
 
@@ -204,7 +207,7 @@ void RTS_ReadLump (int32 lump, void *dest)
    if (lump < 0)
       Error (EXIT_FAILURE, "RTS_ReadLump: %i < 0",lump);
    l = lumpinfo+lump;
-   d_seek (l->handle, l->position);
+   d_seek (l->handle, l->position, DSEEK_SET);
    SafeRead(l->handle,dest,l->size);
    }
 

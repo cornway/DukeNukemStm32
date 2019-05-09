@@ -9,6 +9,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef STM32_SDK
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#else
+#include <debug.h>
+#endif
+
 #include "platform.h"
 #include "display.h"
 
@@ -49,7 +57,6 @@
  *           After calling uninitcache, it is still ok to call allocache
  *           without first calling initcache.
  */
-#include "misc_utils.h"
 
 #define MAXCACHEOBJECTS 9216
 
@@ -216,7 +223,7 @@ void reportandexit(char  *errormessage)
 	for(i=0;i<cacnum;i++)
 	{
 		dprintf("%d- ",i);
-		dprintf("ptr: 0x%x, ",(int8_t)*cac[i].hand);
+		dprintf("ptr: 0x%x, ",(int32_t)*cac[i].hand);
 		dprintf("leng: %d, ",cac[i].leng);
 		dprintf("lock: %d\n",*cac[i].lock);
 		j += cac[i].leng;

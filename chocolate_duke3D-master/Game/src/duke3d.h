@@ -29,8 +29,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "arch.h"
 
+#include <platform.h>
 
 #ifdef _WIN32
 #include "../../Engine/src/windows/inttypes.h"
@@ -38,7 +38,11 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <inttypes.h>
 #endif
 
+#ifdef STM32_SDK
 #include <dev_io.h>
+#else
+#include <fcntl.h>
+#endif
 #include <time.h>
 #include <ctype.h>
 
@@ -340,6 +344,9 @@ typedef struct
     uint32_t bits;
 } input;
 
+#define syncbits_get(i) readLong(&sync[(i)].bits)
+#define syncbits_set(i, bits) writeLong(&sync[i].bits, bits)
+
 #pragma pack(pop)
 
 /* !!! FIXME: "sync" is defined in unistd.h ... :(  --ryan. */
@@ -367,7 +374,9 @@ extern short numanimwalls,probey,lastprobey;
 extern char  *mymembuf;
 extern uint8_t  typebuflen;
 extern char typebuf[41];
+#ifndef STM32_SDK
 extern uint8_t  MusicPtr[72000];
+#endif
 extern int32_t msx[2048],msy[2048];
 extern short cyclers[MAXCYCLERS][6],numcyclers;
 extern char  myname[2048];
@@ -581,7 +590,7 @@ extern short connecthead, connectpoint2[MAXPLAYERS];   //Player linked list vari
 extern short screenpeek;
 
 extern int current_menu;
-extern PACKED int32_t tempwallptr,animatecnt;
+extern int32_t tempwallptr,animatecnt;
 extern int32_t lockclock;
 extern uint8_t  display_mirror,rtsplaying;
 

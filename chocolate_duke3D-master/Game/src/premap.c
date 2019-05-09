@@ -28,6 +28,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "filesystem.h"
 #include "game.h"
 
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 
 extern uint8_t  everyothertime;
 short which_palookup = 9;
@@ -991,7 +994,7 @@ void newgame(uint8_t  vn,uint8_t  ln,uint8_t  sk)
 {
     struct player_struct *p = &ps[0];
     short i;
-#ifndef ORIGCODE
+#ifdef STM32_SDK
     clearsoundlocks();
 #endif
     if(globalskillsound >= 0)

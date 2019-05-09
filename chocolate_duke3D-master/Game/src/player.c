@@ -1802,10 +1802,9 @@ void getinput(short snum)
     int32 turnamount;
     int32 keymove;
     int32 momx,momy;
+    uint32_t bits = 0;
     struct player_struct *p;
-    input _loc;
 
-    d_memcpy(&_loc, &loc, sizeof(_loc));
 	// FIX_00038: Improved Mouse accuracy (losses of integer computation)    
 	static fixed previousInfoDyaw = 0;
 	static fixed previousInfoDpitch = 0;
@@ -1821,13 +1820,13 @@ void getinput(short snum)
 
     if( (p->gm&MODE_MENU) || (p->gm&MODE_TYPE) || (ud.pause_on && !KB_KeyPressed(sc_Pause)) )
     {
-         _loc.fvel = vel = 0;
-         _loc.svel = svel = 0;
-         _loc.avel = angvel = 0;
-         _loc.horz = horiz = 0;
-         _loc.bits = (((int32_t)gamequit)<<26);
+         writeShort(&loc.fvel, vel = 0);
+         writeShort(&loc.svel, svel = 0);
+         loc.avel = angvel = 0;
+         loc.horz = horiz = 0;
+         writeLong(&loc.bits, (((int32_t)gamequit)<<26));
          info.dz = info.dyaw = 0;
-         goto end;
+         return;
     }
 
     tics = totalclock-lastcontroltime;
@@ -1861,20 +1860,22 @@ void getinput(short snum)
 
     if(multiflag == 1)
     {
-        _loc.bits =   1<<17;
-        _loc.bits |=   multiwhat<<18;
-		_loc.bits |=   multipos<<19;
-		multiflag = 0;
-        goto end;
+        bits =   1<<17;
+        bits |=   multiwhat<<18;
+        bits |=   multipos<<19;
+        writeLong(&loc.bits, bits);
+        multiflag = 0;
+        return;
     }
-    _loc.bits =   ACTION(gamefunc_Jump);
-    _loc.bits |=   ACTION(gamefunc_Crouch)<<1;
-    _loc.bits |=   ACTION(gamefunc_Fire)<<2;
-    _loc.bits |=   ACTION(gamefunc_Aim_Up)<<3;
-    _loc.bits |=   ACTION(gamefunc_Aim_Down)<<4;
-    _loc.bits |=   ACTION(gamefunc_Run)<<5;
-	_loc.bits |=   (ud.auto_aim==2)<<6; // 2 = normal, 1 = bullet only, 0 = disabled (not implemented)
-	_loc.bits |=   ud.weaponautoswitch<<7;
+
+    bits =   ACTION(gamefunc_Jump);
+    bits |=   ACTION(gamefunc_Crouch)<<1;
+    bits |=   ACTION(gamefunc_Fire)<<2;
+    bits |=   ACTION(gamefunc_Aim_Up)<<3;
+    bits |=   ACTION(gamefunc_Aim_Down)<<4;
+    bits |=   ACTION(gamefunc_Run)<<5;
+	bits |=   (ud.auto_aim==2)<<6; // 2 = normal, 1 = bullet only, 0 = disabled (not implemented)
+	bits |=   ud.weaponautoswitch<<7;
 
     j=0;
     if (ACTION(gamefunc_Weapon_1))
@@ -1906,40 +1907,43 @@ void getinput(short snum)
 	    if (ACTION(gamefunc_Weapon_10))
 	       j = 10;
 	}
-    _loc.bits |=   j<<8;
-    _loc.bits |=   ACTION(gamefunc_Steroids)<<12;
-    _loc.bits |=   ACTION(gamefunc_Look_Up)<<13;
-    _loc.bits |=   ACTION(gamefunc_Look_Down)<<14;
-    _loc.bits |=   ACTION(gamefunc_NightVision)<<15;
+
+    bits |=   j<<8;
+    bits |=   ACTION(gamefunc_Steroids)<<12;
+    bits |=   ACTION(gamefunc_Look_Up)<<13;
+    bits |=   ACTION(gamefunc_Look_Down)<<14;
+    bits |=   ACTION(gamefunc_NightVision)<<15;;
+
 	if(ud.gitdat_mdk)
 	{
 		if(sprite[ps[myconnectindex].i].extra < max_player_health && ps[myconnectindex].firstaid_amount) // avoid medkit overloading controls
-			_loc.bits |=   ACTION(gamefunc_MedKit)<<16; 
+			bits |=   ACTION(gamefunc_MedKit)<<16; 
 	}
 	else
 	{
-		_loc.bits |=   ACTION(gamefunc_MedKit)<<16; 
+		bits |=   ACTION(gamefunc_MedKit)<<16; 
 	}
-    _loc.bits |=   ACTION(gamefunc_Center_View)<<18;
-	_loc.bits |=   ACTION(gamefunc_Holster_Weapon)<<19;
+    bits |=   ACTION(gamefunc_Center_View)<<18;
+	bits |=   ACTION(gamefunc_Holster_Weapon)<<19;
     if(ACTION(gamefunc_Hide_Weapon))
 	{
 		ud.hideweapon = !ud.hideweapon;
 		vscrn(); // FIX_00056: Refresh issue w/FPS, small Weapon and custom FTA, when screen resized down
 		CONTROL_ClearAction(gamefunc_Hide_Weapon);
 	}
-	_loc.bits |=   ACTION(gamefunc_Inventory_Left)<<20;
-    _loc.bits |=   KB_KeyPressed(sc_Pause)<<21;
-    _loc.bits |=   ACTION(gamefunc_Quick_Kick)<<22;
-    _loc.bits |=   myaimmode<<23;
-    _loc.bits |=   ACTION(gamefunc_Holo_Duke)<<24;
-    _loc.bits |=   ACTION(gamefunc_Jetpack)<<25;
-    _loc.bits |=   (((int32_t)gamequit)<<26);
-    _loc.bits |=   ACTION(gamefunc_Inventory_Right)<<27;
-    _loc.bits |=   ACTION(gamefunc_TurnAround)<<28;
-    _loc.bits |=   ACTION(gamefunc_Open)<<29;
-    _loc.bits |=   ACTION(gamefunc_Inventory)<<30;
-    _loc.bits |=   KB_KeyPressed(sc_Escape)<<31;
+	bits |=   ACTION(gamefunc_Inventory_Left)<<20;
+    bits |=   KB_KeyPressed(sc_Pause)<<21;
+    bits |=   ACTION(gamefunc_Quick_Kick)<<22;
+    bits |=   myaimmode<<23;
+    bits |=   ACTION(gamefunc_Holo_Duke)<<24;
+    bits |=   ACTION(gamefunc_Jetpack)<<25;
+    bits |=   (((int32_t)gamequit)<<26);
+    bits |=   ACTION(gamefunc_Inventory_Right)<<27;
+    bits |=   ACTION(gamefunc_TurnAround)<<28;
+    bits |=   ACTION(gamefunc_Open)<<29;
+    bits |=   ACTION(gamefunc_Inventory)<<30;
+    bits |=   KB_KeyPressed(sc_Escape)<<31;
+    writeLong(&loc.bits, bits);
 
     running = ACTION(gamefunc_Run)|ud.auto_run;
     svel = vel = angvel = horiz = 0;
@@ -2100,11 +2104,11 @@ void getinput(short snum)
     {
         ud.folfvel = vel;
         ud.folavel = angvel;
-        _loc.fvel = 0;
-        _loc.svel = 0;
-        _loc.avel = 0;
-        _loc.horz = 0;
-        goto end;
+        writeShort(&loc.fvel, 0);
+        writeShort(&loc.svel, 0);
+        loc.avel = 0;
+        loc.horz = 0;
+        return;
     }
 
     if( numplayers > 1 )
@@ -2119,16 +2123,13 @@ void getinput(short snum)
 
     momx += fricxv;
     momy += fricyv;
-	
-	_loc.fvel = momx;
-	_loc.svel = momy;
-    _loc.avel = angvel;
+
+    writeShort(&loc.fvel, momx);
+	writeShort(&loc.svel, momy);
+    loc.avel = angvel;
 //	if(loc.avel)
 //		printf("getinput loc.avel=%d\n", loc.avel);
-    _loc.horz = horiz;
-end:
-
-    d_memcpy(&loc, &_loc, sizeof(loc));
+    loc.horz = horiz;
 }
 
 
@@ -2310,7 +2311,7 @@ uint8_t  doincrements(struct player_struct *p)
             }
             spritesound(DUKE_CRACK_FIRST,p->i);
         }
-        else if( p->knuckle_incs == 22 || (READ_LE_I32(sync[snum].bits)&(1<<2)))
+        else if( p->knuckle_incs == 22 || (syncbits_get(snum)&(1<<2)))
             p->knuckle_incs=0;
 
         return 1;
@@ -2360,7 +2361,7 @@ void processinput(short snum)
 
     kb = &p->kickback_pic;
 
-    if(p->cheat_phase <= 0) sb_snum = READ_LE_I32(sync[snum].bits);
+    if(p->cheat_phase <= 0) sb_snum = syncbits_get(snum);
     else sb_snum = 0;
 
     psect = p->cursectnum;

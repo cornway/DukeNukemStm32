@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include "platform.h"
 #include "fixedPoint_math.h"
+#ifdef STM32_SDK
 #include <misc_utils.h>
+#endif
 
 void clearbuf(void *d, int32_t c, int32_t a)
 {

@@ -32,8 +32,12 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "filesystem.h"
 #include "premap.h"
 #include "display.h"
-#include "dukeunix.h"
-
+#ifdef STM32_SDK
+#include <dev_io.h>
+#else
+#include "SDL.h"
+extern SDL_Surface *surface;
+#endif
 extern short inputloc;
 extern int recfilep;
 extern uint8_t  vgacompatible;
@@ -1309,7 +1313,7 @@ int getfilenames(char  kind[6])
 	}
 	while (_dos_findnext(&fileinfo) == 0);
 
-#elif (defined PLATFORM_UNIX)
+#elif (defined PLATFORM_UNIX) && !(defined STM32_SDK)
 
     DIR *dir;
     struct dirent *dent;
@@ -2680,7 +2684,7 @@ else
 						ud.mouseflip = 1-ud.mouseflip;
 					}
                     break;
-#if 0
+#ifndef STM32_SDK
 				case 5:
 
 					if (SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON) 
@@ -2734,7 +2738,7 @@ else
 
 
 			menutext(c,43+16*5,SHX(-7),PHX(-7),"MOUSE CURSOR");
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 			if(SDL_WM_GrabInput(SDL_GRAB_QUERY)==SDL_GRAB_ON)
 				menutext(c+160+40,43+16*5,SHX(-7),PHX(-7),"TAKEN");
 			else
@@ -3189,7 +3193,7 @@ else
 
 				case 1:
 					BFullScreen = !BFullScreen;
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 					SDL_QuitSubSystem(SDL_INIT_VIDEO);
 #endif
                 _platform_init(0, NULL, "Duke Nukem 3D", "Duke3D");

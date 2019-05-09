@@ -25,7 +25,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 //-------------------------------------------------------------------------
 
 #include "duke3d.h"
-
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 
 extern short otherp;
 
@@ -49,7 +51,7 @@ void FixFilePath(char  *filename);
 void lotsofmail(spritetype *s, short n);
 void lotsofpaper(spritetype *s, short n);
 
-char  *keyw[NUMKEYWORDS] =
+static const char  *keyw[NUMKEYWORDS] =
 {
     "definelevelname",  // 0
     "actor",            // 1    [#]
@@ -1303,7 +1305,7 @@ uint8_t  parsecommand(int readfromGRP)
                 textptr++,i++;
                 if(i >= 13)
                 {
-                    //puts(sounds[k]);
+                    dprintf(sounds[k]);
                     dprintf("  * ERROR!(L%hd) Sound filename exceeded limit of 13 characters.\n",line_number);
                     error++;
                     while( *textptr != ' ' ) textptr++;
@@ -1490,8 +1492,8 @@ void passone(int readfromGRP)
 
     while( parsecommand(readfromGRP) == 0 );
 
-    //if( (error+warning) > 12)
-        //puts(  "  * ERROR! Too many warnings or errors.");
+    if( (error+warning) > 12)
+        dprintf(  "  * ERROR! Too many warnings or errors.");
 
 }
 
@@ -1555,10 +1557,13 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
     }
     else
     {
+        extern uint32_t mymemsize;
         dprintf("Compiling: '%s'.\n",filenam);
 
         fs = kfilelength(fp);
-
+        if (mymemsize <= fs) {
+            assert(0);
+        }
         last_used_text = textptr = (char  *) mptr;
         last_used_size = fs;
 
@@ -2819,7 +2824,7 @@ uint8_t  parse(void)
             break;
         case 51:
             {
-                uint32_t bits = READ_LE_I32(sync[g_p].bits);
+                uint32_t bits = syncbits_get(g_p);
                 insptr++;
 
                 l = *insptr;
@@ -2902,7 +2907,7 @@ uint8_t  parse(void)
             parseifelse( (( hittype[g_i].floorz - hittype[g_i].ceilingz ) >> 8 ) < *insptr);
             break;
         case 63:
-            parseifelse( READ_LE_I32(sync[g_p].bits)&(1<<29));
+            parseifelse( syncbits_get(g_p)&(1<<29));
             break;
         case 64:
             parseifelse(sector[g_sp->sectnum].ceilingstat&1);

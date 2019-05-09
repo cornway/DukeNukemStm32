@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "enet.h"
+
 //#include "buildqueue.h"
 
 #include <vector>
@@ -256,7 +258,7 @@ void cleanup(void);
 
 		atexit(cleanup);
 
-		retval = (gcomtype *)Sys_Malloc(sizeof (gcomtype));
+		retval = (gcomtype *)malloc(sizeof (gcomtype));
 		if (retval != NULL)
 		{
 			int rc;
@@ -355,10 +357,9 @@ void cleanup(void);
 			free(g_Peers);
 		}
 		*/
-#ifdef ORIGCODE
 		incommingPacketQueue.clear();
-#endif
-		//enet_deinitialize();
+
+		enet_deinitialize();
 	}
 
 	void cleanup(void)
@@ -402,7 +403,7 @@ void cleanup(void);
 		ENetEvent event;
 		g_nMessageLen = 0;
 
-#ifdef ORIGCODE
+		
 		//clear out the early packet buffer first
 		if(incommingPacketQueue.size() > 0)
 		{
@@ -418,8 +419,7 @@ void cleanup(void);
 				incommingPacketQueue.erase(iter);
 			}
 		}
-		else	
-#endif
+		else			
 		if (enet_host_service (g_Server, & event, INGAME_CONNECTION_DELAY) > 0) 
 		{
 			// setup the pointers.
@@ -793,9 +793,7 @@ void HandleEvent(ENetEvent *pEvent)
 									packet.other = GetOtherIndex(pEvent->peer);
 									packet.bufferSize = g_nMessageLen;
 									memcpy(packet.buffer, pEvent->packet->data, g_nMessageLen);
-#ifdef ORIGCODE
 									incommingPacketQueue.push_back(packet);
-#endif
 									printf("Saving early packet...\n");
 									break;
 								}

@@ -37,8 +37,11 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "scriplib.h"
 #include "build.h"
-#include "unix_compat.h"
 
+#ifdef STM32_SDK
+#include <audio_main.h>
+#include <debug.h>
+#endif
 // we load this in to get default button and key assignments
 // as well as setting up function mappings
 
@@ -123,7 +126,10 @@ void CONFIG_GetSetupFilename( void )
    }
 
    dprintf("Using Setup file: '%s'\n",setupfilename);
-   i=0;
+   i=SDL_GetTicks()+(3*CLOCKS_PER_SEC/4);
+   while (SDL_GetTicks()<i){
+      ;
+   }
 }
 
 /*
@@ -218,7 +224,7 @@ void CONFIG_SetDefaults( void )
    OpponentSoundToggle = 1;
    FXVolume = 220;
    MusicVolume = 200;
-   FXDevice = stm32769idisco;
+   FXDevice = FX_SOUND_DEVICE;
    MusicDevice = -1;
    ReverseStereo = 0;
    
@@ -561,9 +567,9 @@ void readsavenames(void)
 			sprintf(fullpathsavefilename, "%s", fn);
 		}
 
-        fil = TCkopen4load(fullpathsavefilename,0);
+        d_open(fullpathsavefilename, &fil, "r");
         if (fil == -1) continue;
-        kdfread(&dummy,sizeof(dummy),1,fil);
+        dfread(&dummy,sizeof(dummy),1,fil);
 
 		//	FIX_00015: Backward compliance with older demos (down to demos v27, 28, 116 and 117 only)
         if(	dummy != BYTEVERSION	 && 
@@ -572,9 +578,9 @@ void readsavenames(void)
 			dummy != BYTEVERSION_116 &&
 			dummy != BYTEVERSION_117) continue;
         // FIX_00092: corrupted saved files making the following saved files invisible (Bryzian)
-        kdfread(&dummy,sizeof(dummy),1,fil);
-        kdfread(&ud.savegame[i][0],19,1,fil);
-        kclose(fil);
+        dfread(&dummy,sizeof(dummy),1,fil);
+        dfread(&ud.savegame[i][0],19,1,fil);
+        d_close(fil);
     }
 }
 
@@ -634,7 +640,7 @@ void CONFIG_ReadSetup( void )
 			strcpy(boardfilename,_argv[dummy+1]);
 			if( strchr(boardfilename,'.') == 0)
 				strcat(boardfilename,".map");
-			sprintf("Using level: '%s'.\n",boardfilename);
+			dprintf("Using level: '%s'.\n",boardfilename);
 		}
 		else
 		{
@@ -692,10 +698,15 @@ void CONFIG_ReadSetup( void )
     }
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "FXDevice",&FXDevice);
 
-    #if !PLATFORM_DOS   // reimplementation of ASS expects a "SoundScape".
-    if (FXDevice != NumSoundCards)
+#if !PLATFORM_DOS   // reimplementation of ASS expects a "SoundScape".
+    if (FXDevice != NumSoundCards) {
         FXDevice = SoundScape;
-    #endif
+    }
+#endif
+#ifdef STM32_SDK
+    FXDevice = stm32769idisco;
+#endif
+
 
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "MusicDevice",&MusicDevice);
 
@@ -715,13 +726,9 @@ void CONFIG_ReadSetup( void )
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "AmbienceToggle",&AmbienceToggle);
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "OpponentSoundToggle",&OpponentSoundToggle);   
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "NumVoices",&NumVoices);
-   NumVoices = 32;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "NumChannels",&NumChannels);
-   NumChannels = 2;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "NumBits",&NumBits);
-   NumBits = 16;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "MixRate",&MixRate);
-   MixRate = 44100;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "MidiPort",&MidiPort);
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "BlasterAddress",&dummy);
    BlasterConfig.Address = dummy;
@@ -736,6 +743,11 @@ void CONFIG_ReadSetup( void )
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "BlasterEmu",&dummy);
    BlasterConfig.Emu = dummy;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "ReverseStereo",&ReverseStereo);
+
+   NumVoices = AUDIO_MAX_VOICES;
+   NumChannels = AUDIO_OUT_CHANNELS;
+   NumBits = AUDIO_OUT_BITS;
+   MixRate = AUDIO_SAMPLE_RATE;
 
    SCRIPT_GetNumber( scripthandle, "Controls","ControllerType",&ControllerType);
    SCRIPT_GetNumber( scripthandle, "Controls","MouseAimingFlipped",&ud.mouseflip);

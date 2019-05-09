@@ -810,7 +810,7 @@ void guts(spritetype *s,short gtype, short n, short p)
 void gutsdir(spritetype *s,short gtype, short n, short p)
 {
     int32_t gutz,floorz;
-    short i,a,j;
+    short a,j;
     uint8_t  sx,sy;
 
     if(badguy(s) && s->xrepeat < 16)
@@ -829,7 +829,7 @@ void gutsdir(spritetype *s,short gtype, short n, short p)
     for(j=0;j<n;j++)
     {
         a = TRAND&2047;
-        i = EGS(s->sectnum,s->x,s->y,gutz,gtype,-32,sx,sy,a,256+(TRAND&127),-512-(TRAND&2047),ps[p].i,5);
+        EGS(s->sectnum,s->x,s->y,gutz,gtype,-32,sx,sy,a,256+(TRAND&127),-512-(TRAND&2047),ps[p].i,5);
     }
 }
 
@@ -2879,13 +2879,13 @@ void movetransports(void)
                         else if( !(sectlotag == 1 && ps[p].on_ground == 1)  ) break;
 
                         if(onfloorz == 0 && klabs(SZ-ps[p].posz) < 6144 )
-                            if( (ps[p].jetpack_on == 0 ) || (ps[p].jetpack_on && (sync[p].bits&1) ) ||
-                                (ps[p].jetpack_on && (sync[p].bits&2) ) )
+                            if( (ps[p].jetpack_on == 0 ) || (ps[p].jetpack_on && (syncbits_get(p)&1) ) ||
+                                (ps[p].jetpack_on && (syncbits_get(p)&2) ) )
                         {
                             ps[p].oposx = ps[p].posx += sprite[OW].x-SX;
                             ps[p].oposy = ps[p].posy += sprite[OW].y-SY;
 
-                            if( ps[p].jetpack_on && ( (sync[p].bits&1) || ps[p].jetpack_on < 11 ) )
+                            if( ps[p].jetpack_on && ( (syncbits_get(p)&1) || ps[p].jetpack_on < 11 ) )
                                 ps[p].posz = sprite[OW].z-6144;
                             else ps[p].posz = sprite[OW].z+6144;
                             ps[p].oposz = ps[p].posz;
@@ -2902,7 +2902,7 @@ void movetransports(void)
 
                         k = 0;
 
-                        if( onfloorz && sectlotag == 1 && ps[p].on_ground && ps[p].posz > (sector[sect].floorz-(16<<8)) && ( (sync[p].bits&2) || ps[p].poszv > 2048 ) )
+                        if( onfloorz && sectlotag == 1 && ps[p].on_ground && ps[p].posz > (sector[sect].floorz-(16<<8)) && ( (syncbits_get(p)&2) || ps[p].poszv > 2048 ) )
 //                        if( onfloorz && sectlotag == 1 && ps[p].posz > (sector[sect].floorz-(6<<8)) )
                         {
                             k = 1;
@@ -3314,7 +3314,7 @@ void moveactors(void)
 //                        if(s->pal == 12)
                         {
                             j = getincangle(ps[p].ang,getangle(s->x-ps[p].posx,s->y-ps[p].posy));
-                            if( j > -64 && j < 64 && (sync[p].bits&(1<<29)) )
+                            if( j > -64 && j < 64 && (syncbits_get(p)&(1<<29)) )
                                 if(ps[p].toggle_key_flag == 1)
                             {
                                 a = headspritestat[1];
@@ -3679,7 +3679,7 @@ void moveactors(void)
 
                     s->ang = ps[p].ang;
 
-                    if( ( (sync[p].bits&4) || (ps[p].quick_kick > 0) ) && sprite[ps[p].i].extra > 0 )
+                    if( ( (syncbits_get(p)&4) || (ps[p].quick_kick > 0) ) && sprite[ps[p].i].extra > 0 )
                         if( ps[p].quick_kick > 0 || ( ps[p].curr_weapon != HANDREMOTE_WEAPON && ps[p].curr_weapon != HANDBOMB_WEAPON && ps[p].curr_weapon != TRIPBOMB_WEAPON && ps[p].ammo_amount[ps[p].curr_weapon] >= 0) )
                     {
                         for(x=0;x<8;x++)

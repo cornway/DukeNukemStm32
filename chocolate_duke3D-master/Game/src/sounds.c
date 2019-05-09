@@ -30,9 +30,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #include <stdio.h>
 #include <string.h>
+#include "duke3d.h"
 #include "../../Game/src/types.h"
 #include "util_lib.h"
-#include "duke3d.h"
 #include "global.h"
 #include "filesystem.h"
 #include "sounds.h"
@@ -41,8 +41,6 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #define LOUDESTVOLUME 150
 
 int32_t backflag,numenvsnds;
-
-dma_t  *shm = 0;
 
 /*
 ===================
@@ -83,6 +81,9 @@ void SoundStartup( void )
       {
       if ( eightytwofifty && numplayers > 1)
          {
+#ifdef STM32_SDK
+         fatal_error("Not yet");
+#endif
          status = FX_Init( FXDevice, min( NumVoices,4 ), 1, 8, 8000 );
          }
       else
@@ -409,7 +410,7 @@ int xyzsound(short num,short i,int32_t x,int32_t y,int32_t z)
 
         if(Sound[num].num > 0) return -1;
 
-        start = READ_LE_I16_P(Sound[num].ptr + 0x14);
+        start = (uint16_t)readShort(Sound[num].ptr + 0x14);
 
         if(*Sound[num].ptr == 'C')
             voice = FX_PlayLoopedVOC( Sound[num].ptr, start, start + soundsiz[num],
@@ -471,13 +472,13 @@ void sound(short num)
     {
         if(*Sound[num].ptr == 'C')
         {
-            start = READ_LE_I16_P(Sound[num].ptr + 0x14);
+            start = (uint16_t)readShort(Sound[num].ptr + 0x14);
             voice = FX_PlayLoopedVOC( Sound[num].ptr, start, start + soundsiz[num],
                     pitch,LOUDESTVOLUME,LOUDESTVOLUME,LOUDESTVOLUME,soundpr[num],num);
         }
         else
         {
-            start = READ_LE_I16_P(Sound[num].ptr + 0x14);
+            start = (uint16_t)readShort(Sound[num].ptr + 0x14);
             voice = FX_PlayLoopedWAV( Sound[num].ptr, start, start + soundsiz[num],
                     pitch,LOUDESTVOLUME,LOUDESTVOLUME,LOUDESTVOLUME,soundpr[num],num);
         }

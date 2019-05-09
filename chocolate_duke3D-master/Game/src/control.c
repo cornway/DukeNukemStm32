@@ -27,8 +27,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "control.h"
 #include "mouse.h"
 #include "joystick.h"
-#include "dukeunix.h"
-
+#ifdef STM32_SDK
+#include <debug.h>
+#endif
 //***************************************************************************
 //
 // GLOBALS
@@ -60,7 +61,7 @@ uint32   CONTROL_JoyButtonState2;
 uint32   CONTROL_JoyHatState1; //[MAXJOYHATS];
 uint32   CONTROL_JoyHatState2; //[MAXJOYHATS];
 
-
+#ifndef STM32_SDK
 static short mouseButtons = 0;
 static short lastmousebuttons = 0;
 
@@ -84,6 +85,7 @@ static int32 JoyHatMapping[MAXJOYHATS][8];
 static int32 JoyButtonMapping[MAXJOYBUTTONS];
 static float JoyAnalogScale[MAXJOYAXES];
 static int32 JoyAnalogDeadzone[MAXJOYAXES];
+#endif
 
 struct _KeyMapping KeyMapping[MAXGAMEBUTTONS];
 int32 MouseMapping[MAXMOUSEBUTTONS];
@@ -190,6 +192,8 @@ int RESET_ACTION(int i)
 
 	return 0;
 }
+
+#ifndef STM32_SDK
 
 static void SETMOUSEBUTTON(int i)
 {
@@ -357,6 +361,7 @@ static void RESHATBUTTON(int i)
 		CONTROL_JoyHatState2 &= ~b;
 	}
 }
+#endif /*STM32_SDK*/
 
 void CONTROL_UpdateKeyboardState(int key, int pressed)
 {
@@ -438,6 +443,7 @@ void CONTROL_MapButton
 
 void CONTROL_MapJoyButton(int32 whichfunction, int32 whichbutton, boolean doubleclicked)
 {
+#ifndef STM32_SDK
     if(whichbutton < 0 || whichbutton >= MAXJOYBUTTONS)
     {
         return;
@@ -447,16 +453,19 @@ void CONTROL_MapJoyButton(int32 whichfunction, int32 whichbutton, boolean double
 	return; // TODO
 
     JoyButtonMapping[whichbutton] = whichfunction;
+#endif
 }
 
 void CONTROL_MapJoyHat(int32 whichfunction, int32 whichhat, int32 whichvalue)
 {
+#ifndef STM32_SDK
     if(whichhat < 0 || whichhat >= MAXJOYHATS)
     {
         return;
     }
 
     JoyHatMapping[whichhat][whichvalue] = whichfunction;
+#endif
 }
 
 void CONTROL_DefineFlag( int32 which, boolean toggle )
@@ -485,8 +494,9 @@ void CONTROL_GetInput( ControlInfo *info )
     int32 sens_X = CONTROL_GetMouseSensitivity_X();
 	int32 sens_Y = CONTROL_GetMouseSensitivity_Y();
     int32 mx = 0, my = 0;
+#ifndef STM32_SDK
     int i, j;
-
+#endif
 	memset(info, '\0', sizeof (ControlInfo));
 
 	//info->dx = info->dz = 0;
@@ -537,7 +547,7 @@ void CONTROL_GetInput( ControlInfo *info )
 			break;
 	}
 
-
+#ifndef STM32_SDK
     // TODO: releasing the mouse button does not honor if a keyboard key with
     // the same function is still pressed. how should it?
     for(i=0; i<MAXMOUSEBUTTONS;++i)
@@ -608,7 +618,6 @@ void CONTROL_GetInput( ControlInfo *info )
 			lastjoyHats[i] = joyHats[i];
 		}
 		
-
         for(i=0; i<MAXJOYAXES;i++)
         {
             switch(JoyAxisMapping[i])
@@ -680,6 +689,7 @@ void CONTROL_GetInput( ControlInfo *info )
         }
 
     }
+#endif /*STM32_SDK*/
 }
 
 void CONTROL_ClearAction( int32 whichbutton )
@@ -687,12 +697,12 @@ void CONTROL_ClearAction( int32 whichbutton )
 	//RESBUTTON(whichbutton);
 	KB_KeyDown[KeyMapping[whichbutton].key1] = 0;
 	KB_KeyDown[KeyMapping[whichbutton].key2] = 0;
-
+#ifndef STM32_SDK
 	RESJOYBUTTON(whichbutton);
 	RESHATBUTTON(whichbutton);
 	
 	RESMOUSEDIGITALAXIS(whichbutton);
-	
+#endif
 }
 
 void CONTROL_ClearUserInput( UserInput *info )
@@ -752,7 +762,7 @@ void CONTROL_Startup
    )
 {
 	int i;
-
+#ifndef STM32_SDK
 	// Init the joystick
     _joystick_init();
 
@@ -761,7 +771,7 @@ void CONTROL_Startup
 		joyHats[i] = 0;
 		lastjoyHats[i] = 0;
 	}
-
+#endif
    CONTROL_MouseButtonState1 = 0;
    CONTROL_MouseButtonState2 = 0;
    CONTROL_MouseDigitalAxisState1 = 0;
@@ -774,7 +784,9 @@ void CONTROL_Startup
 
 void CONTROL_Shutdown( void )
 {
+#ifndef STM32_SDK
     _joystick_deinit();
+#endif
 }
 
 
@@ -784,11 +796,13 @@ void CONTROL_MapAnalogAxis
    int32 whichanalog
    )
 {
+#ifndef STM32_SDK
 	//STUBBED("CONTROL_MapAnalogAxis");
     if(whichaxis < MAXJOYAXES)
     {
         JoyAxisMapping[whichaxis] = whichanalog;
     }
+#endif
 }
 
 // FIX_00019: DigitalAxis Handling now supported. (cool for medkit use)
@@ -812,11 +826,13 @@ void CONTROL_SetAnalogAxisScale
    float axisscale
    )
 {
+#ifndef STM32_SDK
     if(whichaxis < MAXJOYAXES)
     {
         // Set it... make sure we don't let them set it to 0.. div by 0 is bad.
         JoyAnalogScale[whichaxis] = (axisscale == 0) ? 1.0f : axisscale;
     }
+#endif
 }
 
 void CONTROL_SetAnalogAxisDeadzone
@@ -825,11 +841,13 @@ void CONTROL_SetAnalogAxisDeadzone
    int32 axisdeadzone
    )
 {
+#ifndef STM32_SDK
     if(whichaxis < MAXJOYAXES)
     {
         // Set it... 
         JoyAnalogDeadzone[whichaxis] = axisdeadzone;
     }
+#endif
 }
 
 int32 CONTROL_FilterDeadzone
@@ -848,13 +866,17 @@ int32 CONTROL_FilterDeadzone
 
 int32 CONTROL_GetFilteredAxisValue(int32 axis)
 {
-return (int32)((float)CONTROL_FilterDeadzone
+#ifndef STM32_SDK
+    return (int32)((float)CONTROL_FilterDeadzone
                                     (
                                         _joystick_axis(axis), 
                                         JoyAnalogDeadzone[axis]
                                     )
                                         * JoyAnalogScale[axis]
                                     );
+#else
+    return 0;
+#endif
 }
 
 
@@ -887,6 +909,7 @@ void    MOUSE_HideCursor( void )
 
 static void updateMouse(void)
 {
+#ifndef STM32_SDK
     // this is in buildengine.
     short x, y;
     getmousevalues(&x, &y, &mouseButtons);
@@ -895,22 +918,30 @@ static void updateMouse(void)
     mouseRelativeY += y;
     mousePositionX += x;
     mousePositionY += y;
+#endif
 }
 
 int32   MOUSE_GetButtons( void )
 {
+#ifndef STM32_SDK
     //updateMouse();
     return ((int32) mouseButtons);
+#else
+    return 0;
+#endif
 }
 
 void    MOUSE_GetPosition( int32*x, int32*y  )
 {
+#ifndef STM32_SDK
     if (x) *x = mousePositionX;
     if (y) *y = mousePositionY;
+#endif
 }
 
 void    MOUSE_GetDelta( int32*x, int32*y )
 {
+#ifndef STM32_SDK
     updateMouse();
 
     if (x) *x = mouseRelativeX;
@@ -918,10 +949,12 @@ void    MOUSE_GetDelta( int32*x, int32*y )
 
 	mouseRelativeX = 0;
 	mouseRelativeY = 0;
+#endif
 }
 
 void JOYSTICK_UpdateHats()
 {
+#ifndef STM32_SDK
 	int i;
 
 	for(i=0; i<MAXJOYHATS; i++)
@@ -931,4 +964,5 @@ void JOYSTICK_UpdateHats()
 			joyHats[i] = _joystick_hat(i);
 		//}
 	}
+#endif
 }

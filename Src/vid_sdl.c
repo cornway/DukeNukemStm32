@@ -11,7 +11,6 @@
 #define VIDEO_IN_IRAM 1
 
 viddef_t    vid;                // global video state
-unsigned short  d_8to16table[256];
 
 // The original defaults
 //#define    BASEWIDTH    320
@@ -32,11 +31,7 @@ uint8_t    *VGA_pagebase;
 
 extern SDL_Surface *surface;
 extern int32_t xdim, ydim;
-SDL_Surface *screen = NULL;
-
-static boolean mouse_avail;
-static float   mouse_x, mouse_y;
-static int mouse_oldbuttonstate = 0;
+static SDL_Surface *sdlsurface = NULL;
 
 // No support for option menus
 void (*vid_menudrawfn)(void) = NULL;
@@ -54,9 +49,6 @@ void    VID_ShiftPalette (unsigned char *palette)
 
 static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
 {
-    int chunk;
-    uint8_t *cache;
-    int cachesize;
     screen_t lcd_screen;
 
     // Set up display mode (width and height)
@@ -72,9 +64,9 @@ static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
     screen_win_cfg(&lcd_screen);
 
 #if VIDEO_IN_IRAM
-    screen = (SDL_Surface *)&screenbuf[0];
+    sdlsurface = (SDL_Surface *)&screenbuf[0];
 #else
-    screen = (SDL_Surface *)Sys_Malloc(BASEWIDTH * BASEHEIGHT * sizeof(pix_t) + sizeof(SDL_Surface), "screen");
+    sdlsurface = (SDL_Surface *)Sys_Malloc(BASEWIDTH * BASEHEIGHT * sizeof(pix_t) + sizeof(SDL_Surface), "screen");
     if (screen == NULL)
         Sys_Error ("Not enough memory for video mode\n");
 #endif
@@ -82,14 +74,14 @@ static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
     // Set video width, height and flags
     flags = (SDL_SWSURFACE|SDL_HWPALETTE|SDL_FULLSCREEN);
 
-    memset(screen, 0, sizeof(SDL_Surface));
+    memset(sdlsurface, 0, sizeof(SDL_Surface));
 
-    screen->pixels = (void *)(screen + 1);
-    screen->flags = flags;
-    screen->w = BASEWIDTH;
-    screen->h = BASEHEIGHT;
-    screen->offset = 0;
-    screen->pitch = BASEWIDTH;
+    sdlsurface->pixels = (void *)(sdlsurface + 1);
+    sdlsurface->flags = flags;
+    sdlsurface->w = BASEWIDTH;
+    sdlsurface->h = BASEHEIGHT;
+    sdlsurface->offset = 0;
+    sdlsurface->pitch = BASEWIDTH;
 
     // now know everything we need to know about the buffer
     VGA_width = vid.conwidth = vid.width;
@@ -98,17 +90,16 @@ static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
     vid.numpages = 1;
     vid.colormap = 0;//host_colormap;
     vid.fullbright = 256 - (*((int *)vid.colormap + 2048));
-    VGA_pagebase = vid.buffer = screen->pixels;
-    VGA_rowbytes = vid.rowbytes = screen->pitch;
+    VGA_pagebase = vid.buffer = sdlsurface->pixels;
+    VGA_rowbytes = vid.rowbytes = sdlsurface->pitch;
     vid.conbuffer = vid.buffer;
     vid.conrowbytes = vid.rowbytes;
     vid.direct = 0;
 
-    surface = screen;
-    xdim = screen->w;
-    ydim = screen->h;
+    xdim = sdlsurface->w;
+    ydim = sdlsurface->h;
 
-    return screen;
+    return sdlsurface;
 }
 
 DECLSPEC void SDLCALL SDL_UpdateRect
@@ -116,8 +107,8 @@ DECLSPEC void SDLCALL SDL_UpdateRect
 {
     screen_t screen;
     screen.buf = sdlscreen->pixels;
-    screen.width = w;
-    screen.height = h;
+    screen.width = sdlscreen->w;
+    screen.height = sdlscreen->h;
     screen_update(&screen);
 }
 
@@ -171,13 +162,13 @@ void D_BeginDirectRect (int x, int y, uint8_t *pbitmap, int width, int height)
     uint8_t *offset;
 
 
-    if (!screen) return;
-    if ( x < 0 ) x = screen->w+x-1;
-    offset = (uint8_t *)screen->pixels + y*screen->pitch + x;
+    if (!sdlsurface) return;
+    if ( x < 0 ) x = sdlsurface->w+x-1;
+    offset = (uint8_t *)sdlsurface->pixels + y*sdlsurface->pitch + x;
     while ( height-- )
     {
         memcpy(offset, pbitmap, width);
-        offset += screen->pitch;
+        offset += sdlsurface->pitch;
         pbitmap += width;
     }
 }
@@ -190,11 +181,16 @@ D_EndDirectRect
 */
 void D_EndDirectRect (int x, int y, int width, int height)
 {
-    if (!screen) return;
-    if (x < 0) x = screen->w+x-1;
+    if (!sdlsurface) return;
+    if (x < 0) x = sdlsurface->w+x-1;
     //SDL_UpdateRect(screen, x, y, width, height);
 }
 
+
+DECLSPEC int SDLCALL SDL_FillRect (SDL_Surface *dst, SDL_Rect *dstrect, Uint32 color)
+{
+    return 0;
+}
 
 /*
 ================
@@ -223,11 +219,11 @@ const kbdmap_t gamepad_to_kbd_map[JOY_STD_MAX] =
 i_event_t *input_post_key (i_event_t  *evts, i_event_t event)
 {
     root_sdl_event_filter(&event);
+    return NULL;
 }
 
 void Sys_SendKeyEvents(i_event_t *evts)
 {
-    joypad_tickle();
     input_proc_keys(NULL);
 }
 
@@ -241,7 +237,7 @@ void IN_Init (void)
 
 void IN_Shutdown (void)
 {
-    mouse_avail = 0;
+
 }
 
 void IN_Commands (void)
