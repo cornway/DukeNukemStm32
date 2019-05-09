@@ -38,7 +38,11 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <inttypes.h>
 #endif
 
+#ifdef STM32_SDK
 #include <dev_io.h>
+#else
+#include <fcntl.h>
+#endif
 #include <time.h>
 #include <ctype.h>
 
@@ -370,7 +374,7 @@ extern short numanimwalls,probey,lastprobey;
 extern char  *mymembuf;
 extern uint8_t  typebuflen;
 extern char typebuf[41];
-#ifdef ORIGCODE
+#ifndef STM32_SDK
 extern uint8_t  MusicPtr[72000];
 #endif
 extern int32_t msx[2048],msy[2048];

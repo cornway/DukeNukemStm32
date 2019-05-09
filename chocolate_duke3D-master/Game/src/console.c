@@ -3,7 +3,7 @@
 #include "cvars.h"
 #include "cvar_defs.h"
 #include <stdarg.h>
-#include <unix_compat.h>
+
 
 // For autoexec.cfg
 #include <stdio.h>

@@ -19,7 +19,6 @@
 #include "joystick.h"
 
 #include "audiolib/music.h"
-#include "unix_compat.h"
 
 int g_CV_console_text_color;
 int g_CV_num_console_lines;

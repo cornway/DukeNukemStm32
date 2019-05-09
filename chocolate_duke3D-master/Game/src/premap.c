@@ -994,7 +994,7 @@ void newgame(uint8_t  vn,uint8_t  ln,uint8_t  sk)
 {
     struct player_struct *p = &ps[0];
     short i;
-#ifndef ORIGCODE
+#ifdef STM32_SDK
     clearsoundlocks();
 #endif
     if(globalskillsound >= 0)

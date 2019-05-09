@@ -19,7 +19,7 @@
 #ifdef __SUNPRO_C
 #define STUBBED(x) fprintf(stderr,"STUB: %s (??? %s:%d)\n",x,__FILE__,__LINE__)
 #else
-#define STUBBED(x) /*fprintf(stderr,"STUB: %s (%s, %s:%d)\n",x,__FUNCTION__,__FILE__,__LINE__)*/
+#define STUBBED(x) dprintf("STUB: %s (%s, %s:%d)\n",x,__FUNCTION__,__FILE__,__LINE__)
 #endif
 
 #define PATH_SEP_CHAR '/'
@@ -30,7 +30,14 @@
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
-
+#ifndef STM32_SDK
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <assert.h>
+#endif
 struct find_t
 {
     int dir;
@@ -73,8 +80,8 @@ void _dos_getdate(struct dosdate_t *date);
 #undef stdout
 #undef getchar
 /* kos compat */
-#define stderr (-1)
-#define stdout (-1)
+#define stderr (2)
+#define stdout (2)
 #define Z_AvailHeap() ((10 * 1024) * 1024)
 #else
 // 64 megs should be enough for anybody.  :)  --ryan.
@@ -91,7 +98,9 @@ void _dos_getdate(struct dosdate_t *date);
 // FCS: Game.c features calls to mkdir without the proper flags.
 // Giving all access is ugly but it is just game OK !
 #define mkdir(X) mkdir(X,0777)
-
+#ifndef STM32_SDK
 #define getch() 0
-
+#else
+#define getch getchar
+#endif
 #endif
