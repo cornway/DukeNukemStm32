@@ -1557,13 +1557,9 @@ void loadefs(char  *filenam, char  *mptr, int readfromGRP)
     }
     else
     {
-        extern uint32_t mymemsize;
         dprintf("Compiling: '%s'.\n",filenam);
 
         fs = kfilelength(fp);
-        if (mymemsize <= fs) {
-            assert(0);
-        }
         last_used_text = textptr = (char  *) mptr;
         last_used_size = fs;
 
