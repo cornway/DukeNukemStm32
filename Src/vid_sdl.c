@@ -88,13 +88,13 @@ static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
     VGA_height = vid.conheight = vid.height;
     vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
     vid.numpages = 1;
-    vid.colormap = 0;//host_colormap;
-    vid.fullbright = 256 - (*((int *)vid.colormap + 2048));
+    vid.colormap = NULL;//host_colormap;
+    vid.fullbright = 255;
     VGA_pagebase = vid.buffer = sdlsurface->pixels;
     VGA_rowbytes = vid.rowbytes = sdlsurface->pitch;
     vid.conbuffer = vid.buffer;
     vid.conrowbytes = vid.rowbytes;
-    vid.direct = 0;
+    vid.direct = NULL;
 
     xdim = sdlsurface->w;
     ydim = sdlsurface->h;
