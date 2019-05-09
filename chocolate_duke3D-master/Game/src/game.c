@@ -16,7 +16,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-aint32_t with this program; if not, write to the Free Software
+along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 Original Source: 1996 - Todd Replogle
@@ -41,9 +41,10 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "util_lib.h"
 #include "function.h"
 #include "control.h"
+#include "fx_man.h"
 #include "sounds.h"
 #include "config.h"
-#include "audiolib/sndcards.h"
+#include "sndcards.h"
 
 #include "console.h"
 #include "cvars.h"
@@ -7095,33 +7096,33 @@ void nonsharedkeys(void)
 }
 
 
-
+#define puts
 void comlinehelp(char  **argv)
 {
     dprintf("Command line help.  %s [/flags...]\n",argv[0]);
-    //puts(" ?, /?         This help message");
-    //puts(" /l##          Level (1-11)");
-    //puts(" /v#           Volume (1-4)");
-    //puts(" /s#           Skill (1-4)");
-    //puts(" /r            Record demo");
-    //puts(" /dFILE        Start to play demo FILE");
-    //puts(" /m            No monsters");
-    //puts(" /ns           No sound");
-    //puts(" /nm           No music");
-    //puts(" /t#           Respawn, 1 = Monsters, 2 = Items, 3 = Inventory, x = All");
-    //puts(" /c#           MP mode, 1 = DukeMatch(spawn), 2 = Coop, 3 = Dukematch(no spawn)");
-    //puts(" /q#           Fake multiplayer (2-8 players)");
-    //puts(" /a            Use player AI (fake multiplayer only)");
-    //puts(" /i#           Network mode (1/0) (multiplayer only) (default == 1)");
-    //puts(" /f#           Send fewer packets (1, 2, 4) (multiplayer only)");
-    //puts(" /gFILE, /g... Use multiple group files (must be last on command line)");
-    //puts(" /xFILE        Compile FILE (default GAME.CON)");
-    //puts(" /u#########   User's favorite weapon order (default: 3425689071)");
-    //puts(" /#            Load and run a game (slot 0-9)");
-    //puts(" /z            Skip memory check");
-    //puts(" -map FILE     Use a map FILE");
-    //puts(" -name NAME    Foward NAME");
-    //puts(" -net          Net mode game");
+    dprintf(" ?, /?         This help message");
+    dprintf(" /l##          Level (1-11)");
+    dprintf(" /v#           Volume (1-4)");
+    dprintf(" /s#           Skill (1-4)");
+    dprintf(" /r            Record demo");
+    dprintf(" /dFILE        Start to play demo FILE");
+    dprintf(" /m            No monsters");
+    dprintf(" /ns           No sound");
+    dprintf(" /nm           No music");
+    dprintf(" /t#           Respawn, 1 = Monsters, 2 = Items, 3 = Inventory, x = All");
+    dprintf(" /c#           MP mode, 1 = DukeMatch(spawn), 2 = Coop, 3 = Dukematch(no spawn)");
+    dprintf(" /q#           Fake multiplayer (2-8 players)");
+    dprintf(" /a            Use player AI (fake multiplayer only)");
+    dprintf(" /i#           Network mode (1/0) (multiplayer only) (default == 1)");
+    dprintf(" /f#           Send fewer packets (1, 2, 4) (multiplayer only)");
+    dprintf(" /gFILE, /g... Use multiple group files (must be last on command line)");
+    dprintf(" /xFILE        Compile FILE (default GAME.CON)");
+    dprintf(" /u#########   User's favorite weapon order (default: 3425689071)");
+    dprintf(" /#            Load and run a game (slot 0-9)");
+    dprintf(" /z            Skip memory check");
+    dprintf(" -map FILE     Use a map FILE");
+    dprintf(" -name NAME    Foward NAME");
+    dprintf(" -net          Net mode game");
     dprintf("\n");
 }
 
@@ -7289,19 +7290,19 @@ void checkcommandline(int argc,char  **argv)
                     case 'a':
                     case 'A':
                         ud.playerai = 1;
-                        puts("Other player AI.");
+                        dprintf("Other player AI.");
                         break;
                     case 'n':
                     case 'N':
                         c++;
                         if(*c == 's' || *c == 'S'){
                             CommandSoundToggleOff = 2;
-                            puts("Sound off.");
+                            dprintf("Sound off.");
                         }
                         else
                             if(*c == 'm' || *c == 'M'){
                             CommandMusicToggleOff = 1;
-                            puts("Music off.");
+                            dprintf("Music off.");
                             }
                             else{
                                 comlinehelp(argv);
@@ -7327,13 +7328,13 @@ void checkcommandline(int argc,char  **argv)
                         switch(ud.m_coop)
                         {
                             case 0:
-                                puts("Dukematch (spawn).");
+                                dprintf("Dukematch (spawn).");
                                 break;
                             case 1:
-                                puts("Cooperative play.");
+                                dprintf("Cooperative play.");
                                 break;
                             case 2:
-                                puts("Dukematch (no spawn).");
+                                dprintf("Dukematch (no spawn).");
                                 break;
                         }
 
@@ -7367,7 +7368,7 @@ void checkcommandline(int argc,char  **argv)
                             ud.m_respawn_items = 1;
                             ud.m_respawn_inventory = 1;
                         }
-                        puts("Respawn on.");
+                        dprintf("Respawn on.");
                         break;
                     case 'm':
                     case 'M':
@@ -7375,7 +7376,7 @@ void checkcommandline(int argc,char  **argv)
                         {
                             ud.m_monsters_off = 1;
                             ud.m_player_skill = ud.player_skill = 0;
-                            puts("Monsters off.");
+                            dprintf("Monsters off.");
                         }
                         break;
                     case 'w':
@@ -7384,7 +7385,7 @@ void checkcommandline(int argc,char  **argv)
                         break;
                     case 'q':
                     case 'Q':
-                        puts("Fake multiplayer mode.");
+                        dprintf("Fake multiplayer mode.");
                         if( *(++c) == 0) ud.multimode_bot = 1;
                         else ud.multimode_bot = atol(c)%17;
 						ud.multimode = ud.multimode_bot;
@@ -7398,7 +7399,7 @@ void checkcommandline(int argc,char  **argv)
                     case 'r':
                     case 'R':
                         ud.m_recstat = 1;
-                        puts("Demo record mode on.");
+                        dprintf("Demo record mode on.");
                         break;
                     case 'd':
                     case 'D':
@@ -7450,7 +7451,7 @@ void checkcommandline(int argc,char  **argv)
                         j = 0;
                         if(*c)
                         {
-                            puts("Using favorite weapon order(s).");
+                            dprintf("Using favorite weapon order(s).");
                             while(*c)
                             {
                                 ud.mywchoice[j] = *c-'0';
@@ -7469,7 +7470,7 @@ void checkcommandline(int argc,char  **argv)
                         }
                         else
                         {
-                            puts("Using default weapon orders.");                         
+                            dprintf("Using default weapon orders.");
                         }
 
                         break;
@@ -7718,21 +7719,19 @@ void ShutDown( void )
 =
 ===================
 */
-uint32_t mymemsize = 0x48000;
+
 void compilecons(void)
 {
 	char  userconfilename[512];
 
-   mymembuf = (char  *)Sys_Malloc(mymemsize);
-   assert(mymembuf);
-    //mymemsize = sizeof(hittype);
+   mymembuf = (char  *)hittype;
    labelcode = (int32_t *)&sector[0];
    label = (char  *)sprite;
 
 	sprintf(userconfilename, "%s", confilename);
 
    loadefs(userconfilename,mymembuf, 0);  
-   Sys_Free(mymembuf);
+
 }
 
 
@@ -7771,7 +7770,7 @@ void Startup(void)
 // CTW END - MODIFICATION
    inittimer(TICRATE);
 
-   //puts("Loading art header.");
+  dprintf("Loading art header.");
 
   loadpics("tiles000.art", "\0");
    
@@ -7784,7 +7783,7 @@ void Startup(void)
    initmultiplayers(0,0,0);
 
    if(numplayers > 1)
-    //puts("Multiplayer initialized.");
+     dprintf("Multiplayer initialized.");
 
    ps[myconnectindex].palette = (uint8_t  *) &palette[0];
    SetupGameButtons();
@@ -7793,15 +7792,15 @@ void Startup(void)
        networkmode = 1;
 
 #ifdef PLATFORM_DOS
-   //puts("Checking music inits.");
+   dprintf("Checking music inits.");
    MusicStartup();
-   //puts("Checking sound inits.");
+   dprintf("Checking sound inits.");
    SoundStartup();
 #else
    /* SBF - wasn't sure if swapping them would harm anything. */
-   //puts("Checking sound inits.");
+   dprintf("Checking sound inits.");
    SoundStartup();
-   //puts("Checking music inits.");
+   //dprintf("Checking music inits.");
    MusicStartup();
 #endif
 
@@ -7809,7 +7808,7 @@ void Startup(void)
 	if(nHostForceDisableAutoaim)
 		ud.auto_aim = 0;
 
-   //puts("loadtmb()");
+   dprintf("loadtmb()");
    loadtmb();
 }
 
@@ -8283,8 +8282,8 @@ int duke_main(int argc,char  **argv)
     {
         if(totalmemory < (3162000-350000))
         {
-            //puts("You don't have enough free memory to run Duke Nukem 3D.");
-            //puts("The DOS \"mem\" command should report 6,800K (or 6.8 megs)");
+            dprintf("You don't have enough free memory to run Duke Nukem 3D.");
+            dprintf("The DOS \"mem\" command should report 6,800K (or 6.8 megs)");
             dprintf("Duke Nukem 3D requires %d more bytes to run.\n",3162000-350000-totalmemory);
             Error(EXIT_SUCCESS, "");
         }
@@ -8299,13 +8298,13 @@ int duke_main(int argc,char  **argv)
 
     if( eightytwofifty && numplayers > 1 && (MusicDevice != NumSoundCards) )
     {
-        //puts("\n=========================================================================");
-        //puts("WARNING: 8250 UART detected.");
-        //puts("Music is being disabled and lower quality sound is being set.  We apologize");
-        //puts("for this, but it is necessary to maintain high frame rates while trying to");
-        //puts("play the game on an 8250.  We suggest upgrading to a 16550 or better UART");
-        //puts("for maximum performance.  Press any key to continue.");
-        //puts("=========================================================================\n");
+        dprintf("\n=========================================================================");
+        dprintf("WARNING: 8250 UART detected.");
+        dprintf("Music is being disabled and lower quality sound is being set.  We apologize");
+        dprintf("for this, but it is necessary to maintain high frame rates while trying to");
+        dprintf("play the game on an 8250.  We suggest upgrading to a 16550 or better UART");
+        dprintf("for maximum performance.  Press any key to continue.");
+        dprintf("=========================================================================\n");
 
         while( !KB_KeyWaiting() ) getpackets();
     }

@@ -213,7 +213,7 @@ void renderframe (uint16 framenumber, uint16 *pagepointer)
    destframe = framenumber - (uint16_t)readShort(&anim->curlp.baseRecord);
 
    for(i = 0; i < destframe; i++)
-      offset += pagepointer[i];
+      offset += (uint16_t)readShort(&pagepointer[i]);
       
    ppointer = (byte *)pagepointer;
 
