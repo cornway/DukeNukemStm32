@@ -14,13 +14,10 @@
 
 #define GFX_COLOR_MODE GFX_COLOR_MODE_CLUT
 
-#define HEAP_CACHE_SIZE             (0)
-
 #define AUDIO_SAMPLE_RATE           (11025U)
 
 #define DEVIO_READONLY              (0)
 #define MAX_HANDLES                 (4)
-
 
 #define DEV_MAXXDIM                 (320)
 #define DEV_MAXYDIM                 (240)
