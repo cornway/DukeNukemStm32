@@ -11,7 +11,7 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
   DTCM 0x20000000 0x00018000  {  ; DTCM
    .ANY (dtcm, +RW +ZI)
    audio_mem.o (dtcm, +RW +ZI)
-   ;r_main.o (dtcm, +RW +ZI)
+   serial.o (dtcm, +RW, ZI)
   }
   DTCM_STACK 0x20018000 UNINIT 0x00008000  {  ; DTCM
    *(STACK)
@@ -19,24 +19,12 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
   RW_IRAM1 0x20020000 0x0005C000  {  ; RW data
    .ANY (iram, +RW +ZI)
    usbh_conf.o (+RW +ZI)
-   ;usbh_core.o (+RW +ZI)
-   ;usbh_ctlrec.o (+RW +ZI)
    usbh_hid.o (+RW +ZI)
    usbh_hid_keybd.o (+RW +ZI)
    usbh_hid_mouse.o (+RW +ZI)
-   ;usbh_hid_parser.o (+RW +ZI)
-   ;usbh_ioreq.o (+RW +ZI)
-   ;usbh_pipes.o (+RW +ZI)
    input_main.o (+RW +ZI)
    usb_hid_gamepad.o (+RW +ZI)
-   main.o (+RW +ZI)
-   vid_sdl.o (+RW +ZI)
-   ;sys_sdl.o (+RW +ZI)
-   ;snd_mem.o (+RW +ZI)
-   ;snd_mix.o (+RW +ZI)
    lcd_main.o (+RW +ZI)
-   ;audio_ext.o (+RW +ZI)
-   ;audio_mix.o (+RW +ZI)
    music_main.o (+RW +ZI)
    sd_diskio.o (+RW +ZI)
    dev_main.o (+RW +ZI)

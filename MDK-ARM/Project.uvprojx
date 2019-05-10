@@ -588,7 +588,7 @@
             <File>
               <FileName>startup_stm32f769xx.s</FileName>
               <FileType>2</FileType>
-              <FilePath>..\common\misc\arch\Arm\m7\src\startup_stm32f769xx.s</FilePath>
+              <FilePath>..\src\startup_stm32f769xx.s</FilePath>
             </File>
           </Files>
         </Group>
