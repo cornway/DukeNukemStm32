@@ -28,6 +28,7 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
    music_main.o (+RW +ZI)
    sd_diskio.o (+RW +ZI)
    dev_main.o (+RW +ZI)
+   dev_io.o (+RW +ZI)
    nvic.o (+RW +ZI)
    hdmi_mem.o (+RW +ZI)
   }
