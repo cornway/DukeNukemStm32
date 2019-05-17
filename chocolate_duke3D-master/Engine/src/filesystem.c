@@ -148,7 +148,7 @@ int32_t initgroupfile(const char  *filename)
 	while((j=d_read(archive->fileDescriptor, crcBuffer, sizeof(crcBuffer)))){
 		archive->crc32 = crc32_update(crcBuffer,j,archive->crc32);
 	}
-#else
+#elif CRC_CHECK
     {
         uint8_t         *crcBuffer;
         uint32_t        crcBufSize = (1 << 18);

@@ -8095,7 +8095,7 @@ void findGRPToUse(char * groupfilefullpath){
     dprintf("Scanning directory '%s' for a GRP file like '%s'.\n",directoryToScan,baseDir);
     
     int dir =  d_opendir(directoryToScan);
-    
+    if (dir < 0) return;
     while ((d_readdir(dir, &dirEntry) >= 0))
     {
         

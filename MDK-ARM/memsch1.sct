@@ -12,6 +12,9 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
    .ANY (dtcm, +RW +ZI)
    audio_mem.o (dtcm, +RW +ZI)
    serial.o (dtcm, +RW, ZI)
+   sd_diskio.o (+RW +ZI)
+   dev_main.o (+RW +ZI)
+   dev_io.o (+RW +ZI)
   }
   DTCM_STACK 0x20018000 UNINIT 0x00008000  {  ; DTCM
    *(STACK)
@@ -26,9 +29,6 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
    usb_hid_gamepad.o (+RW +ZI)
    lcd_main.o (+RW +ZI)
    music_main.o (+RW +ZI)
-   sd_diskio.o (+RW +ZI)
-   dev_main.o (+RW +ZI)
-   dev_io.o (+RW +ZI)
    nvic.o (+RW +ZI)
    hdmi_mem.o (+RW +ZI)
   }
