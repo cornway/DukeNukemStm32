@@ -32,7 +32,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <string.h>
 #include "dpmi.h"
 #ifdef STM32_SDK
-#include "misc_utils.h"
+#include <misc_utils.h>
+#include <heap.h>
 #endif
 #define TRUE  ( 1 == 1 )
 #define FALSE ( !TRUE )
@@ -153,7 +154,7 @@ int DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length )
 {
 	/* Lovely... */
 	
-	*ptr = (void *)Sys_Malloc(length);
+	*ptr = (void *)heap_malloc(length);
 	
 	*descriptor = (int) *ptr;
 	
@@ -162,7 +163,7 @@ int DPMI_GetDOSMemory( void **ptr, int *descriptor, unsigned length )
 
 int DPMI_FreeDOSMemory( int descriptor )
 {
-	Sys_Free((void *)descriptor);
+	heap_free((void *)descriptor);
 	
 	return (descriptor == 0) ? DPMI_Error : DPMI_Ok;
 }

@@ -160,25 +160,25 @@ extern "C" {
 #endif
 
 #ifdef HAVE_MALLOC
-#define SDL_malloc	Sys_Malloc
+#define SDL_malloc	heap_malloc
 #else
 extern DECLSPEC void * SDLCALL SDL_malloc(size_t size);
 #endif
 
 #ifdef HAVE_CALLOC
-#define SDL_calloc Sys_Calloc
+#define SDL_calloc heap_calloc
 #else
 extern DECLSPEC void * SDLCALL SDL_calloc(size_t nmemb, size_t size);
 #endif
 
 #ifdef HAVE_REALLOC
-#define SDL_realloc Sys_Realloc
+#define SDL_realloc heap_realloc
 #else
 extern DECLSPEC void * SDLCALL SDL_realloc(void *mem, size_t size);
 #endif
 
 #ifdef HAVE_FREE
-#define SDL_free	Sys_Free
+#define SDL_free	heap_free
 #else
 extern DECLSPEC void SDLCALL SDL_free(void *mem);
 #endif

@@ -30,8 +30,11 @@
 #include "keyboard.h"
 #include "sndcards.h"
 #include <dsl.h>
+#include <misc_utils.h>
 #include <dev_io.h>
 #include <debug.h>
+#include <heap.h>
+#include <audio_main.h>
 #else
 #include "SDL.h"
 #endif
@@ -282,13 +285,13 @@ static void init_new_res_vars(int32_t davidoption)
     	j = ydim*4*sizeof(int32_t);  /* Leave room for horizlookup&horizlookup2 */
 
 		if(horizlookup)
-			Sys_Free(horizlookup);
+			heap_free(horizlookup);
 
 		if(horizlookup2)
-			Sys_Free(horizlookup2);
+			heap_free(horizlookup2);
 		
-		horizlookup = (int32_t*)Sys_Malloc(j);
-		horizlookup2 = (int32_t*)Sys_Malloc(j);
+		horizlookup = (int32_t*)heap_malloc(j);
+		horizlookup2 = (int32_t*)heap_malloc(j);
 
     j = 0;
     
@@ -753,7 +756,7 @@ static void output_sdl_versions(void)
 /* lousy -ansi flag.  :) */
 static char  *string_dupe(const char  *str)
 {
-    char  *retval = (char *)Sys_Malloc(strlen(str) + 1);
+    char  *retval = (char *)heap_malloc(strlen(str) + 1);
     if (retval != NULL)
         strcpy(retval, str);
     return(retval);
@@ -789,6 +792,12 @@ void _platform_init(int argc, char  **argv, const char  *title, const char  *ico
 //TODO ( "[Todo: handle -netmode <int>]" )
 				Setup_StableNetworking();
 					
+            }
+            if (strcmpi(argv[i], "-vol") == 0) {
+                char buf[128];
+
+                snprintf(buf, sizeof(buf), "samplerate=11025, volume=%s", argv[i + 1]);
+                audio_conf(buf);
             }
         }
     }
@@ -1337,7 +1346,7 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
     
     d_write(file, &tga_header, 18);
     
-    bufferPointer = buffer = Sys_Malloc(width*height*4);
+    bufferPointer = buffer = heap_malloc(width*height*4);
     
     for (i = 0 ; i < width*height ; i++)
     {
@@ -1353,7 +1362,7 @@ void WritePaletteToFile(uint8_t* palette,const char* filename,int width, int hei
     d_write(file, buffer, width*height * 4);
     d_close(file);
     
-    Sys_Free(buffer);
+    heap_free(buffer);
 }
 
 
@@ -1392,14 +1401,14 @@ int VBE_setPalette(uint8_t  *palettebuffer)
    
     //CODE EXPLORATION
     //Used only to write the last palette to file.
-    memcpy(lastPalette, palettebuffer, 768);
-    
+    d_memcpy(lastPalette, palettebuffer, 768);
+
     for (i = 0; i < 256; i++){
         b = (Uint8) ((((float) *p++) / 63.0f) * 255.0f);
         g = (Uint8) ((((float) *p++) / 63.0f) * 255.0f);
         r = (Uint8) ((((float) *p++) / 63.0f) * 255.0f);
         p++;
-        writeLong(sdlp++, (long)GFX_RGB(r,g,b, 0xff));
+        writeLong(sdlp++, (long)GFX_RGBA8888(r,g,b, 0xff));
     }
 
     return(SDL_SetColors(surface, fmt_swap, 0, 256));
@@ -1490,7 +1499,7 @@ void readmousebstatus(short *bstatus)
 
 void _updateScreenRect(int32_t x, int32_t y, int32_t w, int32_t h)
 {
-    SDL_UpdateRect(surface, x, y, w, h);
+    //SDL_UpdateRect(surface, x, y, w, h);
 }
 
 //int counter= 0 ;

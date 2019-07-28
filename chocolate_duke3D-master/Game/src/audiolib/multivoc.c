@@ -99,7 +99,7 @@ static int MV_TotalVolume = MV_MaxTotalVolume;
 static int MV_MaxVoices   = 1;
 static int MV_Recording;
 
-int MV_BufferSize = MixBufferSize;
+int MV_BufferSize = 0x800;
 static int MV_BufferLength;
 
 static int MV_NumberOfBuffers = NumberOfBuffers;

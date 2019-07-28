@@ -34,6 +34,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <stdlib.h>
 #include <ctype.h>
 #include <time.h>
+#include <misc_utils.h>
+#include <dev_io.h>
 #include "duke3d.h"
 #include "scriplib.h"
 #include "build.h"
@@ -744,10 +746,10 @@ void CONFIG_ReadSetup( void )
    BlasterConfig.Emu = dummy;
    SCRIPT_GetNumber( scripthandle, "Sound Setup", "ReverseStereo",&ReverseStereo);
 
-   NumVoices = AUDIO_MAX_VOICES;
-   NumChannels = AUDIO_OUT_CHANNELS;
-   NumBits = AUDIO_OUT_BITS;
-   MixRate = AUDIO_SAMPLE_RATE;
+   NumVoices = 16;
+   NumChannels = 2;
+   NumBits = 16;
+   MixRate = 11025;
 
    SCRIPT_GetNumber( scripthandle, "Controls","ControllerType",&ControllerType);
    SCRIPT_GetNumber( scripthandle, "Controls","MouseAimingFlipped",&ud.mouseflip);

@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #else
 #include <debug.h>
+#include <bsp_sys.h>
 #endif
 
 #include "platform.h"
@@ -97,6 +98,7 @@ void allocache (uint8_t** newhandle, int32_t newbytes, uint8_t  *newlockptr)
 	int32_t i, z, zz, bestz=0, daval, bestval, besto=0, o1, o2, sucklen, suckz;
 
 	newbytes = newbytes+15;
+    newbytes = ROUND_UP(newbytes, 4);
 
 	if ((uint32_t)newbytes > (uint32_t)cachesize)
 	{

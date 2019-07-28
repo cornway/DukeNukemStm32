@@ -52,8 +52,15 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 
 #include "global.h"
 #ifdef STM32_SDK
+#include <misc_utils.h>
 #include <dev_io.h>
 #include <debug.h>
+#include <heap.h>
+
+#ifdef mkdir
+#undef mkdir
+#endif
+
 #endif
 #define MINITEXT_BLUE	0
 #define MINITEXT_RED	2
@@ -8095,7 +8102,7 @@ void findGRPToUse(char * groupfilefullpath){
     dprintf("Scanning directory '%s' for a GRP file like '%s'.\n",directoryToScan,baseDir);
     
     int dir =  d_opendir(directoryToScan);
-    
+    if (dir < 0) return;
     while ((d_readdir(dir, &dirEntry) >= 0))
     {
         
@@ -8268,12 +8275,12 @@ int duke_main(int argc,char  **argv)
 	fsize = d_open(argv[0], &filehandle, "r");
 	if(filehandle!=-1)
 	{
-		exe = Sys_Malloc(fsize);
+		exe = heap_malloc(fsize);
 		if(exe)
 		{
 			d_read(filehandle, exe, fsize);
 			ud.exeCRC[0] = crc32_update(exe, d_size(filehandle), ud.exeCRC[0]);
-			Sys_Free(exe);
+			heap_free(exe);
 		}
 		d_close(filehandle);
 	}

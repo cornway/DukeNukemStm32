@@ -35,7 +35,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "lcd_main.h"
+#include <lcd_main.h>
+#include <heap.h>
 
 const char *mus_dir_path = "duke/music";
 const char *snd_dir_path = "duke/sound";
@@ -49,23 +50,18 @@ int main(void)
     dev_main();
 }
 
-char *__argv[1] = {""};
-
 void VID_PreConfig (void)
 {
     screen_t screen;
     screen.buf = NULL;
     screen.width = DEV_MAXXDIM;
     screen.height = DEV_MAXYDIM;
-    screen_win_cfg(&screen);
+    vid_config(heap_malloc, NULL, &screen, GFX_COLOR_MODE_CLUT, 2);
 }
-
-extern int dumpstack (void);
 
 int mainloop (int argc, const char *argv[])
 {
-    dumpstack();
-    duke_main(arrlen(__argv), __argv);
+    duke_main(argc, argv);
     return 0;
 }
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

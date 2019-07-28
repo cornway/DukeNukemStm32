@@ -29,6 +29,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #ifdef STM32_SDK
 #include <misc_utils.h>
 #include <debug.h>
+#include <heap.h>
+#include <dev_io.h>
 #endif
 //=============
 // STATICS
@@ -86,7 +88,7 @@ void RTS_AddFile (char  *filename)
    header.numlumps = IntelLong(header.numlumps);
    header.infotableofs = IntelLong(header.infotableofs);
    length = header.numlumps*sizeof(filelump_t);
-   fileinfo = Sys_Malloc(length);
+   fileinfo = heap_malloc(length);
    if (!fileinfo)
       Error (EXIT_FAILURE, "RTS file could not allocate header info on stack");
    d_seek (handle, header.infotableofs, DSEEK_SET);

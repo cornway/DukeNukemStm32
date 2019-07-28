@@ -32,10 +32,16 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "global.h"
 #ifdef STM32_SDK
+#include <misc_utils.h>
 #include <dev_io.h>
 #include <debug.h>
+#include <heap.h>
 #else
 uint8_t  MusicPtr[72000];
+#endif
+
+#ifdef mkdir
+#undef mkdir
 #endif
 
 char  *mymembuf;
@@ -691,7 +697,7 @@ void *SafeMalloc (int32_t size)
 {
 	void *ptr;
 
-    ptr = Sys_Malloc(size);
+    ptr = heap_malloc(size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeMalloc failure for %lu bytes",size);
@@ -703,7 +709,7 @@ void SafeRealloc (void **x, int32 size)
 {
 	void *ptr;
 
-    ptr = Sys_Realloc(*x, size);
+    ptr = heap_realloc(*x, size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeRealloc failure for %lu bytes",size);
@@ -715,7 +721,7 @@ void *SafeLevelMalloc (int32_t size)
 {
 	void *ptr;
 
-    ptr = Sys_Malloc(size);
+    ptr = heap_malloc(size);
 
 	if (!ptr)
       Error (EXIT_FAILURE, "SafeLevelMalloc failure for %lu bytes",size);
@@ -728,7 +734,7 @@ void SafeFree (void * ptr)
    if ( ptr == NULL )
       Error (EXIT_FAILURE, "SafeFree : Tried to free a freed pointer\n");
 
-    Sys_Free(ptr);
+    heap_free(ptr);
 
 }
 
@@ -891,7 +897,7 @@ int setup_homedir (void)
 	snprintf (ApogeePath, sizeof (ApogeePath), "%s/.duke3d/", getenv ("HOME"));
 
 	//err = mkdir (ApogeePath, S_IRWXU);
-	err = d_mkdir (ApogeePath);
+	err = d_mkdir(ApogeePath);
 	if (err == -1)
 	{
 		dprintf ("Couldn't create preferences directory: %s\n", 

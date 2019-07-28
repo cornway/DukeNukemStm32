@@ -67,7 +67,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //#define SILENCE_16BIT_PAS 0
 
 #define NumberOfBuffers   16
-#define MixBufferSize     AUDIO_OUT_BUFFER_SIZE
+#define MixBufferSize     0x800
 
 #define TotalBufferSize   ( MixBufferSize * NumberOfBuffers )
 

@@ -12,17 +12,14 @@
 #define AUDIO_MODULE_PRESENT        (1)
 #define MUSIC_MODULE_PRESENT        (1)
 
-#define GFX_COLOR_MODE GFX_COLOR_MODE_CLUT
-
-#define HEAP_CACHE_SIZE             (0)
-
-#define AUDIO_SAMPLE_RATE           (11025U)
-
 #define DEVIO_READONLY              (0)
 #define MAX_HANDLES                 (4)
 
-
 #define DEV_MAXXDIM                 (320)
 #define DEV_MAXYDIM                 (240)
+
+#define SD_MODE_DMA_RO              (1)
+#define SD_MODE_DMA_WO              (1)
+
 
 #endif /*__DEV_CONF_H__*/
