@@ -132,6 +132,7 @@ void SoundShutdown( void )
    if (FXDevice == NumSoundCards)
       return;
 
+   audio_deinit();
    status = FX_Shutdown();
    if ( status != FX_Ok )
       {

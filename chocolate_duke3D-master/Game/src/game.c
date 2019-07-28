@@ -2368,6 +2368,12 @@ void FTA(short q,struct player_struct *p, int mode)
     }
 }
 
+static void __sleep_ms (uint32_t ms)
+{
+    ms += d_time();
+    while (d_time() < ms) {};
+}
+
 void showtwoscreens(void)
 {
     short i;
@@ -2385,7 +2391,7 @@ void showtwoscreens(void)
 	    nextpage(); 
 		for(i=63;i>0;i-=7) palto(0,0,0,i);
 
-	    while( !KB_KeyWaiting() ); // getpackets(); // Net already off. Trying to get packets here makes sporadic crash..
+	    __sleep_ms(200); // getpackets(); // Net already off. Trying to get packets here makes sporadic crash..
 	
 	    for(i=0;i<64;i+=7) 
 			palto(0,0,0,i);
@@ -2398,7 +2404,7 @@ void showtwoscreens(void)
 		for(i=63;i>0;i-=7) 
 			palto(0,0,0,i);
 
-	    while( !KB_KeyWaiting() ); // getpackets();
+	    __sleep_ms(200); // getpackets();
 	}
 	else if(PLUTOPAK)
 	{
@@ -2420,7 +2426,7 @@ void showtwoscreens(void)
 
 	    totalclock = 0;
 
-	    while( !KB_KeyWaiting() ); 
+	    __sleep_ms(200);
 	
 	}
 }
@@ -2502,8 +2508,7 @@ void gameexit(char  *msg)
 
     d_unlink("duke3d.tmp");
 	
-    Error(EXIT_SUCCESS, "");
-
+    SDL_Quit();
 }
 
 
