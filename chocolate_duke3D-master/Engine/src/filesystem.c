@@ -497,11 +497,11 @@ static short *lzwbuf2, *lzwbuf3;
 
 int32_t compress(uint8_t  *lzwinbuf, int32_t uncompleng, uint8_t  *lzwoutbuf)
 {
-	int32_t i, addr, newaddr, addrcnt, zx, *longptr;
+	int32_t i, addr, newaddr, addrcnt, zx, *longptr, longtmp;
 	int32_t bytecnt1, bitcnt, numbits, oneupnumbits;
 	short *shortptr;
     
-	for(i=255;i>=0;i--) { lzwbuf1[i] = (uint8_t ) i; writeShort(&lzwbuf3[i], (short) ((i+1)&255)); }
+	for(i=255;i>=0;i--) { lzwbuf1[i] = (uint8_t ) i; lzwbuf3[i] = (short) ((i+1)&255); }
 	clearbuf((void *) (lzwbuf2),256>>1,0xffffffff);
 	clearbuf((void *) (lzwoutbuf),((uncompleng+15)+3)>>2,0L);
     
@@ -514,23 +514,25 @@ int32_t compress(uint8_t  *lzwinbuf, int32_t uncompleng, uint8_t  *lzwoutbuf)
 		{
 			bytecnt1++;
 			if (bytecnt1 == uncompleng) break;
-			if (readShort(&lzwbuf2[addr]) < 0) {writeShort(&lzwbuf2[addr], (short) addrcnt); break;}
-			newaddr = readShort(&lzwbuf2[addr]);
+			if (lzwbuf2[addr] < 0) {lzwbuf2[addr] = (short) addrcnt; break;}
+			newaddr = lzwbuf2[addr];
 			while (lzwbuf1[newaddr] != lzwinbuf[bytecnt1])
 			{
-				zx = readShort(&lzwbuf3[newaddr]);
-				if (zx < 0) {writeShort(&lzwbuf3[newaddr], (short) addrcnt); break;}
+				zx = lzwbuf3[newaddr];
+				if (zx < 0) {lzwbuf3[newaddr] = (short) addrcnt; break;}
 				newaddr = zx;
 			}
-			if (readShort(&lzwbuf3[newaddr]) == addrcnt) break;
+			if (lzwbuf3[newaddr] == addrcnt) break;
 			addr = newaddr;
 		} while (addr >= 0);
-		writeShort(&lzwbuf1[addrcnt], lzwinbuf[bytecnt1]);
-		writeShort(&lzwbuf2[addrcnt], -1);
-		writeShort(&lzwbuf3[addrcnt], -1);
+		lzwbuf1[addrcnt] = lzwinbuf[bytecnt1];
+		lzwbuf2[addrcnt] = -1;
+		lzwbuf3[addrcnt] = -1;
         
 		longptr = (int32_t *)&lzwoutbuf[bitcnt>>3];
-		writeLong(&longptr[0], (uint32_t)readLong(&longptr[0]) | (addr<<(bitcnt&7)));
+        longtmp = readLong(&longptr[0]);
+        longtmp |= (addr<<(bitcnt&7));
+        writeLong(&longptr[0], longtmp);
 		bitcnt += numbits;
 		if ((addr&((oneupnumbits>>1)-1)) > ((addrcnt-1)&((oneupnumbits>>1)-1)))
 			bitcnt--;
@@ -540,19 +542,21 @@ int32_t compress(uint8_t  *lzwinbuf, int32_t uncompleng, uint8_t  *lzwoutbuf)
 	} while ((bytecnt1 < uncompleng) && (bitcnt < (uncompleng<<3)));
     
 	longptr = (int32_t *)&lzwoutbuf[bitcnt>>3];
-    writeLong(&longptr[0], (uint32_t)readLong(&longptr[0]) | (addr<<(bitcnt&7)));
+    longtmp = readLong(&longptr[0]);
+    longtmp |= (addr<<(bitcnt&7));
+    writeLong(&longptr[0], longtmp);
 	bitcnt += numbits;
 	if ((addr&((oneupnumbits>>1)-1)) > ((addrcnt-1)&((oneupnumbits>>1)-1)))
 		bitcnt--;
     
 	shortptr = (short *)lzwoutbuf;
-    writeShort(&shortptr[0], (short)uncompleng);
+	shortptr[0] = (short)uncompleng;
 	if (((bitcnt+7)>>3) < uncompleng)
 	{
-	    writeShort(&shortptr[1], (short)addrcnt);
+		shortptr[1] = (short)addrcnt;
 		return((bitcnt+7)>>3);
 	}
-    writeShort(&shortptr[1], 0);
+	shortptr[1] = (short)0;
 	for(i=0;i<uncompleng;i++) lzwoutbuf[i+4] = lzwinbuf[i];
 	return(uncompleng+4);
 }
@@ -564,13 +568,13 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
 	short *shortptr;
     
 	shortptr = (short *)lzwinbuf;
-	strtot = readShort(&shortptr[1]);
+	strtot = (int32_t )shortptr[1];
 	if (strtot == 0)
 	{
 		copybuf((void *)((lzwinbuf)+4),(void *)((lzwoutbuf)),((compleng-4)+3)>>2);
-		return(readShort(&shortptr[0])); /* uncompleng */
+		return((int32_t )shortptr[0]); /* uncompleng */
 	}
-	for(i=255;i>=0;i--) { writeShort(&lzwbuf2[i], (short) i); writeShort(&lzwbuf3[i], (short) i); }
+	for(i=255;i>=0;i--) { lzwbuf2[i] = (short) i; lzwbuf3[i] = (short) i; }
 	currstr = 256; bitcnt = (4<<3); outbytecnt = 0;
 	numbits = 8; oneupnumbits = (1<<8);
 	do
@@ -581,19 +585,19 @@ int32_t uncompress(uint8_t  *lzwinbuf, int32_t compleng, uint8_t  *lzwoutbuf)
 		if ((dat&((oneupnumbits>>1)-1)) > ((currstr-1)&((oneupnumbits>>1)-1)))
         { dat &= ((oneupnumbits>>1)-1); bitcnt--; }
         
-		writeShort(&lzwbuf3[currstr], (short) dat);
+		lzwbuf3[currstr] = (short) dat;
         
-		for(leng=0;dat>=256;leng++,dat= readShort(&lzwbuf3[dat]))
-			lzwbuf1[leng] = (uint8_t ) readShort(&lzwbuf2[dat]);
+		for(leng=0;dat>=256;leng++,dat=lzwbuf3[dat])
+			lzwbuf1[leng] = (uint8_t ) lzwbuf2[dat];
         
 		lzwoutbuf[outbytecnt++] = (uint8_t ) dat;
 		for(i=leng-1;i>=0;i--) lzwoutbuf[outbytecnt++] = lzwbuf1[i];
         
-		writeShort(&lzwbuf2[currstr-1], (short) dat); writeShort(&lzwbuf2[currstr], (short) dat);
+		lzwbuf2[currstr-1] = (short) dat; lzwbuf2[currstr] = (short) dat;
 		currstr++;
 		if (currstr > oneupnumbits) { numbits++; oneupnumbits <<= 1; }
 	} while (currstr < strtot);
-	return((int32_t )readShort(&shortptr[0])); /* uncompleng */
+	return((int32_t )shortptr[0]); /* uncompleng */
 }
 
 
