@@ -18,7 +18,8 @@
 #include <stdlib.h>
 #include "platform.h"
 #include "unix_compat.h"
-#include "dev_io.h"
+#include <dev_io.h>
+#include <bsp_sys.h>
 #include "names.h"
 
 #if !PLATFORM_MACOSX
@@ -4375,7 +4376,7 @@ void nextpage(void)
     beforedrawrooms = 1;
     numframes++;
 
-    dev_tickle();
+    bsp_tickle();
 }
 
 

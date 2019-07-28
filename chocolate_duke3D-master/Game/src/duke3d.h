@@ -39,7 +39,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #endif
 
 #ifdef STM32_SDK
-#include <dev_io.h>
+
 #else
 #include <fcntl.h>
 #endif

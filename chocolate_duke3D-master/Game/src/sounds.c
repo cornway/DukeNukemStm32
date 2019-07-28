@@ -36,6 +36,9 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "global.h"
 #include "filesystem.h"
 #include "sounds.h"
+#include <heap.h>
+#include <dev_io.h>
+#include <bsp_sys.h>
 
 
 #define LOUDESTVOLUME 150
@@ -216,7 +219,7 @@ void MusicShutdown( void )
 
 int USRHOOKS_GetMem(void  **ptr, uint32_t size )
 {
-   *ptr = Sys_Malloc(size);
+   *ptr = heap_malloc(size);
 
    if (*ptr == NULL)
       return(USRHOOKS_Error);
@@ -227,7 +230,7 @@ int USRHOOKS_GetMem(void  **ptr, uint32_t size )
 
 int USRHOOKS_FreeMem(void  *ptr)
 {
-   Sys_Free(ptr);
+   heap_free(ptr);
    return( USRHOOKS_Ok);
 }
 

@@ -17,6 +17,8 @@
 #include <misc_utils.h>
 #include <dev_io.h>
 #include <debug.h>
+#include <heap.h>
+#include <bsp_sys.h>
 
 extern char game_dir[512];
 #else
@@ -113,9 +115,9 @@ int32_t initgroupfile(const char  *filename)
     archive->numFiles = BUILDSWAP_INTEL32(*((int32_t *)&buf[12]));
     
     
-    archive->gfilelist = Sys_Malloc(archive->numFiles * sizeof(grpIndexEntry_t));
-    archive->fileOffsets = Sys_Malloc(archive->numFiles * sizeof(int32_t));
-    archive->filesizes = Sys_Malloc(archive->numFiles * sizeof(int32_t));
+    archive->gfilelist = heap_malloc(archive->numFiles * sizeof(grpIndexEntry_t));
+    archive->fileOffsets = heap_malloc(archive->numFiles * sizeof(int32_t));
+    archive->filesizes = heap_malloc(archive->numFiles * sizeof(int32_t));
     
     // Load the full index 16 bytes per file (12bytes for name + 4 bytes for the size).
     d_read(archive->fileDescriptor,archive->gfilelist, archive->numFiles * 16);
@@ -155,7 +157,7 @@ int32_t initgroupfile(const char  *filename)
         int i, rem, done;
         rem = archivesize & (crcBufSize - 1);
         archivesize = archivesize - rem;
-        crcBuffer = Sys_Malloc(crcBufSize);
+        crcBuffer = heap_malloc(crcBufSize);
         for (i = 0; i < archivesize; i += crcBufSize) {
             done = d_read(archive->fileDescriptor, crcBuffer, crcBufSize);
             assert(done == crcBufSize);
@@ -168,7 +170,7 @@ int32_t initgroupfile(const char  *filename)
             assert(done == crcBufSize);
             archive->crc32 = crc32_update(crcBuffer,done,archive->crc32);
         }
-        Sys_Free(crcBuffer);
+        heap_free(crcBuffer);
         d_seek(archive->fileDescriptor, 0, DSEEK_SET);
     }
 #endif /*STM32_SDK*/
@@ -190,10 +192,10 @@ void uninitgroupfile(void)
 	int i;
     
 	for( i=0 ; i < grpSet.num ;i++){
-        Sys_Free(grpSet.archives[i].gfilelist);
-        Sys_Free(grpSet.archives[i].fileOffsets);
-        Sys_Free(grpSet.archives[i].filesizes);
-        memset(&grpSet.archives[i], 0, sizeof(grpArchive_t));
+        heap_free(grpSet.archives[i].gfilelist);
+        heap_free(grpSet.archives[i].fileOffsets);
+        heap_free(grpSet.archives[i].filesizes);
+        d_memset(&grpSet.archives[i], 0, sizeof(grpArchive_t));
     }
     
 }

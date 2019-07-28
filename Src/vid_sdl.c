@@ -7,6 +7,7 @@
 #include "sdl_keysym.h"
 #include "keyboard.h"
 #include <vid.h>
+#include <heap.h>
 
 #define VIDEO_IN_IRAM 1
 
@@ -16,14 +17,14 @@ viddef_t    vid;                // global video state
 //#define    BASEWIDTH    320
 //#define    BASEHEIGHT   200
 // Much better for high resolution displays
-#define    BASEWIDTH    (320)
-#define    BASEHEIGHT   (200)
+#define    BASEWIDTH    (DEV_MAXXDIM)
+#define    BASEHEIGHT   (DEV_MAXYDIM)
 
 #define D_SCREEN_PIX_CNT (BASEWIDTH * BASEHEIGHT)
 #define D_SCREEN_BYTE_CNT (D_SCREEN_PIX_CNT * sizeof(pix_t))
 
 #if VIDEO_IN_IRAM
-uint8_t screenbuf[BASEWIDTH * BASEHEIGHT * sizeof(pix_t) + sizeof(SDL_Surface)] = {0};
+uint8_t screenbuf[BASEWIDTH * BASEHEIGHT * sizeof(uint8_t) + sizeof(SDL_Surface)] = {0};
 #endif
 
 int    VGA_width, VGA_height, VGA_rowbytes, VGA_bufferrowbytes = 0;
@@ -61,8 +62,6 @@ static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
     lcd_screen.width = BASEWIDTH;
     lcd_screen.height = BASEHEIGHT;
 
-    screen_win_cfg(&lcd_screen);
-
 #if VIDEO_IN_IRAM
     sdlsurface = (SDL_Surface *)&screenbuf[0];
 #else
@@ -74,7 +73,7 @@ static SDL_Surface *VID_Init (int width, int height, int bpp, Uint32 flags)
     // Set video width, height and flags
     flags = (SDL_SWSURFACE|SDL_HWPALETTE|SDL_FULLSCREEN);
 
-    memset(sdlsurface, 0, sizeof(SDL_Surface));
+    d_memset(sdlsurface, 0, sizeof(SDL_Surface));
 
     sdlsurface->pixels = (void *)(sdlsurface + 1);
     sdlsurface->flags = flags;
@@ -109,7 +108,7 @@ DECLSPEC void SDLCALL SDL_UpdateRect
     screen.buf = sdlscreen->pixels;
     screen.width = sdlscreen->w;
     screen.height = sdlscreen->h;
-    screen_update(&screen);
+    vid_update(&screen);
 }
 
 extern DECLSPEC SDL_Surface * SDLCALL SDL_SetVideoMode
@@ -122,34 +121,6 @@ extern DECLSPEC SDL_Surface * SDLCALL SDL_SetVideoMode
 void    VID_Shutdown (void)
 {
     SDL_Quit();
-}
-
-#if GFX_COLOR_MODE != GFX_COLOR_MODE_CLUT
-#error "Unsupported mode"
-#endif
-
-typedef struct {
-    pix_t a[4];
-} scanline_t;
-
-typedef union {
-#if (GFX_COLOR_MODE == GFX_COLOR_MODE_CLUT)
-    uint32_t w;
-#elif (GFX_COLOR_MODE == GFX_COLOR_MODE_RGB565)
-    uint64_t w;
-#endif
-    scanline_t sl;
-} scanline_u;
-
-#define DST_NEXT_LINE(x) (((uint32_t)(x) + BASEWIDTH * 2 * sizeof(pix_t)))
-#define W_STEP (sizeof(scanline_t) / sizeof(pix_t))
-
-void uiUpdate (vrect_t *rect, screen_t *lcd_screen)
-{
-}
-
-void    VID_Update (void *rects)
-{
 }
 
 /*
@@ -167,7 +138,7 @@ void D_BeginDirectRect (int x, int y, uint8_t *pbitmap, int width, int height)
     offset = (uint8_t *)sdlsurface->pixels + y*sdlsurface->pitch + x;
     while ( height-- )
     {
-        memcpy(offset, pbitmap, width);
+        d_memcpy(offset, pbitmap, width);
         offset += sdlsurface->pitch;
         pbitmap += width;
     }
@@ -216,9 +187,9 @@ const kbdmap_t gamepad_to_kbd_map[JOY_STD_MAX] =
     [JOY_K10]           = {SDLK_ESCAPE, PAD_FREQ_LOW},
 };
 
-i_event_t *input_post_key (i_event_t  *evts, i_event_t event)
+i_event_t *__post_key (i_event_t  *evts, i_event_t *event)
 {
-    root_sdl_event_filter(&event);
+    root_sdl_event_filter(event);
     return NULL;
 }
 
@@ -229,7 +200,7 @@ void Sys_SendKeyEvents(i_event_t *evts)
 
 void IN_Init (void)
 {
-    input_soft_init(gamepad_to_kbd_map);
+    input_soft_init(__post_key, gamepad_to_kbd_map);
     input_bind_extra(K_EX_LOOKUP, SDLK_HOME);
     input_bind_extra(K_EX_LOOKUP, SDLK_DELETE);
     input_bind_extra(K_EX_LOOKUP, SDLK_INSERT);

@@ -12,7 +12,11 @@
 #include "filesystem.h"
 #ifdef STM32_SDK
 #include <debug.h>
+#include <heap.h>
+#include <bsp_sys.h>
 #endif
+
+#pragma align 4
 
 char  artfilename[20];
 
@@ -277,7 +281,7 @@ int loadpics(char  *filename, char * gamedir)
     }
 #else
     {
-        uint32_t size = Sys_AllocBytesLeft();
+        uint32_t size = heap_avail();
 
         size = size & ~(0x00080000 - 1);
         if (size <= 0x00080000) {

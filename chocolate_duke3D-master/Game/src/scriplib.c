@@ -32,6 +32,12 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "duke3d.h"
 #include "scriplib.h"
 
+#include <misc_utils.h>
+#include <dev_io.h>
+#include <heap.h>
+#include <debug.h>
+#include <bsp_sys.h>
+
 /* #define DEBUG_SCRIPLIB */
 
 #define MAX_SCRIPTS 5
@@ -68,7 +74,7 @@ static scriptnode_t *SCRIPT_constructnode (void)
 {
 	scriptnode_t *s;
 
-	s = (scriptnode_t *) Sys_Malloc (sizeof (scriptnode_t));
+	s = (scriptnode_t *) heap_malloc (sizeof (scriptnode_t));
 	if (s != NULL)
 	{
 		s->child = NULL;
@@ -86,16 +92,16 @@ static void SCRIPT_freenode (scriptnode_t *node)
 	assert (node != NULL);
 
 	if (node->type == SCRIPTFLAG_ONESTRING) {
-		Sys_Free (node->data.string[0]);
+		heap_free (node->data.string[0]);
 	} else if (node->type == SCRIPTFLAG_TWOSTRING) {
-		Sys_Free (node->data.string[0]);
-		Sys_Free (node->data.string[1]);
+		heap_free (node->data.string[0]);
+		heap_free (node->data.string[1]);
 	}
 
-	Sys_Free (node->key);
-	Sys_Free (node->sibling);
-	Sys_Free (node->child);
-	Sys_Free (node);
+	heap_free (node->key);
+	heap_free (node->sibling);
+	heap_free (node->child);
+	heap_free (node);
 }
 
 static void SCRIPT_writenode (scriptnode_t *node, int fp)
@@ -190,7 +196,7 @@ static char  *SCRIPT_copystring (char  * s)
 {
 	char  *ret;
 
-	ret = (char  *) Sys_Malloc (strlen (s)+1);
+	ret = (char  *) heap_malloc (strlen (s)+1);
 	if (ret != NULL)
 	{
 		strcpy (ret, s);
@@ -903,7 +909,7 @@ void SCRIPT_PutString
 		node->key = SCRIPT_copystring (entryname);
 		SCRIPT_addchild (section, node);
 	} else {
-		Sys_Free (node->data.string[0]);
+		heap_free (node->data.string[0]);
 	}
 
 	node->data.string[0] = SCRIPT_copystring (string);
@@ -956,8 +962,8 @@ void SCRIPT_PutDoubleString
 		node->key = SCRIPT_copystring (entryname);
 		SCRIPT_addchild (section, node);
 	} else {
-		Sys_Free (node->data.string[0]);
-		Sys_Free (node->data.string[1]);
+		heap_free (node->data.string[0]);
+		heap_free (node->data.string[1]);
 	}
 
 	node->data.string[0] = SCRIPT_copystring (string1);

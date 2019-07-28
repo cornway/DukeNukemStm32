@@ -4,6 +4,9 @@
 #include "cvar_defs.h"
 #include <stdarg.h>
 
+#include <dev_io.h>
+#include <heap.h>
+
 
 // For autoexec.cfg
 #include <stdio.h>
@@ -76,7 +79,7 @@ void CONSOLE_Reset()
         pDelElement = pElement;
         pElement = (CONSOLEELEMENT*)pElement->next;
 
-        Sys_Free(pDelElement);
+        heap_free(pDelElement);
     }
 
     console_buffer = NULL;
@@ -492,7 +495,7 @@ void CONSOLE_ParseCommand(char * command)
 void CONSOLE_InsertUsedCommand(const char * szUsedCommand)
 {
     //create a new element in the list, and add it to the front
-    CONSOLEELEMENT *pElement = (CONSOLEELEMENT*)Sys_Malloc(sizeof(CONSOLEELEMENT));
+    CONSOLEELEMENT *pElement = (CONSOLEELEMENT*)heap_malloc(sizeof(CONSOLEELEMENT));
     if(pElement)
     {
         //Store our newly created member as the prev address
@@ -512,7 +515,7 @@ void CONSOLE_InsertUsedCommand(const char * szUsedCommand)
         pElement->prev = NULL;
 
         //sprintf(console_buffer->text, "%s", msg);
-        memset(console_used_command_list->text, 0, MAX_CONSOLE_STRING_LENGTH);
+        d_memset(console_used_command_list->text, 0, MAX_CONSOLE_STRING_LENGTH);
         strncpy(console_used_command_list->text, szUsedCommand, MAX_CONSOLE_STRING_LENGTH-2);
     }
 }
@@ -529,7 +532,7 @@ void CONSOLE_ClearUsedCommandList()
         pDelElement = pElement;
         pElement = (CONSOLEELEMENT*)pElement->next;
 
-        Sys_Free(pDelElement);
+        heap_free(pDelElement);
     }
 
     console_used_command_list = NULL;
@@ -571,7 +574,7 @@ void CONSOLE_Printf(const char  *newmsg, ...)
     va_end (argptr);
 
     //create a new element in the list, and add it to the front
-    pElement = (CONSOLEELEMENT*)Sys_Malloc(sizeof(CONSOLEELEMENT));
+    pElement = (CONSOLEELEMENT*)heap_malloc(sizeof(CONSOLEELEMENT));
     if(pElement)
     {
         //Store our newly created member as the prev address

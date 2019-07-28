@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #else
 #include <debug.h>
+#include <bsp_sys.h>
 #endif
 
 #include "platform.h"

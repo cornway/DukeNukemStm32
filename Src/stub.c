@@ -7,6 +7,9 @@
 #include "fx_man.h"
 #include <duke3d.h>
 #include <debug.h>
+#include <bsp_sys.h>
+#include <misc_utils.h>
+#include <dev_io.h>
 #include <begin_code.h>
 
 extern const char *mus_dir_path;
@@ -124,7 +127,7 @@ DECLSPEC const SDL_VideoInfo * SDLCALL SDL_GetVideoInfo(void)
     info.blit_sw_A = 0,
     info.blit_fill = 1,
     info.UnusedBits3 = 0,
-    info.video_mem = screen_total_mem_avail_kb();
+    info.video_mem = vid_mem_avail();
     info.vfmt = NULL;
     info.current_w = DEV_MAXXDIM;
     info.current_h = DEV_MAXYDIM;
@@ -155,12 +158,12 @@ DECLSPEC int SDLCALL SDL_Init (uint32_t what)
     return 0;
 }
 
-A_COMPILE_TIME_ASSERT(pallette_chk, sizeof(pal_t) == sizeof(SDL_Color));
+A_COMPILE_TIME_ASSERT(pallette_chk, sizeof(uint32_t) == sizeof(SDL_Color));
 
 DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface *surface, 
                                         SDL_Color *colors, int firstcolor, int ncolors)
 {
-    screen_set_clut((pal_t *)(colors + firstcolor), ncolors);
+    vid_set_clut((colors + firstcolor), ncolors);
     return 0;
 }
 
@@ -172,11 +175,11 @@ DECLSPEC int SDLCALL SDL_putenv(const char *variable)
 
 void SDL_Delay (uint32_t ms)
 {
-    HAL_Delay(ms);
+    Sys_Sleep(ms);
 }
 
 uint32_t SDL_GetTicks (void)
 {
-    return HAL_GetTick();
+    return d_time();
 }
 

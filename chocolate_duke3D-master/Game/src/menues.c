@@ -34,6 +34,7 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include "display.h"
 #ifdef STM32_SDK
 #include <dev_io.h>
+#include <debug.h>
 #else
 #include "SDL.h"
 extern SDL_Surface *surface;
@@ -596,7 +597,7 @@ int saveplayer(int8_t spot)
 	if(getGameDir()[0] != '\0')
 	{
 		// Yes
-		sprintf(fullpathsavefilename, "%s\\%s", getGameDir(), fnptr);
+		sprintf(fullpathsavefilename, "%s/%s", getGameDir(), fnptr);
 	}
 	else
 	{

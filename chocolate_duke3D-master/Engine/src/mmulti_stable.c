@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #ifdef STM32_SDK
 #include <debug.h>
+#include <heap.h>
 #endif
 
 //#include "buildqueue.h"
@@ -266,7 +267,7 @@ void cleanup(void);
 #endif
 		atexit(cleanup);
 
-		retval = (gcomtype *)Sys_Malloc(sizeof (gcomtype));
+		retval = (gcomtype *)heap_malloc(sizeof (gcomtype));
 		if (retval != NULL)
 		{
 			int rc;
@@ -1033,7 +1034,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 		}
 
 		len = kfilelength(handle);
-		buf = (char *) Sys_Malloc(len + 2);
+		buf = (char *) heap_malloc(len + 2);
 		if (!buf)
 		{
 			kclose(handle);
@@ -1044,7 +1045,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 		kclose(handle);
 		if (rc != len)
 		{
-			Sys_Free(buf);
+			heap_free(buf);
 			return(NULL);
 		}
 
@@ -1215,7 +1216,7 @@ int CreateServer(char* ip, int nPort, int nMaxPlayers)
 				dprintf("bogus token! [%s]\n", tok);
 		}
 
-		Sys_Free(buf);
+		heap_free(buf);
 
 		// Create the server
 		int ret = CreateServer(static_ipstring(ip), udpport, gcom->numplayers);

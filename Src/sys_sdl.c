@@ -12,11 +12,10 @@
 #include "sdl_keysym.h"
 #include "audio_main.h"
 #include "input_main.h"
-#include "main.h"
-#include "dev_io.h"
-#include "debug.h"
-#include "begin_code.h"
 #include <misc_utils.h>
+#include <dev_io.h>
+#include <debug.h>
+#include "begin_code.h"
 
 void Sys_Error (char *error, ...);
 
@@ -56,7 +55,8 @@ void Sys_Init(void)
 
 void SDL_Quit(void)
 {
-    Sys_Error("-----------SDL_Quit-----------/n");
+extern void SystemSoftReset (void);
+    SystemSoftReset();
 }
 
 #if !id386
@@ -178,6 +178,11 @@ char *Sys_FileGetS (int handle, char *dst, int count)
     return d_gets(handle, dst, count);
 }
 
+char Sys_FileGetC (int handle)
+{
+    return d_getc(handle);
+}
+
 int Sys_FileWrite (int handle, void *src, int count)
 {
     return d_write(handle, src, count);
@@ -198,19 +203,23 @@ int Sys_FPrintf (int handle, char *fmt, ...)
     return r;
 }
 
-
 int	Sys_FileTime (char *path)
 {
-    return 0;
+    int f, time;
+
+    d_open(path, &f, "r");
+    if (f < 0) {
+        return -1;
+    }
+    time = d_time();
+    d_close(f);
+    return time;
 }
 
 void Sys_mkdir (char *path)
 {
     d_mkdir(path);
 }
-
-
-extern volatile uint32_t systime;
 
 double Sys_FloatTime (void)
 {
@@ -224,9 +233,7 @@ double Sys_FloatTime (void)
 	return (clock()-starttime)*1.0/1024;
 
 #else
-
-    return systime;
-
+    return d_time();
 #endif
 }
 
@@ -254,7 +261,10 @@ void Sys_LineRefresh(void)
 
 void Sys_Sleep(void)
 {
-	HAL_Delay(1);
+    volatile static uint32_t time = 0;
+
+    time = d_time() + 1;
+    while (time > d_time()) {}
 }
 
 void floating_point_exception_handler(int whatever)

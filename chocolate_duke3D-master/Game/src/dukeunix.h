@@ -73,7 +73,7 @@ void _dos_getdate(struct dosdate_t *date);
 
 #if defined(STM32_SDK)
 
-#define Z_AvailHeap() Sys_AllocBytesLeft()
+#define Z_AvailHeap() heap_avail()
 
 #elif defined(DC)
 #undef stderr
@@ -97,10 +97,10 @@ void _dos_getdate(struct dosdate_t *date);
 
 // FCS: Game.c features calls to mkdir without the proper flags.
 // Giving all access is ugly but it is just game OK !
-#define mkdir(X) mkdir(X,0777)
 #ifndef STM32_SDK
 #define getch() 0
 #else
+#define mkdir(X) mkdir(X,0777)
 #define getch getchar
 #endif
 #endif
