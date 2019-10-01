@@ -24,6 +24,7 @@
 
 #if !PLATFORM_MACOSX
 #include <misc_utils.h>
+#include <heap.h>
 #endif
 
 #include "build.h"
@@ -60,10 +61,10 @@ int32_t curbrightness = 0;
 static uint8_t  globalpolytype;
 static short *dotp1[MAXYDIM], *dotp2[MAXYDIM];
 
-static char  tempbuf[MAXWALLS];
+static char  tempbuf[MAXWALLS] IRAM2;
 
 int32_t ebpbak, espbak;
-int32_t slopalookup[16384];
+int32_t slopalookup[16384] IRAM2;
 
 /*
  * !!! used to be static. If we ever put the original setgamemode() back, this
@@ -72,14 +73,14 @@ int32_t slopalookup[16384];
 uint8_t  permanentlock = 255;
 int32_t  mapversion;
 
-uint8_t  picsiz[MAXTILES], tilefilenum[MAXTILES];
+uint8_t  picsiz[MAXTILES] IRAM2, tilefilenum[MAXTILES] IRAM2;
 int32_t lastageclock;
-int32_t tilefileoffs[MAXTILES];
+int32_t tilefileoffs[MAXTILES] IRAM2;
 
 int32_t artsize = 0, cachesize = 0;
 
-static short radarang[1280], radarang2[MAXXDIM+1];
-static uint16_t sqrtable[4096], shlookup[4096+256];
+static short radarang[1280] IRAM2, radarang2[MAXXDIM+1] IRAM2;
+static uint16_t sqrtable[4096] IRAM2, shlookup[4096+256] IRAM2;
 uint8_t  pow2char[8] = {1,2,4,8,16,32,64,-128};
 int32_t pow2long[32] =
 {
@@ -92,7 +93,7 @@ int32_t pow2long[32] =
     16777216L,33554432L,67108864L,134217728L,
     268435456L,536870912L,1073741824L,2147483647L,
 };
-int32_t reciptable[2048], fpuasm;
+int32_t reciptable[2048]IRAM2, fpuasm;
 
 char  kensmessage[128];
 
@@ -121,7 +122,7 @@ typedef struct pvWall_s{
 } pvWall_t;
 
 // Potentially Visible walls are stored in this stack.
-pvWall_t pvWalls[MAXWALLSB];
+pvWall_t pvWalls[MAXWALLSB] IRAM2;
 
 
 
@@ -138,38 +139,38 @@ static short thesector[MAXWALLSB], thewall[MAXWALLSB];
 */
 
 // bunchWallsList contains the list of walls in a bunch.
-static short bunchWallsList[MAXWALLSB];
+static short bunchWallsList[MAXWALLSB]IRAM2;
 
-static short bunchfirst[MAXWALLSB], bunchlast[MAXWALLSB];
-
-
+static short bunchfirst[MAXWALLSB]IRAM2, bunchlast[MAXWALLSB]IRAM2;
 
 
 
 
 
-static short smost[MAXYSAVES], smostcnt;
-static short smoststart[MAXWALLSB];
-static uint8_t  smostwalltype[MAXWALLSB];
-static int32_t smostwall[MAXWALLSB], smostwallcnt = -1L;
 
-static short maskwall[MAXWALLSB], maskwallcnt;
-static int32_t spritesx[MAXSPRITESONSCREEN];
-static int32_t spritesy[MAXSPRITESONSCREEN+1];
-static int32_t spritesz[MAXSPRITESONSCREEN];
-static spritetype *tspriteptr[MAXSPRITESONSCREEN];
+
+static short smost[MAXYSAVES] IRAM2, smostcnt;
+static short smoststart[MAXWALLSB] IRAM2;
+static uint8_t  smostwalltype[MAXWALLSB] IRAM2;
+static int32_t smostwall[MAXWALLSB] IRAM2, smostwallcnt = -1L;
+
+static short maskwall[MAXWALLSB] IRAM2, maskwallcnt IRAM2;
+static int32_t spritesx[MAXSPRITESONSCREEN] IRAM2;
+static int32_t spritesy[MAXSPRITESONSCREEN+1] IRAM2;
+static int32_t spritesz[MAXSPRITESONSCREEN] IRAM2;
+static spritetype *tspriteptr[MAXSPRITESONSCREEN] IRAM2;
 
 //FCS: (up-most pixel on column x that can still be drawn to)
-short umost[MAXXDIM+1];
+short umost[MAXXDIM+1] IRAM2;
 
 //FCS: (down-most pixel +1 on column x that can still be drawn to)
-short dmost[MAXXDIM+1];
+short dmost[MAXXDIM+1] IRAM2;
 
-int16_t bakumost[MAXXDIM+1], bakdmost[MAXXDIM+1];
-short uplc[MAXXDIM+1], dplc[MAXXDIM+1];
-static int16_t uwall[MAXXDIM+1], dwall[MAXXDIM+1];
-static int32_t swplc[MAXXDIM+1], lplc[MAXXDIM+1];
-static int32_t swall[MAXXDIM+1], lwall[MAXXDIM+4];
+int16_t bakumost[MAXXDIM+1] IRAM2, bakdmost[MAXXDIM+1] IRAM2;
+short uplc[MAXXDIM+1] IRAM2 IRAM2, dplc[MAXXDIM+1] IRAM2;
+static int16_t uwall[MAXXDIM+1] IRAM2, dwall[MAXXDIM+1] IRAM2;
+static int32_t swplc[MAXXDIM+1] IRAM2, lplc[MAXXDIM+1] IRAM2;
+static int32_t swall[MAXXDIM+1] IRAM2, lwall[MAXXDIM+4] IRAM2;
 int32_t xdimen = -1, xdimenrecip, halfxdimen, xdimenscale, xdimscale;
 int32_t wx1, wy1, wx2, wy2, ydimen;
 int32_t viewoffset;
@@ -180,33 +181,33 @@ static int32_t xsi[8], ysi[8];
 /* used to be static. --ryan. */
 int32_t *horizlookup=0, *horizlookup2=0, horizycent;
 
-int32_t globalposx, globalposy, globalposz, globalhoriz;
-int16_t globalang, globalcursectnum;
-int32_t globalpal, cosglobalang, singlobalang;
-int32_t cosviewingrangeglobalang, sinviewingrangeglobalang;
-uint8_t  *globalpalwritten;
-int32_t globaluclip, globaldclip, globvis = 0;
-int32_t globalvisibility, globalhisibility, globalpisibility, globalcisibility;
-uint8_t  globparaceilclip, globparaflorclip;
+int32_t globalposx IRAM2, globalposy IRAM2, globalposz IRAM2, globalhoriz IRAM2;
+int16_t globalang IRAM2, globalcursectnum IRAM2;
+int32_t globalpal IRAM2, cosglobalang IRAM2, singlobalang IRAM2;
+int32_t cosviewingrangeglobalang IRAM2, sinviewingrangeglobalang IRAM2;
+uint8_t  *globalpalwritten IRAM2;
+int32_t globaluclip IRAM2, globaldclip IRAM2, globvis = 0;
+int32_t globalvisibility IRAM2, globalhisibility IRAM2, globalpisibility IRAM2, globalcisibility IRAM2;
+uint8_t  globparaceilclip IRAM2, globparaflorclip IRAM2;
 
-int32_t xyaspect, viewingrangerecip;
+int32_t xyaspect IRAM2, viewingrangerecip IRAM2;
 
-int32_t asm1, asm4;
-intptr_t asm2, asm3;
+int32_t asm1, asm4 IRAM2;
+intptr_t asm2, asm3 IRAM2;
 
 
-int32_t vplce[4], vince[4];
-intptr_t bufplce[4];
+int32_t vplce[4] IRAM2, vince[4] IRAM2;
+intptr_t bufplce[4] IRAM2;
 
-uint8_t*  palookupoffse[4];
+uint8_t*  palookupoffse[4] IRAM2;
 
-uint8_t  globalxshift, globalyshift;
-int32_t globalxpanning, globalypanning, globalshade;
-int16_t globalpicnum, globalshiftval;
-int32_t globalzd, globalyscale, globalorientation;
-uint8_t* globalbufplc;
-int32_t globalx1, globaly1, globalx2, globaly2, globalx3, globaly3, globalzx;
-int32_t globalx, globaly, globalz;
+uint8_t  globalxshift IRAM2, globalyshift IRAM2;
+int32_t globalxpanning IRAM2, globalypanning IRAM2, globalshade IRAM2;
+int16_t globalpicnum IRAM2, globalshiftval IRAM2;
+int32_t globalzd IRAM2, globalyscale IRAM2, globalorientation IRAM2;
+uint8_t* globalbufplc IRAM2;
+int32_t globalx1 IRAM2, globaly1 IRAM2, globalx2 IRAM2, globaly2 IRAM2, globalx3 IRAM2, globaly3 IRAM2, globalzx IRAM2;
+int32_t globalx IRAM2, globaly IRAM2, globalz IRAM2;
 
 //FCS:
 // Those two variables are using during portal flooding:
@@ -217,30 +218,30 @@ int32_t globalx, globaly, globalz;
 //FCS: Moved this on the stack
 
 static uint8_t  tablesloaded = 0;
-int32_t pageoffset, ydim16, qsetmode = 0;
-int32_t startposx, startposy, startposz;
-int16_t startang, startsectnum;
-int16_t pointhighlight, linehighlight, highlightcnt;
-static int32_t lastx[MAXYDIM];
+int32_t pageoffset IRAM2, ydim16 IRAM2, qsetmode = 0;
+int32_t startposx IRAM2, startposy IRAM2, startposz IRAM2;
+int16_t startang IRAM2, startsectnum IRAM2;
+int16_t pointhighlight IRAM2, linehighlight IRAM2, highlightcnt IRAM2;
+static int32_t lastx[MAXYDIM] IRAM2;
 uint8_t  paletteloaded = 0;
 
 #define FASTPALGRIDSIZ 8
 static int32_t rdist[129], gdist[129], bdist[129];
-static uint8_t  colhere[((FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2))>>3];
-static uint8_t  colhead[(FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2)];
-static int32_t colnext[256];
+static uint8_t  colhere[((FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2))>>3] IRAM2;
+static uint8_t  colhead[(FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2)*(FASTPALGRIDSIZ+2)] IRAM2;
+static int32_t colnext[256] IRAM2;
 static uint8_t  coldist[8] = {0,1,2,3,4,3,2,1};
-static int32_t colscan[27];
+static int32_t colscan[27] IRAM2;
 
-static int16_t clipnum, hitwalls[4];
+static int16_t clipnum, hitwalls[4] IRAM2;
 int32_t hitscangoalx = (1<<29)-1, hitscangoaly = (1<<29)-1;
 
 typedef struct {
     int32_t x1, y1, x2, y2;
 } linetype;
-static linetype clipit[MAXCLIPNUM];
-static short clipsectorlist[MAXCLIPNUM], clipsectnum;
-static short clipobjectval[MAXCLIPNUM];
+static linetype clipit[MAXCLIPNUM] IRAM2;
+static short clipsectorlist[MAXCLIPNUM] IRAM2, clipsectnum;
+static short clipobjectval[MAXCLIPNUM] IRAM2;
 
 typedef struct
 {
@@ -250,7 +251,7 @@ typedef struct
     uint8_t  dapalnum, dastat, pagesleft;
     int32_t cx1, cy1, cx2, cy2;
 } permfifotype;
-static permfifotype permfifo[MAXPERMS];
+static permfifotype permfifo[MAXPERMS] IRAM2;
 static int32_t permhead = 0, permtail = 0;
 
 //FCS: Num walls to potentially render.

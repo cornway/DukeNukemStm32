@@ -72,7 +72,7 @@ static int MV_cubic16(const short *src, int position, int rate)
 
 	while (hpos > *MV_GLast)
 	{
-		gval0 = readShort(&src[temp++]);
+		gval0 = (short)readShort(&src[temp++]);
 		*MV_GPos = (*MV_GPos + 1) & 3;
 		(*MV_GLast)++;
 	}
@@ -396,20 +396,20 @@ void MV_MixFPStereo8( uint32_t position,
    uint32_t rate, const char *start, uint32_t length )
 {
 	const unsigned char *src;
-	double *dest;
+	double *dest, kleft, kright;
 	unsigned int i;
 	
 	src = (const unsigned char *)start;
 	dest = (double *)MV_MixDestination;
 
+    kleft = (double)MV_LeftVolume / ((double)MV_MaxVolume * (double)0x8000);
+    kright = (double)MV_RightVolume / ((double)MV_MaxVolume * (double)0x8000);
 	for (i = 0; i < length; i++) {
 		int s = MV_cubic8to16(src, position, rate);
 		double left, right;
 		
-		left = (double)MV_LeftVolume * (double)s / (double)MV_MaxVolume;
-		left = left / ((double)0x8000);
-		right = (double)(MV_RightVolume * s) / MV_MaxVolume;
-		right = right / ((double)0x8000);
+		left = kleft * (double)s;
+		right = kright * (double)(s);
 		dest[0] += left;
 		dest[1] += right;
 

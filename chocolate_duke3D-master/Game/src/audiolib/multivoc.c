@@ -596,7 +596,7 @@ playbackstatus MV_GetNextVOCBlock
          }
 
       blocktype = ( int )*ptr;
-      blocklength = readLong(ptr + 1) & 0x00ffffff;
+      blocklength = (unsigned)readLong(ptr + 1) & 0x00ffffff;
       ptr += 4;
 
       switch( blocktype )
@@ -717,10 +717,10 @@ playbackstatus MV_GetNextVOCBlock
          case 9 :
             // New sound data block
 
-            samplespeed = readLong(ptr);
+            samplespeed = (uint16_t)readLong(ptr);
             BitsPerSample = ( unsigned )*( ptr + 4 );
             Channels = ( unsigned )*( ptr + 5 );
-            Format = readLong( ptr + 6 );
+            Format = (unsigned)readLong( ptr + 6 );
 
             if ( ( BitsPerSample == 8 ) && ( Channels == 1 ) &&
                ( Format == VOC_8BIT ) )

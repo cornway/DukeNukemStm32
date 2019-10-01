@@ -39,6 +39,8 @@ Prepared for public release: 03/21/2003 - Charlie Wiederhold, 3D Realms
 #include <heap.h>
 #include <dev_io.h>
 #include <bsp_sys.h>
+#include <debug.h>
+#include <audio_main.h>
 
 
 #define LOUDESTVOLUME 150
