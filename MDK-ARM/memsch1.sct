@@ -9,6 +9,7 @@ LR_IROM1 0x08000000 0x00200000  {    ; load region size_region
    .ANY (+RO)
   }
   DTCM 0x20000000 0x00018000  {  ; DTCM
+  ; I found that this is only one location where dma2 can work normally ???
    .ANY (dtcm, +RW +ZI)
    audio_mem.o (dtcm, +RW +ZI)
    serial.o (dtcm, +RW, ZI)

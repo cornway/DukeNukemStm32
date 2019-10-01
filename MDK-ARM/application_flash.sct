@@ -4,13 +4,13 @@ LR_IROM1 0x08100000 0x00100000 {    ; load region size_region
    *(InRoot$$Sections)
    .ANY (+RO)
   }
-  RW_IRAM1 0x2007C000 UNINIT 0x00004000  {  ; RW data
+  RW_IRAM1 0x20015000 UNINIT 0x00007000  {  ; RW data
    *(BSPHEAP)
   }
   DBG_RAM 0x20018000 UNINIT 0x00001000  {  ; DBG ALGO    
    *(DBG_RAM)
   }
-  DTCM_STACK 0x20019000 UNINIT 0x00007000  {  ; DTCM    
+  DTCM_STACK 0x2001C000 UNINIT 0x00004000  {  ; DTCM
    *(STACK)
   }
   SHARED 0x20000000 UNINIT 0x00001000  {  ; DTCM
@@ -20,10 +20,10 @@ LR_IROM1 0x08100000 0x00100000 {    ; load region size_region
    *(BSPBSS)
   }
   RW_IRAM 0x20020000 0x0005C000 { ;SRAM
-   .ANY (iram2, +RW +ZI)
+   engine.o (iram2)
   }
   SDRAM_HEAP 0xC0000000 0x00240000 {  ; SDRAM
-    .ANY (iram2, +RW +ZI)
+    .ANY (dram, +RW +ZI)
   }
   SDRAM_BSS 0xC0240000 UNINIT 0x00da0000  {  ; SDRAM
     *(HEAP)

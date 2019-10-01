@@ -34,29 +34,46 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include <string.h>
 #include "main.h"
 #include <lcd_main.h>
 #include <heap.h>
+#include <bsp_sys.h>
 
 const char *mus_dir_path = "duke/music";
 const char *snd_dir_path = "duke/sound";
 const char *gamedir_path = "duke";
 
+int g_profile_per = 10;
+
 extern int duke_main(int argc,char  **argv);
-extern int dev_main (void);
+extern int app_main (void);
 
 int main(void)
 {
-    dev_main();
+    app_main();
 }
 
 void VID_PreConfig (void)
 {
-    screen_t screen;
-    screen.buf = NULL;
-    screen.width = DEV_MAXXDIM;
-    screen.height = DEV_MAXYDIM;
-    vid_config(heap_malloc, NULL, &screen, GFX_COLOR_MODE_CLUT, 2);
+    screen_conf_t conf;
+    int hwaccel = 0, p;
+
+    p = bsp_argv_check("-gfxmod");
+    if (p >= 0) {
+        const char *str = bsp_argv_get(p);
+        hwaccel = atoi(str);
+    }
+
+    conf.res_x = DEV_MAXXDIM;
+    conf.res_y = DEV_MAXYDIM;
+    conf.alloc.malloc = heap_alloc_shared;
+    conf.alloc.free = heap_free;
+    conf.colormode = GFX_COLOR_MODE_CLUT;
+    conf.laynum = 2;
+    conf.hwaccel = hwaccel;
+    conf.clockpresc = 1;
+    vid_config(&conf);
 }
 
 int mainloop (int argc, const char *argv[])
