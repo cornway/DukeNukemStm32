@@ -8181,17 +8181,6 @@ int duke_main(int argc,char  **argv)
 	//		"it. Please report new bugs at xd@m-klein.com or on DX forums. Thx!\n\n");
 	
 	dprintf("*** Chocolate DukeNukem3D v%d.%d ***\n\n", CHOCOLATE_DUKE_REV_X, CHOCOLATE_DUKE_REV_DOT_Y);
-    {
-        int argn = bsp_argv_check("-gamedir");
-        const char *gamedir = NULL;
-
-        if (argn >= 0) {
-            gamedir = bsp_argv_get(argn + 1);
-        }
-        if (gamedir) {
-            gamedir_path = gamedir;
-        }
-    }
     setGameDir((char *)gamedir_path);
 
 	// FIX_00033: Fake multi and AI are now fully working
